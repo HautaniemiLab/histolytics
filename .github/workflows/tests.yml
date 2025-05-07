@@ -44,9 +44,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       # Step 4: Install dependencies using UV
-      - name: Install dependencies
-        run: uv install
+      - name: Install deps
+        run: uv sync --locked --all-extras --dev
 
       # Step 5: Run tests with pytest
       - name: Run tests
-        run: uv run pytest --cov=.
+        run: uv run pytest tests
