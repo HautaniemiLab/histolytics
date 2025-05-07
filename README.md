@@ -21,7 +21,7 @@ pip install histolytics
 ## Models 🤖
 
 
-- Panoptic [HoVer-Net](https://www.sciencedirect.com/science/article/abs/)
+- Panoptic [HoVer-Net](https://www.sciencedirect.com/science/article/abs/pii/S1361841519301045)
 - Panoptic [Cellpose](https://www.nature.com/articles/s41592-020-01018-x)
 - Panoptic [Stardist](https://arxiv.org/abs/1806.03535)
 - Panoptic [CellVit-SAM](https://arxiv.org/abs/2306.15350)
