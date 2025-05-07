@@ -11,6 +11,8 @@ on:
       - examples/**
       - docker/**
       - images/**
+      - imgs/**
+      - docs/**
   pull_request:
     branches:
       - main
