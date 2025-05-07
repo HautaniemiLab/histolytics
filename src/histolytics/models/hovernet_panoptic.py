@@ -38,6 +38,8 @@ class HoverNetPanoptic(BaseModelPanoptic):
                 Freeze encoder weights for training.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
+            model_kwargs (Dict[str, Any], default={}):
+                Additional keyword arguments for the model.
         """
         super().__init__()
         self.model = hovernet_panoptic(

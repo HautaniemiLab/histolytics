@@ -38,6 +38,8 @@ class CellposePanoptic(BaseModelPanoptic):
                 Freeze encoder weights for training.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
+            model_kwargs (Dict[str, Any], default={}):
+                Additional keyword arguments for the model.
         """
         super().__init__()
         self.model = cellpose_panoptic(
@@ -52,7 +54,11 @@ class CellposePanoptic(BaseModelPanoptic):
         self.device = device
         self.model.to(device)
 
-    def set_inference_mode(self, mixed_precision: bool = True) -> None:
+    def set_inference_mode(
+        self,
+        mixed_precision: bool = True,
+        postproc_kwargs: Dict[str, Any] = {"use_gpu": True},
+    ) -> None:
         """Set to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
@@ -61,6 +67,6 @@ class CellposePanoptic(BaseModelPanoptic):
         )
         self.post_processor = PostProcessor(
             postproc_method="cellpose",
-            postproc_kwargs={"use_gpu": True},
+            postproc_kwargs=postproc_kwargs,
         )
         self.inference_mode = True

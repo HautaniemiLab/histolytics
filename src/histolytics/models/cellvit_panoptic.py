@@ -17,7 +17,7 @@ class CellVitPanoptic(BaseModelPanoptic):
         self,
         n_nuc_classes: int,
         n_tissue_classes: int,
-        enc_name: str = "efficientnet_b5",
+        enc_name: str = "samvit_base_patch16",
         enc_pretrain: bool = True,
         enc_freeze: bool = False,
         device: torch.device = torch.device("cuda"),
@@ -30,7 +30,7 @@ class CellVitPanoptic(BaseModelPanoptic):
                 Number of nuclei type classes.
             n_tissue_classes (int):
                 Number of tissue type classes.
-            enc_name (str, default="efficientnet_b5"):
+            enc_name (str, default="samvit_base_patch16"):
                 Name of the pytorch-image-models encoder.
             enc_pretrain (bool, default=True):
                 Whether to use pretrained weights in the encoder.
@@ -38,11 +38,13 @@ class CellVitPanoptic(BaseModelPanoptic):
                 Freeze encoder weights for training.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
+            model_kwargs (dict, default={}):
+                Additional keyword arguments for the model.
         """
         super().__init__()
         self.model = cellvit_panoptic(
-            n_nuc_classes,
-            n_tissue_classes,
+            n_nuc_classes=n_nuc_classes,
+            n_tissue_classes=n_tissue_classes,
             enc_name=enc_name,
             enc_pretrain=enc_pretrain,
             enc_freeze=enc_freeze,

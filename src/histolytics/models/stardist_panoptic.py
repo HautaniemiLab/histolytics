@@ -41,6 +41,8 @@ class StarDistPanoptic(BaseModelPanoptic):
                 Freeze encoder weights for training.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
+            model_kwargs (dict, default={}):
+                Additional keyword arguments for the model.
         """
         super().__init__()
         self.model = stardist_panoptic(
@@ -56,7 +58,11 @@ class StarDistPanoptic(BaseModelPanoptic):
         self.device = device
         self.model.to(device)
 
-    def set_inference_mode(self, mixed_precision: bool = True) -> None:
+    def set_inference_mode(
+        self,
+        mixed_precision: bool = True,
+        postproc_kwargs: Dict[str, Any] = {"trim_bboxes": True},
+    ) -> None:
         """Set to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
@@ -65,6 +71,6 @@ class StarDistPanoptic(BaseModelPanoptic):
         )
         self.post_processor = PostProcessor(
             postproc_method="stardist",
-            postproc_kwargs={"trim_bboxes": True},
+            postproc_kwargs=postproc_kwargs,
         )
         self.inference_mode = True
