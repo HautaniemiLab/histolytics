@@ -1,0 +1,23 @@
+[project]
+name = "histolytics"
+version = "0.1.0"
+description = "Panoptic Segmentation and WSI Spatial Analysis"
+readme = "README.md"
+authors = [
+    { name = "Oskari Lehtonen", email = "oskari.lehtonen@helsinki.fi" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "cellseg-models-pytorch>=0.1.26",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+]
