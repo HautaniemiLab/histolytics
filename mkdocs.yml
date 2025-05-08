@@ -1,0 +1,64 @@
+site_name: histolytics docs
+site_description: Documentation for Histolytics, a library for panoptic histopathology WSI analysis
+site_author: Oskari Lehtonen
+repo_url: https://github.com/HautaniemiLab/histolytics
+repo_name: histolytics
+
+theme:
+  name: "material"
+  logo: img/histolytics_thumbnail_logo.png
+  favicon: img/favicon.ico
+  palette:
+    primary: black
+    accent: cyan
+  font:
+    text: Raleway
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - content.tabs.link
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          selection:
+            docstring_style: google
+          rendering:
+            show_source: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - footnotes
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - User Guide:
+    - Installation: user_guide/installation.md
+    - WSI Segmentation: user_guide/wsi_segmentation.md
+  - API Reference:
+    - WSI Segmenter: api/wsi_segmenter.md
+    - Slide Reader: api/slide_reader.md
+  - Tutorials:
+    - Basic Usage: tutorials/basic_usage.md
+  - Contributing: contributing.md
