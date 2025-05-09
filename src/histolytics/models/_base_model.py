@@ -10,38 +10,7 @@ from cellseg_models_pytorch.decoders.multitask_decoder import (
 from huggingface_hub import hf_hub_download
 from PIL.Image import Image
 
-PRETRAINED = {
-    "hovernet_panoptic": {
-        "hgsc_v1_efficientnet_b5": {
-            "repo_id": "csmp-hub/hovernet-histo-hgsc-nuc-v1",
-            "filename": "hovernet_hgsc_v1_efficientnet_b5.safetensors",
-        },
-    },
-    "cellpose_panoptic": {
-        "hgsc_v1_efficientnet_b5": {
-            "repo_id": "csmp-hub/cellpose-histo-hgsc-nuc-v1",
-            "filename": "cellpose_hgsc_v1_efficientnet_b5.safetensors",
-        },
-    },
-    "cellvit_panoptic": {
-        "hgsc_v1_efficientnet_b5": {
-            "repo_id": "csmp-hub/cellvit-histo-hgsc-nuc-v1",
-            "filename": "cellvit_hgsc_v1_efficientnet_b5.safetensors",
-        },
-    },
-    "stardist_panoptic": {
-        "hgsc_v1_efficientnet_b5": {
-            "repo_id": "csmp-hub/stardist-histo-hgsc-nuc-v1",
-            "filename": "stardist_hgsc_v1_efficientnet_b5.safetensors",
-        },
-    },
-    "cppnet_panoptic": {
-        "hgsc_v1_efficientnet_b5": {
-            "repo_id": "csmp-hub/cppnet-histo-hgsc-nuc-v1",
-            "filename": "cppnet_hgsc_v1_efficientnet_b5.safetensors",
-        },
-    },
-}
+from histolytics.models import PRETRAINED
 
 
 class BaseModelPanoptic:
@@ -81,23 +50,15 @@ class BaseModelPanoptic:
             else:
                 raise ValueError(
                     "Please provide a valid path. or a pre-trained model downloaded from the"
-                    f" csmp-hub. One of {list(PRETRAINED[cls.model_name].keys())}."
+                    f" histolytics-hub. One of {list(PRETRAINED[cls.model_name].keys())}."
                 )
 
-        try:
-            from safetensors.torch import load_model
-        except ImportError:
-            raise ImportError(
-                "Please install `safetensors` package to load .safetensors files."
-            )
-
-        enc_name, n_nuc_classes, n_tissue_classes, state_dict = cls._get_state_dict(
+        enc_name, n_pan_classes, n_tissue_classes, state_dict = cls._get_state_dict(
             weights_path, device=device
         )
-        enc_name = "efficientnet_b5"
 
         model_inst = cls(
-            n_nuc_classes=n_nuc_classes,
+            n_pan_classes=n_pan_classes,
             n_tissue_classes=n_tissue_classes,
             enc_name=enc_name,
             enc_pretrain=False,
@@ -107,6 +68,12 @@ class BaseModelPanoptic:
         )
 
         if weights_path.suffix == ".safetensors":
+            try:
+                from safetensors.torch import load_model
+            except ImportError:
+                raise ImportError(
+                    "Please install `safetensors` package to load .safetensors files."
+                )
             load_model(model_inst.model, weights_path, device.type)
         else:
             model_inst.model.load_state_dict(state_dict, strict=True)
@@ -138,7 +105,7 @@ class BaseModelPanoptic:
         Returns:
             Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]:
                 Dictionary of soft outputs:
-                    - "nuc": SoftInstanceOutput (type_map, aux_map).
+                    - "pan": SoftInstanceOutput (type_map, aux_map).
                     - "tissue": SoftSemanticOutput (type_map).
         """
         if not self.inference_mode:
@@ -187,7 +154,7 @@ class BaseModelPanoptic:
             n_jobs (int, default=4):
                 The number of workers for the post-processing.
             save_paths_nuc (List[Union[Path, str]], default=None):
-                The paths to save the nuclei masks. If None, the masks are not saved.
+                The paths to save the panlei masks. If None, the masks are not saved.
             save_paths_cyto (List[Union[Path, str]], default=None):
                 The paths to save the cytoplasm masks. If None, the masks are not saved.
             save_paths_tissue (List[Union[Path, str]], default=None):
@@ -196,7 +163,7 @@ class BaseModelPanoptic:
                 The XYWH coordinates of the image patch. If not None, the coordinates are
                 saved in the filenames of outputs.
             class_dict_nuc (Dict[int, str], default=None):
-                The dictionary of nuclei classes. E.g. {0: "bg", 1: "neoplastic"}
+                The dictionary of panlei classes. E.g. {0: "bg", 1: "neoplastic"}
             class_dict_cyto (Dict[int, str], default=None):
                 The dictionary of cytoplasm classes. E.g. {0: "bg", 1: "macrophage_cyto"}
             class_dict_tissue (Dict[int, str], default=None):
@@ -205,7 +172,7 @@ class BaseModelPanoptic:
         Returns:
             Dict[str, List[np.ndarray]]:
                 Dictionary of post-processed outputs:
-                    - "nuc": List of output nuclei masks (H, W).
+                    - "pan": List of output panlei masks (H, W).
                     - "cyto": List of output cytoplasm masks (H, W).
                     - "tissue": List of output tissue masks (H, w).
         """
@@ -278,12 +245,12 @@ class BaseModelPanoptic:
         # infer encoder name and number of classes from state_dict
         enc_keys = [key for key in state_dict.keys() if "encoder." in key]
         enc_name = enc_keys[0].split(".")[0] if enc_keys else None
-        nuc_type_head_key = next(
+        pan_type_head_key = next(
             key
             for key in state_dict.keys()
-            if "nuc_type_head.head" in key and "weight" in key
+            if "pan_type_head.head" in key and "weight" in key
         )
-        n_nuc_classes = state_dict[nuc_type_head_key].shape[0]
+        n_pan_classes = state_dict[pan_type_head_key].shape[0]
         tissue_type_head_key = next(
             key
             for key in state_dict.keys()
@@ -291,4 +258,4 @@ class BaseModelPanoptic:
         )
         n_tissue_classes = state_dict[tissue_type_head_key].shape[0]
 
-        return enc_name, n_nuc_classes, n_tissue_classes, state_dict
+        return enc_name, n_pan_classes, n_tissue_classes, state_dict

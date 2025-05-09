@@ -1,13 +1,50 @@
 from typing import Any, Dict
 
 import torch
+import torch.nn as nn
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
 from cellseg_models_pytorch.inference.predictor import Predictor
-from cellseg_models_pytorch.models.cellvit.cellvit_unet import cellvit_panoptic
+from cellseg_models_pytorch.models.cellvit.cellvit_unet import CellVitSamUnet
 
 from histolytics.models._base_model import BaseModelPanoptic
 
 __all__ = ["CellVitPanoptic"]
+
+
+def cellvit_panoptic(
+    enc_name: str, n_nuc_classes: int, n_tissue_classes: int, **kwargs
+) -> nn.Module:
+    """Initialaize CellVit for panoptic segmentation.
+
+    CellVit:
+        - https://arxiv.org/abs/2306.15350
+
+    Parameters:
+        enc_name (str):
+            Name of the encoder. One of: "samvit_base_patch16", "samvit_base_patch16_224",
+            "samvit_huge_patch16", "samvit_large_patch16"
+        n_nuc_classes (int):
+            Number of nuclei type classes.
+        n_tissue_classes (int):
+            Number of tissue type classes.
+        **kwargs:
+            Arbitrary key word args for the CellVitSAM class.
+
+    Returns:
+        nn.Module: The initialized CellVitSAM+ model.
+    """
+    cellvit_sam = CellVitSamUnet(
+        enc_name=enc_name,
+        decoders=("hovernet", "type", "tissue"),
+        heads={
+            "hovernet": {"nuc_hovernet": 2},
+            "type": {"nuc_type": n_nuc_classes},
+            "tissue": {"tissue_type": n_tissue_classes},
+        },
+        **kwargs,
+    )
+
+    return cellvit_sam
 
 
 class CellVitPanoptic(BaseModelPanoptic):
@@ -24,6 +61,9 @@ class CellVitPanoptic(BaseModelPanoptic):
         model_kwargs: Dict[str, Any] = {},
     ) -> None:
         """CellVitPanoptic model for panoptic segmentation of nuclei and tissues.
+
+        CellVit:
+        - https://arxiv.org/abs/2306.15350
 
         Parameters:
             n_nuc_classes (int):

@@ -1,13 +1,42 @@
 from typing import Any, Dict
 
 import torch
+import torch.nn as nn
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
 from cellseg_models_pytorch.inference.predictor import Predictor
-from cellseg_models_pytorch.models.cellpose.cellpose_unet import cellpose_panoptic
+from cellseg_models_pytorch.models.cellpose.cellpose_unet import CellPoseUnet
 
 from histolytics.models._base_model import BaseModelPanoptic
 
 __all__ = ["CellposePanoptic"]
+
+
+def cellpose_panoptic(n_nuc_classes: int, n_tissue_classes: int, **kwargs) -> nn.Module:
+    """Initialize Cellpose for panoptic segmentation.
+
+    Cellpose:
+    - https://www.nature.com/articles/s41592-020-01018-x
+
+    Parameters
+        n_nuc_classes (int):
+            Number of nuclei type classes.
+        n_tissue_classes (int):
+            Number of tissue type classes.
+        **kwargs:
+            Arbitrary key word args for the CellPoseUnet class.
+
+    Returns:
+        nn.Module: The initialized Cellpose+ U-net model.
+    """
+    cellpose_unet = CellPoseUnet(
+        decoders=("type", "tissue"),
+        heads={
+            "type": {"nuc_cellpose": 2, "nuc_type": n_nuc_classes},
+            "tissue": {"tissue_type": n_tissue_classes},
+        },
+        **kwargs,
+    )
+    return cellpose_unet
 
 
 class CellposePanoptic(BaseModelPanoptic):
@@ -24,6 +53,9 @@ class CellposePanoptic(BaseModelPanoptic):
         model_kwargs: Dict[str, Any] = {},
     ) -> None:
         """CellposePanoptic model for panoptic segmentation of nuclei and tissues.
+
+        Cellpose:
+        - https://www.nature.com/articles/s41592-020-01018-x
 
         Parameters:
             n_nuc_classes (int):

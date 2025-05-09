@@ -1,13 +1,49 @@
 from typing import Any, Dict
 
 import torch
+import torch.nn as nn
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
 from cellseg_models_pytorch.inference.predictor import Predictor
-from cellseg_models_pytorch.models.stardist.stardist_unet import stardist_panoptic
+from cellseg_models_pytorch.models.cppnet.cppnet_unet import CPPNetUnet
 
 from histolytics.models._base_model import BaseModelPanoptic
 
 __all__ = ["CPPNetPanoptic"]
+
+
+def cppnet_panoptic(
+    n_rays: int, n_nuc_classes: int, n_tissue_classes: int, **kwargs
+) -> nn.Module:
+    """Initialaize CPP-Net for panoptic segmentation.
+
+    CPP-Net:
+        - https://arxiv.org/abs/2102.06867
+
+    Parameters:
+        n_rays (int):
+            Number of rays predicted per each object
+        n_nuc_classes (int):
+            Number of nuclei type classes.
+        n_tissue_classes (int):
+            Number of tissue type classes.
+        **kwargs:
+            Arbitrary key word args for the CPPNet class.
+
+    Returns:
+        nn.Module: The initialized CPP-Net model.
+    """
+    cppnet = CPPNetUnet(
+        decoders=("stardist", "type", "tissue"),
+        heads={
+            "stardist": {"nuc_stardist": n_rays, "nuc_binary": 1},
+            "type": {"nuc_type": n_nuc_classes},
+            "tissue": {"tissue_type": n_tissue_classes},
+        },
+        n_rays=n_rays,
+        **kwargs,
+    )
+
+    return cppnet
 
 
 class CPPNetPanoptic(BaseModelPanoptic):
@@ -25,6 +61,9 @@ class CPPNetPanoptic(BaseModelPanoptic):
         model_kwargs: Dict[str, Any] = {},
     ) -> None:
         """CPPNetPanoptic model for panoptic segmentation of nuclei and tissues.
+
+        CPP-Net:
+        - https://arxiv.org/abs/2102.06867
 
         Parameters:
             n_nuc_classes (int):
@@ -45,7 +84,7 @@ class CPPNetPanoptic(BaseModelPanoptic):
                 Additional keyword arguments for the model.
         """
         super().__init__()
-        self.model = stardist_panoptic(
+        self.model = cppnet_panoptic(
             n_rays=n_rays,
             n_nuc_classes=n_nuc_classes,
             n_tissue_classes=n_tissue_classes,

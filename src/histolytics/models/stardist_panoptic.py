@@ -1,13 +1,51 @@
 from typing import Any, Dict
 
 import torch
+import torch.nn as nn
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
 from cellseg_models_pytorch.inference.predictor import Predictor
-from cellseg_models_pytorch.models.stardist.stardist_unet import stardist_panoptic
+from cellseg_models_pytorch.models.stardist.stardist_unet import StarDistUnet
 
 from histolytics.models._base_model import BaseModelPanoptic
 
 __all__ = ["StarDistPanoptic"]
+
+
+def stardist_panoptic(
+    n_rays: int, n_nuc_classes: int, n_tissue_classes: int, **kwargs
+) -> nn.Module:
+    """Initialize Stardist model for panoptic segmentation.
+
+    Stardist:
+    - https://arxiv.org/abs/1806.03535
+
+    Parameters:
+        n_rays (int):
+            Number of rays predicted per each object
+        n_nuc_classes (int):
+            Number of nuclei type classes.
+        n_tissue_classes (int):
+            Number of tissue type classes.
+        **kwargs:
+            Arbitrary key word args for the StarDistUnet class.
+
+    Returns:
+        nn.Module: The initialized Panoptic Stardist model.
+    """
+    stardist_unet = StarDistUnet(
+        decoders=("stardist", "tissue"),
+        heads={
+            "stardist": {
+                "nuc_stardist": n_rays,
+                "nuc_binary": 1,
+                "nuc_type": n_nuc_classes,
+            },
+            "tissue": {"tissue_type": n_tissue_classes},
+        },
+        **kwargs,
+    )
+
+    return stardist_unet
 
 
 class StarDistPanoptic(BaseModelPanoptic):
@@ -25,6 +63,9 @@ class StarDistPanoptic(BaseModelPanoptic):
         model_kwargs: Dict[str, Any] = {},
     ) -> None:
         """StardistPanoptic model for panoptic segmentation of nuclei and tissues.
+
+        Stardist:
+        - https://arxiv.org/abs/1806.03535
 
         Parameters:
             n_nuc_classes (int):

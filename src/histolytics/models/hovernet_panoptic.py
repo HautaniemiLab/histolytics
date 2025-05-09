@@ -1,13 +1,48 @@
 from typing import Any, Dict
 
 import torch
+import torch.nn as nn
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
 from cellseg_models_pytorch.inference.predictor import Predictor
-from cellseg_models_pytorch.models.hovernet.hovernet_unet import hovernet_panoptic
+from cellseg_models_pytorch.models.hovernet.hovernet_unet import HoverNetUnet
 
 from histolytics.models._base_model import BaseModelPanoptic
 
 __all__ = ["HoverNetPanoptic"]
+
+
+def hovernet_panoptic(
+    n_nuc_classes: int,
+    n_tissue_classes: int,
+    **kwargs,
+) -> nn.Module:
+    """Initialaize HoverNet+ for panoptic segmentation.
+
+    HoVer-Net:
+        - https://www.sciencedirect.com/science/article/pii/S1361841519301045?via%3Dihub
+
+    Parameters:
+        n_nuc_classes (int):
+            Number of nuclei type classes.
+        n_tissue_classes (int):
+            Number of tissue type classes.
+        **kwargs:
+            Arbitrary key word args for the HoverNet class.
+
+    Returns:
+        nn.Module: The initialized HoVer-Net+ model.
+    """
+    hovernet = HoverNetUnet(
+        decoders=("hovernet", "type", "tissue"),
+        heads={
+            "hovernet": {"nuc_hovernet": 2},
+            "type": {"nuc_type": n_nuc_classes},
+            "tissue": {"tissue_type": n_tissue_classes},
+        },
+        **kwargs,
+    )
+
+    return hovernet
 
 
 class HoverNetPanoptic(BaseModelPanoptic):
@@ -24,6 +59,9 @@ class HoverNetPanoptic(BaseModelPanoptic):
         model_kwargs: Dict[str, Any] = {},
     ) -> None:
         """HovernetPanoptic model for panoptic segmentation of nuclei and tissues.
+
+        HoVer-Net:
+        - https://www.sciencedirect.com/science/article/pii/S1361841519301045?via%3Dihub
 
         Parameters:
             n_nuc_classes (int):
