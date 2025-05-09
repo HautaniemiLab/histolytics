@@ -54,11 +54,17 @@ nav:
   - Home: index.md
   - Getting Started: getting_started.md
   - User Guide:
-    - Installation: user_guide/installation.md
+    - Model Fine-tuning: user_guide/fine_tuning.md
     - WSI Segmentation: user_guide/wsi_segmentation.md
+    - Data Wrangling: user_guide/data_wrangling.md
+  - Analysis Tutorials:
+    - Nuclear Morphology: analysis_tutorials/nuclear_morphology.md
+    - Chromatin Patterns: analysis_tutorials/chromatin_patterns.md
+    - Collagen Fibers: analysis_tutorials/collagen_fibers.md
+    - Stromal Morphology: analysis_tutorials/stromal_features.md
+    - Spatial Neighborhoods: analysis_tutorials/neighborhood_analysis.md
+    - Spatial Clustering: analysis_tutorials/clustering.md
   - API Reference:
     - WSI Segmenter: api/wsi_segmenter.md
     - Slide Reader: api/slide_reader.md
-  - Tutorials:
-    - Basic Usage: tutorials/basic_usage.md
   - Contributing: contributing.md

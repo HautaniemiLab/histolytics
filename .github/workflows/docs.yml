@@ -1,0 +1,39 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+            python-version: "3.10"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+        # Step 4: Install dependencies using UV
+      - name: Install deps
+        run: uv sync --locked --all-extras --dev
+
+      - name: Deploy Docs
+        run: |
+          source .venv/bin/activate
+          uv run mkdocs gh-deploy --force
