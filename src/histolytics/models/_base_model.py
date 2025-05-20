@@ -10,7 +10,7 @@ from cellseg_models_pytorch.decoders.multitask_decoder import (
 from huggingface_hub import hf_hub_download
 from PIL.Image import Image
 
-from histolytics.models import PRETRAINED
+from histolytics.models import MODEL_CLASS_DICTS, PRETRAINED_MODELS
 
 
 class BaseModelPanoptic:
@@ -39,26 +39,26 @@ class BaseModelPanoptic:
         """
         weights_path = Path(weights)
         if not weights_path.is_file():
-            if weights_path.as_posix() in PRETRAINED[cls.model_name].keys():
+            if weights_path.as_posix() in PRETRAINED_MODELS[cls.model_name].keys():
                 weights_path = Path(
                     hf_hub_download(
-                        repo_id=PRETRAINED[cls.model_name][weights]["repo_id"],
-                        filename=PRETRAINED[cls.model_name][weights]["filename"],
+                        repo_id=PRETRAINED_MODELS[cls.model_name][weights]["repo_id"],
+                        filename=PRETRAINED_MODELS[cls.model_name][weights]["filename"],
                     )
                 )
 
             else:
                 raise ValueError(
                     "Please provide a valid path. or a pre-trained model downloaded from the"
-                    f" histolytics-hub. One of {list(PRETRAINED[cls.model_name].keys())}."
+                    f" histolytics-hub. One of {list(PRETRAINED_MODELS[cls.model_name].keys())}."
                 )
 
-        enc_name, n_pan_classes, n_tissue_classes, state_dict = cls._get_state_dict(
+        enc_name, n_nuc_classes, n_tissue_classes, state_dict = cls._get_state_dict(
             weights_path, device=device
         )
 
         model_inst = cls(
-            n_pan_classes=n_pan_classes,
+            n_nuc_classes=n_nuc_classes,
             n_tissue_classes=n_tissue_classes,
             enc_name=enc_name,
             enc_pretrain=False,
@@ -77,6 +77,14 @@ class BaseModelPanoptic:
             load_model(model_inst.model, weights_path, device.type)
         else:
             model_inst.model.load_state_dict(state_dict, strict=True)
+
+        try:
+            cls.nuc_classes = MODEL_CLASS_DICTS[weights]["nuc"]
+            cls.tissue_classes = MODEL_CLASS_DICTS[weights]["tissue"]
+        except KeyError:
+            # if the model is not in the class dict, set to None
+            cls.nuc_classes = None
+            cls.tissue_classes = None
 
         return model_inst
 
@@ -245,12 +253,12 @@ class BaseModelPanoptic:
         # infer encoder name and number of classes from state_dict
         enc_keys = [key for key in state_dict.keys() if "encoder." in key]
         enc_name = enc_keys[0].split(".")[0] if enc_keys else None
-        pan_type_head_key = next(
+        nuc_type_head_key = next(
             key
             for key in state_dict.keys()
-            if "pan_type_head.head" in key and "weight" in key
+            if "nuc_type_head.head" in key and "weight" in key
         )
-        n_pan_classes = state_dict[pan_type_head_key].shape[0]
+        n_nuc_classes = state_dict[nuc_type_head_key].shape[0]
         tissue_type_head_key = next(
             key
             for key in state_dict.keys()
@@ -258,4 +266,4 @@ class BaseModelPanoptic:
         )
         n_tissue_classes = state_dict[tissue_type_head_key].shape[0]
 
-        return enc_name, n_pan_classes, n_tissue_classes, state_dict
+        return enc_name, n_nuc_classes, n_tissue_classes, state_dict
