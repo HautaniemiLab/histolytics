@@ -47,5 +47,3 @@ segmenter.merge_tissues(
     dst="merged_tissue.parquet"
 )
 ```
-
-For more detailed examples, see the [Tutorials](tutorials/basic_usage.md) section.

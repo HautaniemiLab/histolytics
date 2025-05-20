@@ -23,7 +23,6 @@ theme:
     - navigation.indexes
     - navigation.instant
     - navigation.tracking
-    - navigation.indexes
 
 plugins:
   - search
@@ -35,6 +34,7 @@ plugins:
         python:
           selection:
             docstring_style: google
+            filters: ["!^_[^_]", "!^__init__$"]
           rendering:
             show_source: true
   - mkdocs-jupyter:
@@ -81,15 +81,12 @@ extra_javascript:
 extra_css:
   - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
 
-
-
 nav:
   - Home: index.md
   - Getting Started: getting_started.md
-  - User Guide:
+  - Segmentation:
     - Model Fine-tuning: user_guide/fine_tuning.md
-    - WSI Segmentation: user_guide/wsi_segmentation.md
-    - Data Wrangling: user_guide/data_wrangling.md
+    - WSI Segmentation: user_guide/panoptic_segmentation.ipynb
   - Analysis Tutorials:
     - Nuclear Morphology: analysis_tutorials/nuclear_morphology.md
     - Chromatin Patterns: analysis_tutorials/chromatin_patterns.md
@@ -98,6 +95,6 @@ nav:
     - Spatial Neighborhoods: analysis_tutorials/neighborhood_analysis.md
     - Spatial Clustering: analysis_tutorials/clustering.md
   - API Reference:
-    - WSI Segmenter: api/wsi_segmenter.md
+    - WSIPanopticSegmenter: api/wsi_segmenter.md
     - Slide Reader: api/slide_reader.md
   - Contributing: contributing.md
