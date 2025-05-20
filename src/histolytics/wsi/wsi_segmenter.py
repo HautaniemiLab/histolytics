@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from histolytics.models._base_model import BaseModelPanoptic
-from histolytics.slide_reader import SlideReader
+from histolytics.wsi.slide_reader import SlideReader
 
 try:
     import albumentations as A
