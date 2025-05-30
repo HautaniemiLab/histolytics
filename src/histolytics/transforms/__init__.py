@@ -1,5 +1,6 @@
 from cellseg_models_pytorch.transforms.albu_transforms import (
     AlbuStrongAugment,
+    ApplyEach,
     BinarizeTransform,
     CellposeTransform,
     ContourTransform,
@@ -28,4 +29,5 @@ __all__ = [
     "PercentileNormalization",
     "SmoothDistTransform",
     "StardistTransform",
+    "ApplyEach",
 ]
