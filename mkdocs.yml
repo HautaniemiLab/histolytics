@@ -83,11 +83,15 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Getting Started: getting_started.md
+  - Installation: installation.md
   - Segmentation:
-    - Model Fine-tuning: user_guide/fine_tuning.md
-    - WSI Segmentation: user_guide/panoptic_segmentation.ipynb
-  - Analysis Tutorials:
+    - Getting Started: user_guide/seg/getting_started_seg.md
+    - Model Backbones: user_guide/seg/backbones.ipynb
+    - Model Fine-tuning: user_guide/seg/finetuning.ipynb
+    - WSI Segmentation: user_guide/seg/panoptic_segmentation.ipynb
+  - Spatial Analysis:
+    - Getting Started: getting_started_spatial.md
+    - Spatial Indexing and Partitioning: user_guide/spatial/indexing_partitioning.md
     - Nuclear Morphology: analysis_tutorials/nuclear_morphology.md
     - Chromatin Patterns: analysis_tutorials/chromatin_patterns.md
     - Collagen Fibers: analysis_tutorials/collagen_fibers.md
@@ -95,6 +99,6 @@ nav:
     - Spatial Neighborhoods: analysis_tutorials/neighborhood_analysis.md
     - Spatial Clustering: analysis_tutorials/clustering.md
   - API Reference:
+    - "api/index.md"
     - WSIPanopticSegmenter: api/wsi_segmenter.md
-    - Slide Reader: api/slide_reader.md
-  - Contributing: contributing.md
+    - SlideReader: api/slide_reader.md
