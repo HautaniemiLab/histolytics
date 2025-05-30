@@ -10,6 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "albumentations>=2.0.6",
     "cellseg-models-pytorch>=0.1.26",
+    "datasets>=3.6.0",
     "geopandas>=1.0.1",
     "libpysal>=4.13.0",
     "matplotlib>=3.10.3",
