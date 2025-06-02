@@ -1,4 +1,4 @@
-# USAGE
+# Getting started
 
 ## 1. Load a pre-trained model
 
