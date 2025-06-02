@@ -88,6 +88,7 @@ nav:
     - Getting Started: user_guide/seg/getting_started_seg.md
     - Model Backbones: user_guide/seg/backbones.ipynb
     - Model Fine-tuning: user_guide/seg/finetuning.ipynb
+    - Tile Selection: user_guide/seg/selecting_tiles.ipynb
     - WSI Segmentation: user_guide/seg/panoptic_segmentation.ipynb
   - Spatial Analysis:
     - Getting Started: getting_started_spatial.md
