@@ -28,6 +28,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Optional, Union
 
+import geopandas as gpd
 import numpy as np
 from cellseg_models_pytorch.wsi.bioio_reader import BioIOReader
 from cellseg_models_pytorch.wsi.cucim_reader import CucimReader
@@ -44,6 +45,7 @@ from cellseg_models_pytorch.wsi.tiles import (
 )
 from cellseg_models_pytorch.wsi.tissue import clean_tissue_mask, get_tissue_mask
 from PIL import Image
+from shapely.geometry import Polygon, box
 
 AVAILABLE_BACKENDS = ("OPENSLIDE", "CUCIM", "BIOIO")
 
@@ -250,6 +252,7 @@ class SlideReader:
         width: int,
         *,
         tissue_mask: Optional[np.ndarray],
+        annotations: Optional[Polygon] = None,
         height: Optional[int] = None,
         overlap: float = 0.0,
         max_background: float = 0.95,
@@ -263,6 +266,9 @@ class SlideReader:
             tissue_mask (np.ndarray, default=None):
                 Tissue mask for filtering tiles with too much background. If None,
                 the filtering is disabled.
+            annotations (Optional[Polygon], default=None):
+                Annotations to filter tiles by. If provided, only tiles that intersect
+                with the annotations will be returned.
             height (int, default=None):
                 Height of a tile. If None, will be set to `width`.
             overlap (float, default=0.0):
@@ -300,6 +306,29 @@ class SlideReader:
                 if background <= max_background:
                     filtered_coordinates.append(xywh)
             tile_coordinates = filtered_coordinates
+
+        if annotations is not None:
+            # Convert tile coordinates to polygons
+            tiles_gdf = gpd.GeoDataFrame(
+                {
+                    "geometry": [
+                        box(x, y, x + w, y + h) for x, y, w, h in tile_coordinates
+                    ]
+                }
+            )
+
+            # Filter tiles that intersect with the annotation bbox
+            filtered_tiles = tiles_gdf[tiles_gdf.intersects(annotations)]
+
+            tile_coordinates = [
+                (
+                    int(poly.bounds[0]),
+                    int(poly.bounds[1]),
+                    int(poly.bounds[2] - poly.bounds[0]),
+                    int(poly.bounds[3] - poly.bounds[1]),
+                )
+                for poly in filtered_tiles.geometry
+            ]
 
         return TileCoordinates(
             coordinates=tile_coordinates,
