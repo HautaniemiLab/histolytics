@@ -12,9 +12,13 @@ dependencies = [
     "cellseg-models-pytorch>=0.1.26",
     "datasets>=3.6.0",
     "geopandas>=1.0.1",
+    "h3>=4.2.2",
     "libpysal>=4.13.0",
+    "mapclassify>=2.8.1",
     "matplotlib>=3.10.3",
     "networkx>=3.4.2",
+    "pandarallel>=1.6.5",
+    "quadbin>=0.2.2",
 ]
 
 [build-system]
