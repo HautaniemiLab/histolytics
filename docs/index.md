@@ -8,7 +8,6 @@ Welcome to the Histolytics documentation. Histolytics is a Python package for WS
 
 - [Installation Guide](installation.md)
 - [Segmentation Quick Start](./user_guide/seg/getting_started_seg.md)
-- [Spatial Analysis Quick Start](/user_guide/spatial_analysis/getting_started.md)
 - [API Reference](api/index.md)
 
 ## Contributing
