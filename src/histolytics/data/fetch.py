@@ -1,0 +1,93 @@
+from pathlib import Path
+
+import geopandas as gpd
+
+BASE_PATH = Path(__file__).parent.resolve()
+
+__all__ = [
+    "cervix_tissue",
+    "cervix_nuclei",
+    "cervix_tissue_crop",
+    "cervix_nuclei_crop",
+    "hgsc_cancer_nuclei",
+    "hgsc_cancer_tissue",
+]
+
+
+def _load(f):
+    """Load a gdf file located in the data directory.
+
+    Parameters:
+        f (str):
+            File name.
+
+    Returns:
+        gpd.GeoDataFrame:
+            A gdf loaded from f.
+    """
+    return gpd.read_parquet(f)
+
+
+def cervix_tissue():
+    """A GeoDataframe of segmented cervical biopsy containing tissue areas.
+
+    Examples:
+        >>> from cellseg_gsontools.data import cervix_tissue
+        >>> cervix_tissue().plot(column="class_name")
+    """
+    return _load(BASE_PATH / "cervix_biopsy_tissue.parquet")
+
+
+def cervix_nuclei():
+    """A GeoDataframe segmented cervical biopsy containing nuclei of the cervical tissue.
+
+    Examples:
+        >>> from cellseg_gsontools.data import cervix_nuclei
+        >>> cervix_nuclei().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "cervix_biopsy_nuclei.parquet")
+
+
+def cervix_tissue_crop():
+    """A GeoDataframe of a cropped bbox from segmented cervical biopsy containing tissue areas.
+
+    Examples:
+        >>> from cellseg_gsontools.data import cervix_tissue_crop
+        >>> cervix_tissue_crop().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "cervix_tissue_crop.parquet")
+
+
+def cervix_nuclei_crop():
+    """A GeoDataframe of a cropped bbox from segmented cervical biopsy containing nuclei.
+
+    Examples:
+        >>> from cellseg_gsontools.data import cervix_nuclei_crop
+        >>> cervix_nuclei_crop().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "cervix_nuclei_crop.parquet")
+
+
+def hgsc_cancer_nuclei():
+    """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
+
+    Examples:
+        >>> from cellseg_gsontools.data import hgsc_cancer_nuclei
+        >>> hgsc_cancer_nuclei().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "cancer_nuclei.parquet")
+
+
+def hgsc_cancer_tissue():
+    """A GeoDataframe of a cropped bbox from segmented HGSC slide containing tumor tissue
+
+    Examples:
+        >>> from cellseg_gsontools.data import hgsc_cancer_tissue
+        >>> hgsc_cancer_tissue().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "cancer_tissue.parquet")
