@@ -7,7 +7,6 @@ import psutil
 from pandarallel import pandarallel
 from pandas.api.types import (
     is_bool_dtype,
-    is_categorical_dtype,
     is_object_dtype,
     is_string_dtype,
 )
@@ -85,7 +84,7 @@ def gdf_apply(
 def is_categorical(col: pd.Series) -> bool:
     """Check if a column is categorical."""
     return (
-        is_categorical_dtype(col)
+        isinstance(col, pd.Categorical)
         or is_string_dtype(col)
         or is_object_dtype(col)
         or is_bool_dtype(col)
