@@ -493,7 +493,7 @@ def shape_metric(
     gdf: gpd.GeoDataFrame,
     metrics: Tuple[str, ...],
     parallel: bool = True,
-    num_processes: int = -1,
+    num_processes: int = 1,
     col_prefix: str = None,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
@@ -506,7 +506,7 @@ def shape_metric(
             A Tuple/List of shape metrics.
         parallel (bool):
             Flag whether to use parallel apply operations when computing the diversities.
-        num_processes (int, default=-1):
+        num_processes (int, default=1):
             The number of processes to use when parallel=True. If -1,
             this will use all available cores.
         col_prefix (str):
