@@ -745,6 +745,24 @@ wheels = [
 ]
 
 [[package]]
+name = "esda"
+version = "2.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "geopandas" },
+    { name = "libpysal" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "shapely" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/52/dd/a5e84c054a9efac548ec69894b758f634cb6454e811b739e7a70d146f134/esda-2.7.0.tar.gz", hash = "sha256:e3167aa1f010a377c5b4b457ea6f91d126816a1070fa48a4e048e9f8633082f5", size = 44185102 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5b/de/729ecc562edbd412ca2158cda78105c0208656cbbf2e6e70000c59d3ab9e/esda-2.7.0-py3-none-any.whl", hash = "sha256:74cb6bce4e9e9ef7d3826d808d987588bbf3aa9ec787c38a0a341485365d73cd", size = 142795 },
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1010,6 +1028,7 @@ dependencies = [
     { name = "albumentations" },
     { name = "cellseg-models-pytorch" },
     { name = "datasets" },
+    { name = "esda" },
     { name = "geopandas" },
     { name = "h3" },
     { name = "libpysal" },
@@ -1042,6 +1061,7 @@ requires-dist = [
     { name = "albumentations", specifier = ">=2.0.6" },
     { name = "cellseg-models-pytorch", specifier = ">=0.1.26" },
     { name = "datasets", specifier = ">=3.6.0" },
+    { name = "esda", specifier = ">=2.7.0" },
     { name = "geopandas", specifier = ">=1.0.1" },
     { name = "h3", specifier = ">=4.2.2" },
     { name = "libpysal", specifier = ">=4.13.0" },
