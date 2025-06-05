@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Tuple
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import psutil
 from pandarallel import pandarallel
@@ -11,7 +12,14 @@ from pandas.api.types import (
     is_string_dtype,
 )
 
-__all__ = ["gdf_apply", "_set_crs", "is_categorical", "set_uid"]
+__all__ = [
+    "gdf_to_polars",
+    "gdf_apply",
+    "set_crs",
+    "is_categorical",
+    "set_uid",
+    "get_centroid_numpy",
+]
 
 
 def gdf_apply(
@@ -117,7 +125,21 @@ def set_uid(
     return gdf
 
 
-def _set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
+def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
+    """Get the centroid coordinates of a GeoDataFrame as a numpy array.
+
+    Parameters:
+        gdf (gpd.GeoDataFrame):
+            Input GeoDataFrame.
+    Returns:
+        np.ndarray:
+            A numpy array of shape (n, 2) containing the centroid coordinates
+            of each geometry in the GeoDataFrame.
+    """
+    return np.array(gdf.centroid.apply(lambda point: (point.x, point.y)).tolist())
+
+
+def set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
     """Set the crs to 4328 (metric).
 
     Parameters:
@@ -127,3 +149,57 @@ def _set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
             The EPSG code of the CRS to set. Default is 4328 (WGS 84).
     """
     return gdf.set_crs(epsg=crs, allow_override=True)
+
+
+def gdf_to_polars(gdf):
+    """Convert a GeoDataFrame to a polars DataFrame while preserving Shapely geometries.
+
+    Parameters:
+        gdf: geopandas.GeoDataFrame
+            The input GeoDataFrame
+
+    Returns:
+        polars.DataFrame with Shapely objects preserved as Python objects
+    """
+    try:
+        import polars as pl
+    except ImportError:
+        raise ImportError(
+            "polars is not installed. Please install it with `pip install polars`."
+        )
+
+    # First convert to pandas
+    pdf = pd.DataFrame(gdf)
+
+    # Identify columns containing Shapely objects
+    geometry_cols = []
+    for col in pdf.columns:
+        if len(pdf) > 0:
+            shapely_modules = (
+                "shapely.geometry.point",
+                "shapely.geometry.polygon",
+                "shapely.geometry.linestring",
+                "shapely.geometry.multipoint",
+                "shapely.geometry.multipolygon",
+                "shapely.geometry.multilinestring",
+                "shapely.geometry.collection",
+            )
+            if (
+                getattr(pdf[col].iloc[0], "__class__", None)
+                and getattr(pdf[col].iloc[0].__class__, "__module__", None)
+                in shapely_modules
+            ):
+                # If the column contains Shapely objects, we will treat it as a geometry column
+                # and store it as a Python object in polars
+                geometry_cols.append(col)
+
+    # Convert to polars with all columns as objects initially
+    pl_df = pl.from_pandas(
+        pdf[[col for col in pdf.columns if col not in geometry_cols]]
+    )
+
+    # For geometry columns, ensure they're stored as Python objects
+    # Add geometry columns as Python objects to the polars DataFrame
+    for col in geometry_cols:
+        pl_df = pl_df.with_columns(pl.Series(col, pdf[col].tolist(), dtype=pl.Object))
+    return pl_df
