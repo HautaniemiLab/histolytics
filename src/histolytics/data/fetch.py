@@ -10,7 +10,6 @@ __all__ = [
     "cervix_tissue_crop",
     "cervix_nuclei_crop",
     "hgsc_cancer_nuclei",
-    "hgsc_cancer_tissue",
 ]
 
 
@@ -79,15 +78,4 @@ def hgsc_cancer_nuclei():
         >>> hgsc_cancer_nuclei().plot(column="class_name")
         plt.Axes
     """
-    return _load(BASE_PATH / "cancer_nuclei.parquet")
-
-
-def hgsc_cancer_tissue():
-    """A GeoDataframe of a cropped bbox from segmented HGSC slide containing tumor tissue
-
-    Examples:
-        >>> from cellseg_gsontools.data import hgsc_cancer_tissue
-        >>> hgsc_cancer_tissue().plot(column="class_name")
-        plt.Axes
-    """
-    return _load(BASE_PATH / "cancer_tissue.parquet")
+    return _load(BASE_PATH / "hgsc_nest.parquet")
