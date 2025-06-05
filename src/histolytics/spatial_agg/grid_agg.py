@@ -75,8 +75,6 @@ def grid_aggregate(
 
     Raises:
         ValueError: If predicate is not one of "intersects" or "within".
-
-    Examples:
     """
     allowed = ["intersects", "within", "contains", "contains_properly"]
     if predicate not in allowed:
@@ -95,6 +93,7 @@ def grid_aggregate(
         pbar=pbar,
         num_processes=num_processes,
         columns=["geometry"],
+        **kwargs,
     )
 
     return grid
