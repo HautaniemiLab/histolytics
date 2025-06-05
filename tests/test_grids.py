@@ -1,7 +1,9 @@
 import geopandas as gpd
+import numpy as np
 import pytest
 
-from histolytics.data import cervix_tissue
+from histolytics.data import cervix_nuclei_crop, cervix_tissue, cervix_tissue_crop
+from histolytics.spatial_agg.grid_agg import grid_aggregate
 from histolytics.spatial_ops.h3 import h3_grid
 from histolytics.spatial_ops.quadbin import quadbin_grid
 from histolytics.spatial_ops.rect_grid import rect_grid
@@ -120,3 +122,58 @@ def test_rect_grid(resolution, overlap, predicate):
             test_tissue, resolution=resolution, overlap=0, predicate=predicate
         )
         assert len(grid) >= len(no_overlap_grid)
+
+
+def count_nuclei(objs):
+    """Function to count the number of nuclei in a cell"""
+    if objs is None or objs.empty:
+        return 0
+    return len(objs)
+
+
+@pytest.mark.parametrize(
+    "metric_func,predicate,new_col_names,expected_columns",
+    [
+        # Test case 1: Simple count with intersects
+        (count_nuclei, "intersects", "nuclei_count", ["nuclei_count"]),
+        # Test case 2: Simple count with contains
+        (count_nuclei, "contains", "contained_nuclei", ["contained_nuclei"]),
+    ],
+)
+def test_grid_aggregate(metric_func, predicate, new_col_names, expected_columns):
+    """Test grid_aggregate with different parameters and metric functions"""
+    # Load test data
+    tissue = cervix_tissue_crop()
+    nuclei = cervix_nuclei_crop()
+
+    # Create a grid
+    grid = rect_grid(tissue, resolution=(256, 256), overlap=0)
+
+    # Run grid_aggregate
+    result = grid_aggregate(
+        grid=grid,
+        objs=nuclei,
+        metric_func=metric_func,
+        predicate=predicate,
+        new_col_names=new_col_names,
+        parallel=False,  # Disable parallel processing for testing
+    )
+
+    # Basic assertions
+    assert isinstance(result, gpd.GeoDataFrame)
+    assert result.shape[0] == grid.shape[0]  # Same number of grid cells
+
+    # Check that expected columns exist
+    for col in expected_columns:
+        assert col in result.columns
+
+    # Additional assertions based on metric function
+    if metric_func == count_nuclei:
+        # For count_nuclei, the result should be non-negative integers
+        col = expected_columns[0]
+        assert all(result[col] >= 0)
+        assert all(result[col].apply(lambda x: isinstance(x, (int, np.integer))))
+
+        # At least one cell should have nuclei (unless test data is empty)
+        if not nuclei.empty:
+            assert result[col].sum() > 0
