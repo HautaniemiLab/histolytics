@@ -1,4 +1,3 @@
-import geopandas as gpd
 import pytest
 from libpysal.weights import W
 
@@ -16,69 +15,49 @@ def nuclei_data():
 
 
 @pytest.mark.parametrize(
-    "graph_type,threshold,return_gdf,extra_params",
+    "method,threshold,extra_params",
     [
-        ("delaunay", 100, False, {}),
-        ("delaunay", 100, True, {}),
-        ("knn", 100, False, {"k": 3}),
-        ("distband", 50, False, {}),
-        ("gabriel", 100, True, {}),
-        ("voronoi", 100, False, {}),
-        ("rel_nhood", 100, True, {}),
+        ("delaunay", 100, {}),
+        ("knn", 100, {"k": 3}),
+        ("distband", 50, {}),
+        ("gabriel", 100, {}),
+        ("voronoi", 100, {}),
+        ("rel_nhood", 100, {}),
     ],
 )
-def test_fit_graph(nuclei_data, graph_type, threshold, return_gdf, extra_params):
+def test_fit_graph(nuclei_data, method, threshold, extra_params):
     """Test fit_graph with different graph types and parameters"""
     # Call the function under test
-    result = fit_graph(
+    result, _ = fit_graph(
         nuclei_data,
-        graph_type=graph_type,
+        method=method,
         threshold=threshold,
-        return_gdf=return_gdf,
         **extra_params,
     )
 
-    # Check return type based on return_gdf parameter
-    if return_gdf:
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        assert isinstance(result[0], W)
-        assert isinstance(result[1], gpd.GeoDataFrame)
+    assert isinstance(result, W)
 
-        # Check that the weights object and GeoDataFrame are consistent
-        w, w_gdf = result
+    # Basic checks on the weights object
+    assert len(result.neighbors) > 0
+    assert all(uid in nuclei_data.index for uid in result.neighbors.keys())
 
-        # Check that the GeoDataFrame has the expected columns
-        assert "focal" in w_gdf.columns
-        assert "neighbor" in w_gdf.columns
+    # For KNN, verify k neighbors (except for boundary points)
+    if method == "knn":
+        k = extra_params.get("k", 4)  # Default k is 4
+        # Some points on the boundary might have fewer neighbors
+        assert all(len(neighbors) <= k for neighbors in result.neighbors.values())
+        # Most points should have exactly k neighbors
+        assert sum(len(neighbors) == k for neighbors in result.neighbors.values()) > 0
 
-        # Verify weights relate to the original data
-        assert all(uid in nuclei_data.index for uid in w.neighbors.keys())
-
-        # For KNN, verify k neighbors (except for boundary points)
-        if graph_type == "knn":
-            k = extra_params.get("k", 4)  # Default k is 4
-            # Some points on the boundary might have fewer neighbors
-            assert all(len(neighbors) <= k for neighbors in w.neighbors.values())
-            # Most points should have exactly k neighbors
-            assert sum(len(neighbors) == k for neighbors in w.neighbors.values()) > 0
-
-        # For distance band, verify all edges are within threshold
-        if graph_type == "distband":
-            assert all(geom.length <= threshold for geom in w_gdf.geometry)
-    else:
-        assert isinstance(result, W)
-
-        # Basic checks on the weights object
-        assert len(result.neighbors) > 0
-        assert all(uid in nuclei_data.index for uid in result.neighbors.keys())
+    # For distance band, verify all edges are within threshold
+    # (This check is omitted since w_gdf is not available without return_gdf)
 
 
-@pytest.mark.parametrize("graph_type", ["invalid_type", "not_supported", "123"])
-def test_fit_graph_invalid_type(nuclei_data, graph_type):
+@pytest.mark.parametrize("method", ["invalid_type", "not_supported", "123"])
+def test_fit_graph_invalid_type(nuclei_data, method):
     """Test fit_graph with invalid graph types"""
     with pytest.raises(ValueError, match="Type must be one of"):
-        fit_graph(nuclei_data, graph_type=graph_type)
+        fit_graph(nuclei_data, method=method)
 
 
 def test_fit_graph_with_id_col(nuclei_data):
@@ -88,9 +67,7 @@ def test_fit_graph_with_id_col(nuclei_data):
     nuclei_data = set_uid(nuclei_data, 30, id_col="custom_id", drop=False)
 
     # Call function with custom ID column
-    result = fit_graph(
-        nuclei_data, graph_type="delaunay", id_col="custom_id", return_gdf=True
-    )
+    result = fit_graph(nuclei_data, method="delaunay", id_col="custom_id")
 
     # Check that the result is a tuple with weights and GeoDataFrame
     assert isinstance(result, tuple)

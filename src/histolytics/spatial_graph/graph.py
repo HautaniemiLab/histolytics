@@ -17,7 +17,7 @@ __all__ = ["fit_graph"]
 
 def fit_graph(
     gdf: gpd.GeoDataFrame,
-    graph_type: str,
+    method: str,
     id_col: str = "uid",
     threshold: int = 100,
     use_polars: bool = False,
@@ -30,7 +30,7 @@ def fit_graph(
     Parameters:
         gdf (gpd.GeoDataFrame):
             The input GeoDataFrame with spatial data.
-        graph_type (str):
+        method (str):
             Type of spatial graph to fit. Options are: "delaunay", "knn", "rel_nhood",
             "distband", "gabriel", "voronoi".
         id_col (str, default="uid):
@@ -78,8 +78,8 @@ def fit_graph(
             GeoDataFrame containing the spatial graph edges.
     """
     allowed_types = ["delaunay", "knn", "rel_nhood", "distband", "gabriel", "voronoi"]
-    if graph_type not in allowed_types:
-        raise ValueError(f"Type must be one of {allowed_types}. Got {graph_type}.")
+    if method not in allowed_types:
+        raise ValueError(f"Type must be one of {allowed_types}. Got {method}.")
 
     # ensure gdf has a unique identifier
     if id_col not in gdf.columns:
@@ -87,17 +87,17 @@ def fit_graph(
         gdf = set_crs(gdf)  # ensure CRS is set to avoid warnings
 
     # fit spatial weights
-    if graph_type == "delaunay":
+    if method == "delaunay":
         w = fit_delaunay(gdf, id_col=id_col, **kwargs)
-    elif graph_type == "knn":
+    elif method == "knn":
         w = fit_knn(gdf, id_col=id_col, **kwargs)
-    elif graph_type == "rel_nhood":
+    elif method == "rel_nhood":
         w = fit_rel_nhood(gdf, id_col=id_col, **kwargs)
-    elif graph_type == "distband":
+    elif method == "distband":
         w = fit_distband(gdf, threshold=threshold, id_col=id_col, **kwargs)
-    elif graph_type == "gabriel":
+    elif method == "gabriel":
         w = fit_gabriel(gdf, id_col=id_col, **kwargs)
-    elif graph_type == "voronoi":
+    elif method == "voronoi":
         w = fit_voronoi(gdf, id_col=id_col, **kwargs)
 
     # if islands are dropped, add them back to avoid errors
@@ -115,7 +115,7 @@ def fit_graph(
     )
 
     # drop geometries that are longer than the threshold
-    if graph_type != "distband":
+    if method != "distband":
         w_gdf = w_gdf[w_gdf.geometry.length <= threshold]
 
     return w, w_gdf.reset_index(drop=True)
