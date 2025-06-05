@@ -3,7 +3,7 @@ from typing import Union
 import geopandas as gpd
 import numpy as np
 
-from histolytics.utils.gdf import _set_crs
+from histolytics.utils.gdf import set_crs
 
 __all__ = ["get_objs", "get_interfaces"]
 
@@ -98,8 +98,8 @@ def get_interfaces(
         gpd.GeoDataFrame:
             A geodataframe containing the intersecting polygons including the buffer.
     """
-    buffer_area = _set_crs(buffer_area)
-    areas = _set_crs(areas)
+    buffer_area = set_crs(buffer_area)
+    areas = set_crs(areas)
 
     buffer_zone = gpd.GeoDataFrame(
         {"geometry": list(buffer_area.buffer(buffer_dist))},
