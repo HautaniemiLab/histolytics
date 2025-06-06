@@ -4,6 +4,8 @@ from .fetch import (
     cervix_tissue,
     cervix_tissue_crop,
     hgsc_cancer_nuclei,
+    hgsc_nuclei_wsi,
+    hgsc_tissue_wsi,
 )
 
 __all__ = [
@@ -12,4 +14,6 @@ __all__ = [
     "cervix_tissue_crop",
     "cervix_nuclei_crop",
     "hgsc_cancer_nuclei",
+    "hgsc_tissue_wsi",
+    "hgsc_nuclei_wsi",
 ]

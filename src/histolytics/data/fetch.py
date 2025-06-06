@@ -10,6 +10,8 @@ __all__ = [
     "cervix_tissue_crop",
     "cervix_nuclei_crop",
     "hgsc_cancer_nuclei",
+    "hgsc_tissue_wsi",
+    "hgsc_nuclei_wsi",
 ]
 
 
@@ -31,7 +33,7 @@ def cervix_tissue():
     """A GeoDataframe of segmented cervical biopsy containing tissue areas.
 
     Examples:
-        >>> from cellseg_gsontools.data import cervix_tissue
+        >>> from histolytics.data import cervix_tissue
         >>> cervix_tissue().plot(column="class_name")
     """
     return _load(BASE_PATH / "cervix_biopsy_tissue.parquet")
@@ -41,18 +43,39 @@ def cervix_nuclei():
     """A GeoDataframe segmented cervical biopsy containing nuclei of the cervical tissue.
 
     Examples:
-        >>> from cellseg_gsontools.data import cervix_nuclei
+        >>> from histolytics.data import cervix_nuclei
         >>> cervix_nuclei().plot(column="class_name")
         plt.Axes
     """
     return _load(BASE_PATH / "cervix_biopsy_nuclei.parquet")
 
 
+def hgsc_tissue_wsi():
+    """A GeoDataframe of segmented cervical biopsy containing tissue areas.
+
+    Examples:
+        >>> from histolytics.data import hgsc_tissue_wsi
+        >>> hgsc_tissue_wsi().plot(column="class_name")
+    """
+    return _load(BASE_PATH / "hgsc_tissue_wsi.parquet")
+
+
+def hgsc_nuclei_wsi():
+    """A GeoDataframe segmented cervical biopsy containing nuclei of the cervical tissue.
+
+    Examples:
+        >>> from histolytics.data import hgsc_nuclei_wsi
+        >>> hgsc_nuclei_wsi().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "hgsc_nuclei_wsi.parquet")
+
+
 def cervix_tissue_crop():
     """A GeoDataframe of a cropped bbox from segmented cervical biopsy containing tissue areas.
 
     Examples:
-        >>> from cellseg_gsontools.data import cervix_tissue_crop
+        >>> from histolytics.data import cervix_tissue_crop
         >>> cervix_tissue_crop().plot(column="class_name")
         plt.Axes
     """
@@ -63,7 +86,7 @@ def cervix_nuclei_crop():
     """A GeoDataframe of a cropped bbox from segmented cervical biopsy containing nuclei.
 
     Examples:
-        >>> from cellseg_gsontools.data import cervix_nuclei_crop
+        >>> from histolytics.data import cervix_nuclei_crop
         >>> cervix_nuclei_crop().plot(column="class_name")
         plt.Axes
     """
@@ -74,7 +97,7 @@ def hgsc_cancer_nuclei():
     """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
 
     Examples:
-        >>> from cellseg_gsontools.data import hgsc_cancer_nuclei
+        >>> from histolytics.data import hgsc_cancer_nuclei
         >>> hgsc_cancer_nuclei().plot(column="class_name")
         plt.Axes
     """
