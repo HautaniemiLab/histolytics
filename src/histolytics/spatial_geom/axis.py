@@ -46,7 +46,9 @@ def axis_len(geom: BaseGeometry, which: str = "major", **kwargs) -> float:
         )
 
 
-def axis_angle(geom: BaseGeometry, which: str = "major") -> float:
+def axis_angle(
+    geom: BaseGeometry, which: str = "major", normalize: bool = True
+) -> float:
     """Compute the angle of axis of a minimum rotated rectangle of a geometry.
 
     Parameters:
@@ -54,6 +56,9 @@ def axis_angle(geom: BaseGeometry, which: str = "major") -> float:
             Input shapely geometry object.
         which: str, default="major"
             One of ("major", "minor").
+        normalize: bool, default=True
+            Whether to normalize the angle to be within [0, 90]. Otherwise, the angle will be
+            in the range [0, 180].
 
     Returns:
         float
@@ -85,7 +90,8 @@ def axis_angle(geom: BaseGeometry, which: str = "major") -> float:
 
     # Normalize angle to be within [0, 90]
     angle = np.degrees(angle)
-    if angle > 90:
-        angle = 180 - angle
+    if normalize:
+        if angle > 90:
+            angle = 180 - angle
 
     return angle

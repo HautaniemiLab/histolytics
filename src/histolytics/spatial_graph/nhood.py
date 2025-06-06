@@ -208,6 +208,9 @@ def nhood_dists(
             np.float32
         )
         if invert:
-            nhood_dists = np.reciprocal(nhood_dists, where=nhood_dists > 0)
+            # Ensure minimum distance to avoid huge reciprocals
+            min_distance = 1e-6
+            nhood_dists = np.clip(nhood_dists, min_distance, None)
+            nhood_dists = 1.0 / nhood_dists
 
     return nhood_dists

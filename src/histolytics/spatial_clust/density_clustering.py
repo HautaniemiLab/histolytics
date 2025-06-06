@@ -1,4 +1,5 @@
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 from esda.adbscan import ADBSCAN
 from sklearn.cluster import DBSCAN, HDBSCAN, OPTICS
@@ -13,9 +14,9 @@ def density_clustering(
     eps: float = 350.0,
     min_samples: int = 30,
     method: str = "dbscan",
-    num_processes: int = None,
+    num_processes: int = 1,
     **kwargs,
-) -> gpd.GeoDataFrame:
+) -> np.ndarray:
     """Apply a density based clustering to centroids in a gdf.
 
     This is a quick wrapper for a few clustering algos adapted
@@ -52,8 +53,9 @@ def density_clustering(
             If illegal method is given or input `gdf` is of wrong type.
 
     Returns:
-        gpd.GeoDataFrame:
-            The input gdf with a new "labels" columns of the clusters.
+        labels (np.ndarray):
+            An array of cluster labels for each centroid in the gdf. Noise points are
+            labeled as -1.
 
     Examples:
         Cluster immune cell centroids in a gdf using dbscan.
@@ -64,27 +66,24 @@ def density_clustering(
             f"Illegal clustering method was given. Got: {method}, allowed: {allowed}"
         )
 
-    xy = get_centroid_numpy(gdf, as_array=True)
+    xy = get_centroid_numpy(gdf)
 
     if method == "adbscan":
         xy = pd.DataFrame({"X": xy[:, 0], "Y": xy[:, 1]})
         clusterer = ADBSCAN(
-            eps=eps, min_samples=min_samples, num_processes=num_processes, **kwargs
+            eps=eps, min_samples=min_samples, n_jobs=num_processes, **kwargs
         )
     elif method == "dbscan":
         clusterer = DBSCAN(
-            eps=eps, min_samples=min_samples, num_processes=num_processes, **kwargs
+            eps=eps, min_samples=min_samples, n_jobs=num_processes, **kwargs
         )
     elif method == "hdbscan":
-        clusterer = HDBSCAN(
-            min_samples=min_samples, num_processes=num_processes, **kwargs
-        )
+        clusterer = HDBSCAN(min_samples=min_samples, n_jobs=num_processes, **kwargs)
     elif method == "optics":
         clusterer = OPTICS(
-            max_eps=eps, min_samples=min_samples, num_processes=num_processes, **kwargs
+            max_eps=eps, min_samples=min_samples, n_jobs=num_processes, **kwargs
         )
 
-    labels = clusterer.fit(xy).labels_
-    gdf["labels"] = labels
+    labels = clusterer.fit(xy).labels_.astype(int)
 
-    return gdf
+    return labels

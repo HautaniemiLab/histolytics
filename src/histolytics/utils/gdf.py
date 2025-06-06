@@ -135,7 +135,7 @@ def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
             A numpy array of shape (n, 2) containing the centroid coordinates
             of each geometry in the GeoDataFrame.
     """
-    return np.array(gdf.centroid.apply(lambda point: (point.x, point.y)).tolist())
+    return np.vstack([gdf.centroid.x, gdf.centroid.y]).T
 
 
 def set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
