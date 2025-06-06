@@ -3,10 +3,41 @@ from itertools import combinations_with_replacement
 from typing import List, Tuple
 
 import geopandas as gpd
-from libpysal.weights import W
+import networkx as nx
+import numpy as np
+from libpysal.weights import W, w_subset
 from shapely.geometry import LineString
 
 from histolytics.utils.gdf import gdf_apply, gdf_to_polars
+
+__all__ = [
+    "get_connected_components",
+    "weights2gdf",
+]
+
+
+def get_connected_components(w: W, ids: np.ndarray) -> List[W]:
+    """Get the connected components of a spatial weights object.
+
+    Parameters:
+        w (W):
+            The spatial weights object.
+        ids (np.ndarray):
+            The ids of the nodes in the weights object.
+
+    Returns:
+        sub_graphs (List[W]):
+            The connected components of the graph.
+    """
+    w_sub = w_subset(w, ids, silence_warnings=True)
+
+    G = w_sub.to_networkx()
+    sub_graphs = [
+        W(nx.to_dict_of_lists(G.subgraph(c).copy()), silence_warnings=True)
+        for c in nx.connected_components(G)
+    ]
+
+    return sub_graphs
 
 
 def weights2gdf(
