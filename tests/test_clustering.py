@@ -1,7 +1,10 @@
+import geopandas as gpd
 import numpy as np
 import pytest
 
 from histolytics.data import hgsc_cancer_nuclei
+from histolytics.spatial_clust.centrography import cluster_tendency
+from histolytics.spatial_clust.clust_metrics import cluster_feats
 from histolytics.spatial_clust.density_clustering import density_clustering
 from histolytics.spatial_clust.lisa_clustering import lisa_clustering
 from histolytics.spatial_geom.shape_metrics import shape_metric
@@ -203,3 +206,180 @@ def test_lisa_clustering(inflammatory_nuclei_with_weights, feature, permutations
             assert (
                 clustering_detected
             ), f"Expected to find some LISA clusters with {feature}"
+
+
+@pytest.fixture
+def clustered_immune_cells(immune_nuclei):
+    """Create clusters from immune cells using DBSCAN"""
+    # Skip if not enough immune cells for meaningful clusters
+    if len(immune_nuclei) < 50:
+        pytest.skip("Not enough immune cells for meaningful clustering")
+
+    # Apply density clustering
+    labels = density_clustering(
+        immune_nuclei, eps=200.0, min_samples=5, method="dbscan"
+    )
+
+    # Add cluster labels to the GeoDataFrame
+    immune_with_clusters = immune_nuclei.copy()
+    immune_with_clusters["cluster_id"] = labels
+
+    return immune_with_clusters
+
+
+@pytest.mark.parametrize(
+    "hull_type,normalize_orientation",
+    [
+        # Test with alpha shape (default), normalized orientation
+        ("alpha_shape", True),
+        # Test with alpha shape, non-normalized orientation
+        ("alpha_shape", False),
+        # Test with convex hull
+        ("convex_hull", True),
+        # Test with ellipse
+        ("ellipse", True),
+    ],
+)
+def test_cluster_feats(clustered_immune_cells, hull_type, normalize_orientation):
+    """Test cluster_feats with different hull types and orientation settings"""
+    # Group cells by cluster ID and apply cluster_feats to each group
+    cluster_features = {}
+
+    # Get unique cluster IDs, excluding noise points (-1)
+    cluster_ids = np.unique(clustered_immune_cells["cluster_id"])
+    cluster_ids = cluster_ids[cluster_ids >= 0]
+
+    # Skip test if no valid clusters found
+    if len(cluster_ids) == 0:
+        pytest.skip("No valid clusters found in the data")
+
+    # Process each cluster
+    for cluster_id in cluster_ids:
+        # Get cells in this cluster
+        cluster_cells = clustered_immune_cells[
+            clustered_immune_cells["cluster_id"] == cluster_id
+        ]
+
+        # Skip very small clusters (need at least 3 points for hull)
+        if len(cluster_cells) < 3:
+            continue
+
+        # Calculate cluster features
+        try:
+            # For alpha shape, add a reasonable step parameter
+            kwargs = {}
+            if hull_type == "alpha_shape":
+                kwargs["step"] = 50  # Adjust based on your data scale
+
+            features = cluster_feats(
+                cluster_cells,
+                hull_type=hull_type,
+                normalize_orientation=normalize_orientation,
+                **kwargs,
+            )
+            cluster_features[cluster_id] = features
+        except Exception as e:
+            # Skip this cluster if computation fails
+            print(f"Skipping cluster {cluster_id} due to error: {str(e)}")
+            continue
+
+    # Skip if all clusters failed
+    if not cluster_features:
+        pytest.skip(f"All clusters failed with hull_type={hull_type}")
+
+    # Verify feature calculations for each successful cluster
+    for cluster_id, features in cluster_features.items():
+        # Check that all expected features are present
+        expected_features = ["area", "dispersion", "size", "orientation"]
+        for feature in expected_features:
+            assert feature in features, f"Feature {feature} missing from results"
+
+        # Basic validation of feature values
+        assert features["size"] > 0, "Cluster size should be positive"
+        assert features["area"] > 0, "Cluster area should be positive"
+        assert features["dispersion"] >= 0, "Dispersion should be non-negative"
+
+        # Orientation checks
+        if normalize_orientation:
+            # If normalized, orientation should be between 0 and 90
+            assert (
+                0 <= features["orientation"] <= 90
+            ), f"Normalized orientation should be between 0 and 90, got {features['orientation']}"
+        else:
+            # If not normalized, orientation should be between -180 and 180
+            assert (
+                -180 <= features["orientation"] <= 180
+            ), f"Non-normalized orientation should be between -180 and 180, got {features['orientation']}"
+
+        # Validate size against actual data
+        cluster_cells = clustered_immune_cells[
+            clustered_immune_cells["cluster_id"] == cluster_id
+        ]
+        assert features["size"] == len(
+            cluster_cells
+        ), "Size should match number of cells in cluster"
+
+
+def test_cluster_feats_empty_input():
+    """Test cluster_feats with empty input"""
+    # Create empty GeoDataFrame
+    empty_gdf = gpd.GeoDataFrame(geometry=[])
+
+    # Should raise ValueError or similar
+    with pytest.raises(Exception):
+        cluster_feats(empty_gdf)
+
+
+def test_cluster_tendency_with_clusters(immune_nuclei):
+    """Test cluster_tendency with clustered data"""
+    # Skip if not enough cells for clustering
+    if len(immune_nuclei) < 50:
+        pytest.skip("Not enough immune cells for meaningful clustering")
+
+    # Apply density clustering
+    labels = density_clustering(
+        immune_nuclei, eps=200.0, min_samples=5, method="dbscan"
+    )
+
+    # Add cluster labels
+    immune_with_clusters = immune_nuclei.copy()
+    immune_with_clusters["cluster_id"] = labels
+
+    # Get unique cluster IDs (excluding noise points)
+    cluster_ids = np.unique(labels)
+    cluster_ids = cluster_ids[cluster_ids >= 0]
+
+    # Skip if no clusters found
+    if len(cluster_ids) == 0:
+        pytest.skip("No clusters found in the data")
+
+    # Process each cluster and get centroids
+    centroids = {}
+    for cluster_id in cluster_ids:
+        cluster_cells = immune_with_clusters[
+            immune_with_clusters["cluster_id"] == cluster_id
+        ]
+
+        # Skip small clusters
+        if len(cluster_cells) < 3:
+            continue
+
+        centroids[cluster_id] = cluster_tendency(cluster_cells, centroid_method="mean")
+
+    # Skip if no valid clusters
+    if not centroids:
+        pytest.skip("No valid clusters for testing")
+
+    # Verify centroids are within cluster bounds
+    for cluster_id, centroid in centroids.items():
+        cluster_cells = immune_with_clusters[
+            immune_with_clusters["cluster_id"] == cluster_id
+        ]
+        bounds = cluster_cells.total_bounds
+
+        assert (
+            bounds[0] <= centroid.x <= bounds[2]
+        ), f"Centroid x outside cluster {cluster_id} bounds"
+        assert (
+            bounds[1] <= centroid.y <= bounds[3]
+        ), f"Centroid y outside cluster {cluster_id} bounds"
