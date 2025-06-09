@@ -13,7 +13,7 @@ from histolytics.utils.mask_utils import rm_closed_edges
 
 def extract_collagen_fibers(
     img: np.ndarray,
-    label: np.ndarray = None,
+    label: np.ndarray,
     sigma: float = 2.5,
     rm_bg: bool = False,
 ) -> np.ndarray:
@@ -22,8 +22,8 @@ def extract_collagen_fibers(
     Parameters:
         img (np.ndarray):
             The input image. Shape (H, W, 3).
-        label (np.ndarray, default=None):
-            The nuclei mask (optional). Shape (H, W).
+        label (np.ndarray):
+            The nuclei mask. Shape (H, W).
         sigma (float, default=2.5):
             The sigma parameter for the Canny edge detector.
         rm_bg (bool, default=False):
