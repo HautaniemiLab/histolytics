@@ -1,10 +1,9 @@
-from typing import List
-
 import cv2
 import numpy as np
 
+from histolytics.utils.mask_utils import bounding_box
+
 __all__ = [
-    "bounding_box",
     "draw_thing_contours",
 ]
 
@@ -21,32 +20,6 @@ NUM_COLORS = {
     8: (155.0, 110.0, 155.0),
     9: (0.0, 0.0, 0.0),
 }
-
-
-def bounding_box(inst_map: np.ndarray) -> List[int]:
-    """Bounding box coordinates for an instance that is given as input.
-
-    This assumes that the `inst_map` has only one instance in it.
-
-    Parameters:
-        inst_map (np.ndarray):
-            Instance labelled mask. Shape (H, W).
-
-    Returns:
-        List[int]:
-            List of the origin- and end-point coordinates of the bbox.
-    """
-    rows = np.any(inst_map, axis=1)
-    cols = np.any(inst_map, axis=0)
-    rmin, rmax = np.where(rows)[0][[0, -1]]
-    cmin, cmax = np.where(cols)[0][[0, -1]]
-
-    # due to python indexing, need to add 1 to max
-    # else accessing will be 1px in the box, not out
-    rmax += 1
-    cmax += 1
-
-    return [rmin, rmax, cmin, cmax]
 
 
 def draw_thing_contours(
