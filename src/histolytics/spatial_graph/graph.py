@@ -70,12 +70,10 @@ def fit_graph(
          6: [1, 27, 1159, 1169, 1682],
          7: [5, 8, 9, 24, 1152, 1162], ...
 
-
     Returns:
-        W or gpd.GeoDataFrame:
-            If `return_gdf` is False, returns a libpysal weights object.
-            If `return_gdf` is True, returns a tuple of the weights object and a
-            GeoDataFrame containing the spatial graph edges.
+        W and gpd.GeoDataFrame:
+            returns a libpysal weights object and a GeoDataFrame containing the spatial
+            graph edges.
     """
     allowed_types = ["delaunay", "knn", "rel_nhood", "distband", "gabriel", "voronoi"]
     if method not in allowed_types:

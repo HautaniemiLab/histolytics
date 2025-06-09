@@ -544,8 +544,7 @@ def shape_metric(
             The input geodataframe with computed shape metric columns added.
 
     Examples:
-        Compute the eccentricity and solidity for each polygon in gdf.
-        >>> from cellseg_gsontools.geometry import shape_metric
+        >>> from histolytics.spatial_geom.shape_metrics import shape_metric
         >>> shape_metric(gdf, metrics=["eccentricity", "solidity"], parallel=True)
     """
     if not isinstance(metrics, (list, tuple)):
