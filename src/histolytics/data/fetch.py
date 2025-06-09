@@ -2,6 +2,8 @@ from pathlib import Path
 
 import geopandas as gpd
 
+from histolytics.utils import FileHandler
+
 BASE_PATH = Path(__file__).parent.resolve()
 
 __all__ = [
@@ -10,8 +12,11 @@ __all__ = [
     "cervix_tissue_crop",
     "cervix_nuclei_crop",
     "hgsc_cancer_nuclei",
+    "hgsc_cancer_he",
     "hgsc_tissue_wsi",
     "hgsc_nuclei_wsi",
+    "hgsc_stroma_nuclei",
+    "hgsc_stroma_he",
 ]
 
 
@@ -102,3 +107,36 @@ def hgsc_cancer_nuclei():
         plt.Axes
     """
     return _load(BASE_PATH / "hgsc_nest.parquet")
+
+
+def hgsc_stroma_nuclei():
+    """A GeoDataframe a cropped bbox from segmented HGSC slide containing stromal nuclei.
+
+    Examples:
+        >>> from histolytics.data import hgsc_stroma_nuclei
+        >>> hgsc_stroma_nuclei().plot(column="class_name")
+        plt.Axes
+    """
+    return _load(BASE_PATH / "hgsc_stromal_cells.parquet")
+
+
+def hgsc_cancer_he():
+    """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_he
+        >>> plt.imshow(hgsc_cancer_he())
+        plt.Axes
+    """
+    return FileHandler.read_img(BASE_PATH / "hgsc_nest.png")
+
+
+def hgsc_stroma_he():
+    """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
+
+    Examples:
+        >>> from histolytics.data import hgsc_stroma_he
+        >>> plt.imshow(hgsc_stroma_he())
+        plt.Axes
+    """
+    return FileHandler.read_img(BASE_PATH / "hgsc_stromal_he.png")
