@@ -8,7 +8,11 @@ __all__ = ["chromatin_clumps"]
 
 
 def chromatin_clumps(
-    img: np.ndarray, label: np.ndarray = None, mean: float = 0.0, std: float = 1.0
+    img: np.ndarray,
+    label: np.ndarray = None,
+    mean: float = 0.0,
+    std: float = 1.0,
+    erode: bool = True,
 ) -> np.ndarray:
     """Extracts chromatin clumps from a given image and label-map.
 
@@ -24,6 +28,8 @@ def chromatin_clumps(
             Mean intensity of the image.
         std (float):
             Standard deviation of the image.
+        erode (bool, default=True):
+            Whether to erode the chromatin clumps after thresholding.
 
     Returns:
         chrom_mask (np.ndarray):
@@ -81,7 +87,9 @@ def chromatin_clumps(
         inst = label == i
         _intensity = img * inst
         high_mask = _intensity > otsu[0]
-        chrom_clump = erosion(np.bitwise_xor(inst, high_mask), disk(2))
+        chrom_clump = np.bitwise_xor(inst, high_mask)
+        if erode:
+            chrom_clump = erosion(chrom_clump, disk(2))
         chrom_mask += chrom_clump
         chrom_area = np.sum(chrom_clump)
         chrom_areas.append(chrom_area)
