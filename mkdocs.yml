@@ -95,8 +95,8 @@ nav:
     - Nuclear Morphology: user_guide/spatial/morphology.ipynb
     - Spatial Neighborhoods: user_guide/spatial/nhood_analysis.ipynb
     - Spatial Clustering: user_guide/spatial/clustering.ipynb
-    - Chromatin Patterns: user_guide/spatial/chromatin_patterns.md
-    - Collagen Fibers: user_guide/spatial/collagen_fibers.md
+    - Chromatin Patterns: user_guide/spatial/chromatin_patterns.ipynb
+    - Collagen Fibers: user_guide/spatial/collagen_fibers.ipynb
     - Stromal Morphology: user_guide/spatial/stromal_features.md
   - API Reference:
     - "api/index.md"
