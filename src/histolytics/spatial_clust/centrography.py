@@ -108,7 +108,8 @@ def cluster_tendency(
 
         >>> nuc = hgsc_cancer_nuclei()
         >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
-        >>> nuc_imm = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
+        >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
+        >>> nuc_imm = nuc_imm.assign(labels=labels)
 
         >>> clust_centroids = (
         ...    nuc_imm.groupby("labels")

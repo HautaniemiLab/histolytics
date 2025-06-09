@@ -58,7 +58,15 @@ def density_clustering(
             labeled as -1.
 
     Examples:
-        Cluster immune cell centroids in a gdf using dbscan.
+        >>> import pandas as pd
+        >>> from histolytics.spatial_clust.density_clustering import density_clustering
+        >>> from histolytics.data import hgsc_cancer_nuclei
+
+        >>> nuc = hgsc_cancer_nuclei()
+        >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
+        >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
+        >>> print(labels)
+        [-1 -1 -1 -1  0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1  0  0  0  0  0  0  0  0 ...
     """
     allowed = ("dbscan", "adbscan", "optics", "hdbscan")
     if method not in allowed:

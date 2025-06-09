@@ -159,6 +159,37 @@ def cluster_feats(
             - "orientation": The orientation angle of the cluster.
 
     Examples:
+        >>> import pandas as pd
+        >>> from histolytics.spatial_clust.density_clustering import density_clustering
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.spatial_clust.centrography import cluster_tendency
+        >>> from histolytics.spatial_clust.clust_metrics import cluster_feats
+
+        >>> nuc = hgsc_cancer_nuclei()
+        >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
+        >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
+        >>> nuc_imm = nuc_imm.assign(labels=labels)
+
+        >>> clust_centroids = (
+        ...     nuc_imm.groupby("labels")
+        ...     .apply(lambda g: cluster_tendency(g, "mean"), include_groups=False)
+        ...     .reset_index(drop=False, name="geometry")
+        >>> )
+
+        >>> clust_features = (
+        ...    nuc_imm.groupby("labels")
+        ...    .apply(
+        ...        lambda x: pd.Series(
+        ...            cluster_feats(x, hull_type="convex_hull", normalize_orientation=True)
+        ...        ),
+        ...        include_groups=False,
+        ...    )
+        ...    .reset_index(drop=False)
+        >>> )
+        >>> print(clust_features)
+            labels           area  dispersion   size  orientation
+        0      -1  732641.332024  483.830111   83.0    34.979649
+        1       0  368383.654562  249.680419  205.0    81.664728
     """
     return {
         "area": cluster_area(gdf, hull_type=hull_type, **kwargs),
