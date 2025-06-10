@@ -4,7 +4,7 @@
 
 **A Python library for scalable panoptic spatial analysis of histological WSIs**
 
-[![Github Test](https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests)](https://github.com/HautaniemiLab/histolytics/blob/main/.github/workflows/tests.yml) [![License](https://img.shields.io/github/license/HautaniemiLab/histolytics)](https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE) [![Python - Version](https://img.shields.io/pypi/pyversions/cellseg_gsontools)](https://www.python.org/)
+[![Github Test](https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests)](https://github.com/HautaniemiLab/histolytics/blob/main/.github/workflows/tests.yml) [![License](https://img.shields.io/github/license/HautaniemiLab/histolytics)](https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE) [![Python - Version](https://img.shields.io/pypi/pyversions/histolytics)](https://www.python.org/) [![Package - Version](https://img.shields.io/pypi/v/histolytics)](https://pypi.org/project/histolytics/)
 
 </div>
 

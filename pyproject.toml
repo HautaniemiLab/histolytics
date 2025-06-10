@@ -8,6 +8,13 @@ authors = [
     { name = "Oskari Lehtonen", email = "oskari.lehtonen@helsinki.fi" }
 ]
 keywords = ["panoptic segmentation", "whole slide image", "spatial analysis", "geospatial", "computer vision"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 requires-python = ">=3.10"
 dependencies = [
     "albumentations>=2.0.6",
@@ -28,7 +35,7 @@ dependencies = [
 Homepage = "https://hautaniemilab.github.io/histolytics/"
 Documentation = "https://hautaniemilab.github.io/histolytics/"
 Repository = "https://github.com/HautaniemiLab/histolytics"
-Changelog = "https://github.com/HautaniemiLab/histolytics/blob/main/CONTRIBUTING.md"
+Changelog = "https://github.com/HautaniemiLab/histolytics/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]

@@ -19,6 +19,9 @@
 <a href="https://pypi.org/project/histolytics/">
     <img src="https://img.shields.io/pypi/pyversions/histolytics" alt="Python - Version">
 </a>
+<a href="https://pypi.org/project/histolytics/">
+    <img src="https://img.shields.io/pypi/v/histolytics" alt="Package - Version">
+</a>
 
 </div>
 
