@@ -70,7 +70,7 @@ See the [contributing guide](https://github.com/HautaniemiLab/histolytics/blob/m
 ## Citation
 
 ```bibtex
-@article{okun2023histolytics,
+@article{2025histolytics,
   title={Histolytics: A Panoptic Spatial Analysis Framework for Interpretable Histopathology},
   author={Oskari Lehtonen, Niko Nordlund, Shams Salloum, Ilkka Kalliala, Anni Virtanen, Sampsa Hautaniemi},
   journal={XX},

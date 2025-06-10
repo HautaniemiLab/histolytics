@@ -47,12 +47,12 @@ We welcome contributions! To get started:
 3. Ensure all tests pass and add new tests as needed.
 4. Submit a pull request describing your changes.
 
-See [contributing guide](https://github.com/HautaniemiLab/histolytics#) for detailed guidelines.
+See [contributing guide](https://github.com/HautaniemiLab/histolytics/blob/main/CONTRIBUTING.md) for detailed guidelines.
 
 ## Citation
 
 ```bibtex
-@article{okun2023histolytics,
+@article{2025histolytics,
   title={Histolytics: A Panoptic Spatial Analysis Framework for Interpretable Histopathology},
   author={Oskari Lehtonen, Niko Nordlund, Shams Salloum, Ilkka Kalliala, Anni Virtanen, Sampsa Hautaniemi},
   journal={XX},
