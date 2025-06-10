@@ -3,9 +3,11 @@ name = "histolytics"
 version = "0.1.0"
 description = "Panoptic Segmentation and WSI Spatial Analysis"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Oskari Lehtonen", email = "oskari.lehtonen@helsinki.fi" }
 ]
+keywords = ["panoptic segmentation", "whole slide image", "spatial analysis", "geospatial", "computer vision"]
 requires-python = ">=3.10"
 dependencies = [
     "albumentations>=2.0.6",
@@ -21,6 +23,12 @@ dependencies = [
     "pandarallel>=1.6.5",
     "quadbin>=0.2.2",
 ]
+
+[project.urls]
+Homepage = "https://hautaniemilab.github.io/histolytics/"
+Documentation = "https://hautaniemilab.github.io/histolytics/"
+Repository = "https://github.com/HautaniemiLab/histolytics"
+Changelog = "https://github.com/HautaniemiLab/histolytics/blob/main/CONTRIBUTING.md"
 
 [build-system]
 requires = ["hatchling"]
