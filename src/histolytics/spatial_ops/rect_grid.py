@@ -39,16 +39,18 @@ def rect_grid(
         Fit a square grid to a gdf:
         >>> from histolytics.spatial_ops.quadbin import quadbin_grid
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
-
+        >>>
         >>> # get the stromal tissue
         >>> tis = cervix_tissue()
         >>> stroma = tis[tis["class_name"] == "stroma"]
+        >>>
+        >>> # fit a rectangular grid to the stroma tissue
         >>> grid = rect_grid(stroma, resolution=(256, 256), overlap=0)
         >>> print(grid.head(3))
-                                                geometry
-        0  POLYGON ((5955 114, 6211 114, 6211 370, 5955 3...
-        1  POLYGON ((6211 114, 6467 114, 6467 370, 6211 3...
-        2  POLYGON ((6467 114, 6723 114, 6723 370, 6467 3...
+                                                    geometry
+            0  POLYGON ((5955 114, 6211 114, 6211 370, 5955 3...
+            1  POLYGON ((6211 114, 6467 114, 6467 370, 6211 3...
+            2  POLYGON ((6467 114, 6723 114, 6723 370, 6467 3...
     """
     if gdf.empty or gdf is None:
         return

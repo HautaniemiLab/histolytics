@@ -36,16 +36,18 @@ def quadbin_grid(
         Fit a rectangular Quadbin grid to a gdf:
         >>> from histolytics.spatial_ops.quadbin import quadbin_grid
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
-
+        >>>
         >>> # get the stromal tissue
         >>> tis = cervix_tissue()
         >>> stroma = tis[tis["class_name"] == "stroma"]
+        >>>
+        >>> # fit a quadbin grid to the stroma tissue
         >>> quad_grid = quadbin_grid(stroma, resolution=18)
         >>> print(quad_grid.head(3))
-                                                                    geometry
-        5271089524171866111  POLYGON ((6581.37043 761.23896, 6581.36916 608...
-        5271089524172062719  POLYGON ((6734.64415 761.23754, 6734.64288 608...
-        5271089524171931647  POLYGON ((6734.64571 913.48504, 6734.64415 761...
+                                                                        geometry
+            5271089524171866111  POLYGON ((6581.37043 761.23896, 6581.36916 608...
+            5271089524172062719  POLYGON ((6734.64415 761.23754, 6734.64288 608...
+            5271089524171931647  POLYGON ((6734.64571 913.48504, 6734.64415 761...
     """
     if gdf.empty or gdf is None:
         return

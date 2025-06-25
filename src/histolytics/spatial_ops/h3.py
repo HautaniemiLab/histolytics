@@ -34,7 +34,7 @@ def h3_grid(
         Fit a hexagonal h3 grid to a gdf:
         >>> from histolytics.spatial_ops.h3 import h3_grid
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
-
+        >>>
         >>> # get the stromal tissue
         >>> tis = cervix_tissue()
         >>> stroma = tis[tis["class_name"] == "stroma"]
