@@ -57,16 +57,11 @@ def get_objs(
 def get_interfaces(
     buffer_area: gpd.GeoDataFrame, areas: gpd.GeoDataFrame, buffer_dist: int = 200
 ) -> gpd.GeoDataFrame:
-    """Get the interfaces b/w the polygons defined in a `areas` gdf and `buffer_area`.
+    """Get the interfaces b/w the polygons defined in a `areas` and `buffer_area`.
 
-    Interface is the region around the border of two touching polygons. The interface
-    radius is determined by the `buffer_dist` parameter.
-
-    Applies a buffer to the `buffer_area` and finds the intersection between the buffer
-    and the polygons in `areas` gdf.
-
-    Useful for example, when you want to extract the interface of two distinct tissues
-    like stroma and cancer.
+    Identifies the interface regions between polygons in `areas` and in `buffer_area`
+    by buffering the `buffer_area` polygons and finding their intersections with `areas`.
+    The width of the interface is controlled by the `buffer_dist` parameter.
 
     Parameters:
         buffer_area (gpd.GeoDataFrame):
@@ -74,8 +69,8 @@ def get_interfaces(
         areas (gpd.GeoDataFrame):
             A geodataframe containing polygons (tissue areas) that might intersect
             with the `buffer_area`.
-        buffer_dist (int):
-            The radius of the buffer.
+        buffer_dist (int, default=200):
+            The radius (in pixels) of the buffer
 
     Example:
         >>> from histolytics.spatial_ops import get_interfaces
