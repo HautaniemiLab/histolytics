@@ -72,7 +72,12 @@ def get_interfaces(
         buffer_dist (int, default=200):
             The radius (in pixels) of the buffer
 
-    Example:
+
+    Returns:
+        gpd.GeoDataFrame:
+            A geodataframe containing the intersecting polygons including the buffer.
+
+    Examples:
         >>> from histolytics.spatial_ops import get_interfaces
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
         >>>
@@ -90,10 +95,6 @@ def get_interfaces(
             0        cin  POLYGON ((3263.52 10109.06, 3256.98 10112.3, 3...
             1        cin  POLYGON ((1848.02 4655.29, 1849.62 4656.52, 18...
             2        cin  POLYGON ((2645.39 10817.62, 2646.52 10815.23, ...
-
-    Returns:
-        gpd.GeoDataFrame:
-            A geodataframe containing the intersecting polygons including the buffer.
     """
     buffer_area = set_crs(buffer_area)
     areas = set_crs(areas)
