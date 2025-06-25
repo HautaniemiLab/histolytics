@@ -4,6 +4,8 @@ import geopandas as gpd
 import numpy as np
 from shapely.geometry import Polygon, box
 
+__all__ = ["rect_grid"]
+
 
 def rect_grid(
     gdf: gpd.GeoDataFrame,
