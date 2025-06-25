@@ -41,8 +41,47 @@ def local_vals(
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 
-    Returns (gpd.GeoDataFrame):
-        The original GeoDataFrame with an additional column for neighborhood values.
+    Returns:
+        gpd.GeoDataFrame:
+            The original GeoDataFrame with an additional column for neighborhood values.
+
+    Examples:
+        >>> from histolytics.utils.gdf import set_uid
+        >>> from histolytics.data import cervix_nuclei
+        >>> from histolytics.spatial_graph.graph import fit_graph
+        >>> from histolytics.spatial_geom.shape_metrics import shape_metric
+        >>> from histolytics.spatial_agg.local_values import local_vals
+        >>>
+        >>> # input data
+        >>> nuc = cervix_nuclei()
+        >>> nuc = set_uid(nuc)
+        >>>
+        >>> # Calculate shape metrics
+        >>> nuc = shape_metric(nuc, ["area"])
+        >>> nuc["area"] = nuc["area"].round(3)
+        >>>
+        >>> # Fit delaunay graph
+        >>> w, _ = fit_graph(nuc, "delaunay", id_col="uid", threshold=100, use_polars=True)
+        >>> # Get the local areas of nuclei in each neighborhood
+        >>> nuc = local_vals(
+        ...     nuc,
+        ...     w,
+        ...     val_col="area",
+        ...     new_col_name="local_areas",
+        ...     id_col="uid",
+        ...     num_processes=6,
+        ... )
+        >>> print(nuc.head(3))
+                    geometry        class_name  uid  \
+            uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                    area                                        local_areas
+            uid
+            0    429.588  [429.588, 171.402, 130.916, 129.895, 52.101, 4...
+            1    408.466  [408.466, 226.671, 151.296, 107.531, 67.125, 5...
+            2    369.493  [369.493, 330.894, 215.215, 127.846, 417.95]7, 2...
     """
     if create_copy:
         gdf = gdf.copy()
@@ -108,8 +147,42 @@ def local_type_counts(
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 
-    Returns (gpd.GeoDataFrame):
-        The original GeoDataFrame with an additional column for local type counts.
+    Returns:
+        gpd.GeoDataFrame:
+            The original GeoDataFrame with an additional column for local type counts.
+
+    Examples:
+        >>> from histolytics.utils.gdf import set_uid
+        >>> from histolytics.data import cervix_nuclei
+        >>> from histolytics.spatial_graph.graph import fit_graph
+        >>> from histolytics.spatial_geom.shape_metrics import shape_metric
+        >>> from histolytics.spatial_agg.local_values import local_type_counts
+        >>>
+        >>> # input data
+        >>> nuc = cervix_nuclei()
+        >>> nuc = set_uid(nuc)
+        >>>
+        >>> # Fit delaunay graph
+        >>> w, _ = fit_graph(nuc, "delaunay", id_col="uid", threshold=100, use_polars=True)
+        >>> # Get the local counts of inflammatory cells in each neighborhood
+        >>> nuc = local_type_counts(
+        ...     nuc,
+        ...     w,
+        ...     class_name="inflammatory",
+        ...     id_col="uid",
+        ...     num_processes=6,
+        ... )
+        >>> print(nuc.head(3))
+                geometry        class_name  uid  \
+            uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                                                    nhood_classes  inflammatory_cnt
+            uid
+            0    [connective, connective, connective, inflammat...               2.0
+            1    [connective, connective, connective, connectiv...               0.0
+            2    [squamous_epithel, connective, connective, gla...               0.0
     """
     if "nhood_classes" not in gdf.columns:
         gdf = local_vals(

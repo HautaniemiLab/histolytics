@@ -61,6 +61,9 @@ def local_distances(
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 
+    Raises:
+        ValueError: If the `reductions` parameter contains an illegal reduction method.
+
     Returns:
         gpd.GeoDataFrame:
             The input geodataframe with computed distances column added.
@@ -72,24 +75,33 @@ def local_distances(
         >>> from histolytics.spatial_graph.graph import fit_graph
         >>> from histolytics.spatial_geom.shape_metrics import shape_metric
         >>> from histolytics.spatial_agg.local_distances import local_distances
-
+        >>>
         >>> # input data
         >>> nuc = cervix_nuclei()
         >>> nuc = set_uid(nuc)
-
+        >>>
         >>> # Calculate shape metrics
         >>> nuc = shape_metric(nuc, ["area"])
         >>> # Fit delaunay graph
         >>> w, _ = fit_graph(nuc, "delaunay", id_col="uid", threshold=100, use_polars=True)
-        >>> # Compute local neighborhood summaries for shape metrics
+        >>> # Compute local neighborhood distances for shape metrics
         >>> nuc = local_distances(
-        ...    nuc,
-        ...    w,
-        ...    id_col="uid",
-        ...    reductions=["mean"],
-        ...    num_processes=6,
+        ...     nuc,
+        ...     w,
+        ...     id_col="uid",
+        ...     reductions=["mean"],
+        ...     num_processes=6,
         >>> )
         >>> print(nuc.head(3))
+                    uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                    area  nhood_dists_mean
+            uid
+            0    429.58790         48.500637
+            1    408.46570         55.802475
+            2    369.49285         37.081177
     """
     allowed = ("sum", "mean", "median", "min", "max", "std")
     if not all(r in allowed for r in reductions):

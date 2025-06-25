@@ -27,7 +27,7 @@ def fit_delaunay(
             The column name to use as the ID for the Delaunay triangulation.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the Delaunay constructor.
 
     Returns:
@@ -63,7 +63,7 @@ def fit_knn(
             The number of nearest neighbors to consider.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the KNN constructor.
 
     Returns:
@@ -89,7 +89,7 @@ def fit_rel_nhood(
             The column name to use as the ID for the Relative Neighborhood.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the RelativeNeighborhood constructor.
 
     Returns:
@@ -121,7 +121,7 @@ def fit_distband(
             The column name to use as the ID for the Distance Band.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the DistanceBand constructor.
 
     Returns:
@@ -151,7 +151,7 @@ def fit_gabriel(
             The column name to use as the ID for the Gabriel polygons.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the Gabriel constructor.
 
     Returns:
@@ -177,7 +177,7 @@ def fit_voronoi(
             The column name to use as the ID for the Voronoi polygons.
         silence_warnings (bool, default=True):
             Whether to silence warnings from libpysal.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments passed to the Voronoi constructor.
 
     Returns:

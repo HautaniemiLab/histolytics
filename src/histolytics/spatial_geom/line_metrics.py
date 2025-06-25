@@ -180,12 +180,12 @@ def line_metric(
     Note:
         Allowed shape metrics are:
 
-        - "tortuosity": The tortuosity of the line.
-        - "average_turning_angle": The average turning angle of the line.
-        - "major_axis_len": The length of the major axis of the line.
-        - "minor_axis_len": The length of the minor axis of the line.
-        - "major_axis_angle": The angle of the major axis of the line.
-        - "minor_axis_angle": The angle of the minor axis of the line.
+        - `tortuosity`
+        - `average_turning_angle`
+        - `major_axis_len`
+        - `minor_axis_len`
+        - `major_axis_angle`
+        - `minor_axis_angle`
 
     Raises:
         ValueError:
@@ -196,9 +196,22 @@ def line_metric(
             The input geodataframe with computed shape metric columns added.
 
     Examples:
-        Compute the eccentricity and solidity for each polygon in gdf.
-        >>> from histolytics.spatial_geom.shape_metrics import line_metric
-        >>> line_metric(gdf, metrics=["tortuosity", "length"], parallel=True)
+        >>> from shapely.geometry import LineString
+        >>> from histolytics.spatial_geom.line_metrics import line_metric
+        >>> import geopandas as gpd
+        >>> lines = [
+        ...     LineString([(i, i) for i in range(12)]),
+        ...     LineString([(i, 0 if i % 2 == 0 else 1) for i in range(12)]),
+        ...     LineString([(0, i) for i in range(12)]),
+        >>> ]
+        >>> gdf = gpd.GeoDataFrame(geometry=lines)
+        >>> gdf = line_metric(gdf, metrics=["tortuosity", "length"], parallel=True)
+        >>> print(gdf.head(3))
+                                                        geometry  tortuosity     length
+            0  LINESTRING (0 0, 1 1, 2 2, 3 3, 4 4, 5 5, 6 6,...    1.000000  15.556349
+            1  LINESTRING (0 0, 1 1, 2 0, 3 1, 4 0, 5 1, 6 0,...    1.408406  15.556349
+            2  LINESTRING (0 0, 0 1, 0 2, 0 3, 0 4, 0 5, 0 6,...    1.000000  11.000000
+
     """
     if not isinstance(metrics, (list, tuple)):
         raise ValueError(f"`metrics` must be a list or tuple. Got: {type(metrics)}.")

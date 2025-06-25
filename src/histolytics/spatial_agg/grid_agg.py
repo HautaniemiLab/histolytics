@@ -69,12 +69,29 @@ def grid_aggregate(
         pbar (bool):
             Whether to show a progress bar. Ignored if parallel=False.
 
+    Raises:
+        ValueError: If predicate is not one of "intersects" or "within".
+
     Returns:
         gpd.GeoDataFrame:
             The grid with the new columns added.
 
-    Raises:
-        ValueError: If predicate is not one of "intersects" or "within".
+    Examples:
+        >>> def immune_density(nuclei):
+        >>>     if "inflammatory" in nuclei.value_counts("class_name"):
+        >>>         cnt = nuclei.value_counts("class_name", normalize=True)["inflammatory"]
+        >>>     else:
+        >>>         cnt = 0
+        >>>     return float(cnt)
+        >>>
+        >>> grid = grid_aggregate(
+        >>>     objs=nuc_gdf,
+        >>>     grid=grid,
+        >>>     metric_func=immune_density,
+        >>>     new_col_names=["immune_density"],
+        >>>     predicate="contains",
+        >>>     num_processes=1,
+        >>> )
     """
     allowed = ["intersects", "within", "contains", "contains_properly"]
     if predicate not in allowed:

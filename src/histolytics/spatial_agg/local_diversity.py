@@ -104,13 +104,13 @@ def local_diversity(
         >>> from histolytics.spatial_agg.local_diversity import local_diversity
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
         >>> from histolytics.utils.gdf import set_uid
-
+        >>>
         >>> nuc = cervix_nuclei()
         >>> nuc = set_uid(nuc)  # ensure unique IDs for nuclei
-
+        >>>
         >>> # Fit delaunay graph
         >>> w, _ = fit_graph(nuc, "delaunay", id_col="uid", threshold=100, use_polars=True)
-
+        >>>
         >>> # Compute local cell type diversity with simpson index and shannon entropy
         >>> nuc = local_diversity(
         ...     nuc,
@@ -120,17 +120,17 @@ def local_diversity(
         ...     metrics=["simpson_index"],
         ...     num_processes=6,
         >>> )
-                geometry        class_name  uid  \
-        uid
-        0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
-        1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
-        2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
-
-            class_name_shannon_index
-        uid
-        0                    0.636514
-        1                    0.636514
-        2                    1.332179
+        >>> print(nuc.head(3))
+                    geometry        class_name  uid  \
+            uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                class_name_shannon_index
+            uid
+            0                    0.636514
+            1                    0.636514
+            2                    1.332179
     """
     allowed = list(DIVERSITY_LOOKUP.keys())
     if not all(m in allowed for m in metrics):

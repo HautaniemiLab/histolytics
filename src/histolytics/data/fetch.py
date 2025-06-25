@@ -56,7 +56,7 @@ def cervix_nuclei():
 
 
 def hgsc_tissue_wsi():
-    """A GeoDataframe of segmented cervical biopsy containing tissue areas.
+    """A GeoDataframe of segmented HGSC WSI tissue areas.
 
     Examples:
         >>> from histolytics.data import hgsc_tissue_wsi
@@ -66,7 +66,7 @@ def hgsc_tissue_wsi():
 
 
 def hgsc_nuclei_wsi():
-    """A GeoDataframe segmented cervical biopsy containing nuclei of the cervical tissue.
+    """A GeoDataframe segmented HGSC WSI nuclei.
 
     Examples:
         >>> from histolytics.data import hgsc_nuclei_wsi
@@ -121,7 +121,7 @@ def hgsc_stroma_nuclei():
 
 
 def hgsc_cancer_he():
-    """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
+    """A 1000x1000 H&E image of HGSC containing a tumor nest. Pairs with hgsc_cancer_nuclei.
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_he
@@ -132,7 +132,7 @@ def hgsc_cancer_he():
 
 
 def hgsc_stroma_he():
-    """A GeoDataframe a cropped bbox from segmented HGSC slide containing cancer nuclei.
+    """A 1000x1000 H&E image of HGSC containing a tumor nest. Pairs with hgsc_stroma_nuclei.
 
     Examples:
         >>> from histolytics.data import hgsc_stroma_he

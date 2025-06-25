@@ -79,12 +79,10 @@ def weights2gdf(
         >>> from histolytics.spatial_graph.utils import weights2gdf
         >>> from histolytics.spatial_graph.spatial_weights import fit_delaunay
         >>> from histolytics.utils.gdf import set_uid
-
         >>> nuc = cervix_nuclei()
         >>> id_col = "uid"
         >>> gdf = nuc.copy()
         >>> gdf = set_uid(gdf, id_col=id_col)
-
         >>> # use only neoplastic nuclei
         >>> gdf = gdf[gdf["class_name"] == "neoplastic"].copy()
         >>> w = fit_delaunay(gdf, id_col=id_col)

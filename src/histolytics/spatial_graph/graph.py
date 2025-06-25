@@ -47,14 +47,13 @@ def fit_graph(
             Number of processes to use for parallel processing. If -1, uses all
             available cores. Ignored if `use_polars` is True. If `use_parallel` is
             False, this will be ignored.
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments for specific graph fitting functions.
             For example, `k` for KNN etc.
 
     Examples:
         >>> from histolytics.data import cervix_nuclei
         >>> from histolytics.utils.gdf import set_uid
-
         >>> nuc = cervix_nuclei()
         >>> nuc = set_uid(nuc, id_col="uid")
         >>> w, w_gdf = fit_graph(

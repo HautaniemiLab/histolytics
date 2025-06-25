@@ -14,22 +14,20 @@ from histolytics.utils.gdf import gdf_apply
 from .shape_metrics import major_axis_len
 
 __all__ = [
-    "perpendicular_line",
-    "equal_interval_points",
     "medial_lines",
     "perpendicular_lines",
 ]
 
 
-def equal_interval_points(obj: Any, n: int = None, delta: float = None):
+def _equal_interval_points(obj: Any, n: int = None, delta: float = None):
     """Resample the points of a shapely object at equal intervals.
 
     Parameters:
         obj (Any):
             Any shapely object that has length property.
-        n (int):
+        n (int, default=None):
             Number of points, defaults to None
-        delta (float):
+        delta (float, default=None):
             Distance between points, defaults to None
 
     Returns:
@@ -82,39 +80,7 @@ def _group_contiguous_vertices(vertices: np.ndarray) -> List[LineString]:
     return grouped_lines
 
 
-def medial_lines(
-    poly: Polygon, num_points: int = 100, delta: float = 0.3
-) -> Union[MultiLineString, LineString]:
-    """Compute the medial lines of a polygon using voronoi diagram.
-
-    Parameters:
-        polygon (shapely.geometry.Polygon):
-            Polygon to compute the medial lines of.
-        n (int):
-            Number of resampled points in the input polygon, defaults to None
-        delta (float):
-            Distance between resampled polygon points, defaults to None. Ignored
-            if n is not None.
-
-    Returns:
-        shapely.geometry.MultiLineString or shapely.geometry.LineString:
-            the medial line(s).
-    """
-    coords = equal_interval_points(poly.exterior, n=num_points, delta=delta)
-    vor = Voronoi(coords)
-
-    contains = vectorized.contains(poly, *vor.vertices.T)
-    contains = np.append(contains, False)
-    ridge = np.asanyarray(vor.ridge_vertices, dtype=np.int64)
-    edges = ridge[contains[ridge].all(axis=1)]
-
-    grouped_lines = _group_contiguous_vertices(vor.vertices[edges])
-    medial = linemerge(grouped_lines)
-
-    return medial
-
-
-def perpendicular_line(
+def _perpendicular_line(
     line: shapely.LineString, seg_length: float
 ) -> shapely.LineString:
     """Create a perpendicular line from a line segment.
@@ -141,15 +107,58 @@ def perpendicular_line(
     return shapely.LineString([left, right])
 
 
+def medial_lines(
+    poly: Polygon, num_points: int = 100, delta: float = 0.3
+) -> Union[MultiLineString, LineString]:
+    """Compute the medial lines of a polygon using voronoi diagram.
+
+    Parameters:
+        poly (shapely.geometry.Polygon):
+            Polygon to compute the medial lines of.
+        num_points (int, default=100):
+            Number of resampled points in the input polygon, defaults to None
+        delta (float, default=0.3):
+            Distance between resampled polygon points, defaults to None. Ignored
+            if n is not None.
+
+    Returns:
+        shapely.geometry.MultiLineString or shapely.geometry.LineString:
+            the medial line(s).
+
+    Examples:
+        >>> from shapely.geometry import Polygon
+        >>> from histolytics.spatial_geom.medial_lines import medial_lines
+        >>>
+        >>> # Create a simple polygon
+        >>> poly = Polygon([(0, 0), (0, 10), (10, 10), (10, 0)])
+        >>>
+        >>> # Compute medial lines
+        >>> medial_lines(poly, num_points=200)
+            MULTILINESTRING ((0.100503 0.100503, 0.301508 0.301508, 0.502513 0.502513))
+    """
+    coords = _equal_interval_points(poly.exterior, n=num_points, delta=delta)
+    vor = Voronoi(coords)
+
+    contains = vectorized.contains(poly, *vor.vertices.T)
+    contains = np.append(contains, False)
+    ridge = np.asanyarray(vor.ridge_vertices, dtype=np.int64)
+    edges = ridge[contains[ridge].all(axis=1)]
+
+    grouped_lines = _group_contiguous_vertices(vor.vertices[edges])
+    medial = linemerge(grouped_lines)
+
+    return medial
+
+
 def perpendicular_lines(
-    lines: gpd.GeoDataFrame, polygon: shapely.Polygon = None
+    lines: gpd.GeoDataFrame, poly: shapely.Polygon = None
 ) -> gpd.GeoDataFrame:
     """Get perpendicular lines to the input lines starting from the line midpoints.
 
     Parameters:
         lines (gpd.GeoDataFrame):
             GeoDataFrame of the input lines.
-        polygon (shapely.Polygon):
+        poly (shapely.Polygon):
             Polygon to clip the perpendicular lines to.
 
     Returns:
@@ -157,15 +166,15 @@ def perpendicular_lines(
             GeoDataFrame of the perpendicular lines.
     """
     # create perpendicular lines to the medial lines
-    if polygon is None:
-        polygon = lines.unary_union.convex_hull
+    if poly is None:
+        poly = lines.unary_union.convex_hull
 
-    seg_len = major_axis_len(polygon)
-    func = partial(perpendicular_line, seg_length=seg_len)
+    seg_len = major_axis_len(poly)
+    func = partial(_perpendicular_line, seg_length=seg_len)
     perp_lines = gdf_apply(lines, func, columns=["geometry"])
 
     # clip the perpendicular lines to the polygon
-    perp_lines = gpd.GeoDataFrame(perp_lines, columns=["geometry"]).clip(polygon)
+    perp_lines = gpd.GeoDataFrame(perp_lines, columns=["geometry"]).clip(poly)
 
     # explode perpendicular lines & take only the ones that intersect w/ medial lines
     perp_lines = perp_lines.explode(index_parts=False).reset_index(drop=True)

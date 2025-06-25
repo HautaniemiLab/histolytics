@@ -2,7 +2,7 @@ import numpy as np
 from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry
 
-__all__ = ["axis_len", "axis_angle", "_dist", "_azimuth"]
+__all__ = ["axis_len", "axis_angle"]
 
 
 def _dist(p1: Point, p2: Point) -> float:
@@ -22,7 +22,7 @@ def axis_len(geom: BaseGeometry, which: str = "major", **kwargs) -> float:
     Parameters:
         geom (BaseGeometry):
             Input shapely geometry object.
-        which (str, default="major")
+        which (str, default="major"):
             One of ("major", "minor").
 
     Returns:
@@ -54,9 +54,9 @@ def axis_angle(
     Parameters:
         geom (BaseGeometry):
             Input shapely geometry object.
-        which: str, default="major"
+        which (str, default="major"):
             One of ("major", "minor").
-        normalize: bool, default=True
+        normalize (bool, default=True):
             Whether to normalize the angle to be within [0, 90]. Otherwise, the angle will be
             in the range [0, 180].
 

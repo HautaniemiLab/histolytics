@@ -544,8 +544,27 @@ def shape_metric(
             The input geodataframe with computed shape metric columns added.
 
     Examples:
+        >>> from histolytics.utils.gdf import set_uid
+        >>> from histolytics.data import cervix_nuclei
         >>> from histolytics.spatial_geom.shape_metrics import shape_metric
-        >>> shape_metric(gdf, metrics=["eccentricity", "solidity"], parallel=True)
+        >>>
+        >>> # input data
+        >>> nuc = cervix_nuclei()
+        >>> nuc = set_uid(nuc)
+        >>>
+        >>> # Calculate shape metrics
+        >>> nuc = shape_metric(nuc, metrics=["eccentricity", "solidity"])
+        >>> print(nuc.head(3))
+                    geometry        class_name  uid  \
+            uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                eccentricity  solidity
+            uid
+            0        0.960195  0.989154
+            1        0.041712  1.000000
+            2        0.610266  0.996911
     """
     if not isinstance(metrics, (list, tuple)):
         raise ValueError(f"`metrics` must be a list or tuple. Got: {type(metrics)}.")

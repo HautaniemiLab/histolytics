@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 from libpysal.cg import alpha_shape_auto
 from scipy.spatial import ConvexHull
@@ -44,8 +46,30 @@ def ellipse_poly(xy: np.ndarray) -> Polygon:
     return rotate(scaled, rotation, use_radians=True)
 
 
-def hull(xy: np.ndarray, hull_type: str = "alpha_shape", **kwargs) -> Polygon:
-    allowed_hulls = ["alpha_shape", "convex_hull", "ellipse"]
+def hull(xy: np.ndarray, hull_type: str = "alpha_shape", **kwargs: Any) -> Polygon:
+    """Compute a geometric hull around a set of 2D points.
+
+    Parameters:
+        xy (np.ndarray):
+            An array of shape (N, 2) representing N 2D points.
+        hull_type (str, default="alpha_shape"):
+            The type of hull to compute. Must be one of
+            "alpha_shape", "convex_hull", "bbox", or "ellipse".
+        **kwargs (Any):
+            Additional keyword arguments passed to the underlying hull computation
+            functions (e.g., parameters for alpha shape).
+
+    Raises:
+        ValueError: If an invalid hull_type is provided.
+
+    Returns:
+        Polygon: A shapely Polygon object representing the computed hull.
+
+    Examples:
+        >>> hull(points, hull_type="convex_hull")
+        <shapely.geometry.polygon.Polygon object at ...>
+    """
+    allowed_hulls = ["alpha_shape", "convex_hull", "ellipse", "bbox"]
     if hull_type not in allowed_hulls:
         raise ValueError(f"Invalid hull type. Allowed values are: {allowed_hulls}")
 
@@ -57,5 +81,8 @@ def hull(xy: np.ndarray, hull_type: str = "alpha_shape", **kwargs) -> Polygon:
         hull_poly = Polygon(hull_points)
     elif hull_type == "ellipse":
         hull_poly = ellipse_poly(xy)
+    elif hull_type == "bbox":
+        poly = Polygon(xy)
+        hull_poly = poly.envelope
 
     return hull_poly

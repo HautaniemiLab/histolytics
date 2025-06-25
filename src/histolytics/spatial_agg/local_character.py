@@ -71,36 +71,35 @@ def local_character(
         >>> from histolytics.spatial_graph.graph import fit_graph
         >>> from histolytics.spatial_geom.shape_metrics import shape_metric
         >>> from histolytics.spatial_agg.local_character import local_character
-
+        >>>
         >>> # input data
         >>> nuc = cervix_nuclei()
         >>> nuc = set_uid(nuc)
-
+        >>>
         >>> # Calculate shape metrics
         >>> nuc = shape_metric(nuc, ["area"])
         >>> # Fit delaunay graph
         >>> w, _ = fit_graph(nuc, "delaunay", id_col="uid", threshold=100, use_polars=True)
         >>> # Compute local neighborhood summaries for shape metrics
         >>> nuc = local_character(
-        ...    nuc,
-        ...    w,
-        ...    val_cols=["area"],
-        ...    id_col="uid",
-        ...    reductions=["mean"],
-        ...    num_processes=6,
+        ...     nuc,
+        ...     w,
+        ...     val_cols=["area"],
+        ...     id_col="uid",
+        ...     reductions=["mean"],
+        ...     num_processes=6,
         >>> )
         >>> print(nuc.head(3))
-            geometry        class_name  uid  \
-        uid
-        0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
-        1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
-        2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
-
-                area  eccentricity  area_nhood_mean
-        uid
-        0    429.58790      0.960195       159.663283
-        1    408.46570      0.041712       237.720661
-        2    369.49285      0.610266       292.279720
+                geometry        class_name  uid  \
+            uid
+            0    POLYGON ((940.01 5570.02, 939.01 5573, 939 559...        connective    0
+            1    POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...        connective    1
+            2    POLYGON ((866 5137.02, 862.77 5137.94, 860 513...  squamous_epithel    2
+                    area  eccentricity  area_nhood_mean
+            uid
+            0    429.58790      0.960195       159.663283
+            1    408.46570      0.041712       237.720661
+            2    369.49285      0.610266       292.279720
     """
     allowed = ("sum", "mean", "median", "min", "max", "std", "var")
     if not all(r in allowed for r in reductions):
