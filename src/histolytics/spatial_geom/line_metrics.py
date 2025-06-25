@@ -148,7 +148,7 @@ LINE_SHAPE_LOOKUP = {
     "minor_axis_len": minor_axis_len,
     "major_axis_angle": major_axis_angle,
     "minor_axis_angle": minor_axis_angle,
-    "length": lambda x: x.length,
+    "length": None,
 }
 
 
@@ -182,6 +182,7 @@ def line_metric(
 
         - `tortuosity`
         - `average_turning_angle`
+        - `length`
         - `major_axis_len`
         - `minor_axis_len`
         - `major_axis_angle`
@@ -229,6 +230,11 @@ def line_metric(
         col_prefix = ""
     else:
         col_prefix += "_"
+
+    met = list(metrics)
+    if "length" in metrics:
+        gdf[f"{col_prefix}length"] = gdf.length
+        met.remove("length")
 
     met = list(metrics)
     for metric in met:

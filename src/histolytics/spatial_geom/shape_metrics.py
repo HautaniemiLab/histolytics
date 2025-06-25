@@ -77,6 +77,7 @@ def shape_metric(
         Allowed shape metrics are:
 
         - `area`
+        - `perimeter`
         - `major_axis_len`
         - `minor_axis_len`
         - `major_axis_angle`
