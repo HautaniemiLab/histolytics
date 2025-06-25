@@ -7,6 +7,7 @@ from histolytics.spatial_clust.centrography import cluster_tendency
 from histolytics.spatial_clust.clust_metrics import cluster_feats
 from histolytics.spatial_clust.density_clustering import density_clustering
 from histolytics.spatial_clust.lisa_clustering import lisa_clustering
+from histolytics.spatial_clust.ripley import ripley_test
 from histolytics.spatial_geom.shape_metrics import shape_metric
 from histolytics.spatial_graph.graph import fit_graph
 from histolytics.utils.gdf import set_uid
@@ -383,3 +384,111 @@ def test_cluster_tendency_with_clusters(immune_nuclei):
         assert (
             bounds[1] <= centroid.y <= bounds[3]
         ), f"Centroid y outside cluster {cluster_id} bounds"
+
+
+@pytest.fixture
+def neoplastic_nuclei():
+    """Load cancer nuclei data and filter for neoplastic cells only"""
+    nuclei = hgsc_cancer_nuclei()
+    neoplastic = nuclei[nuclei["class_name"] == "neoplastic"].copy()
+    return neoplastic
+
+
+@pytest.mark.parametrize(
+    "ripley_alphabet,hull_type,expected_props",
+    [
+        # Test Ripley G function with different hull types
+        ("g", "bbox", {"stat_range": (0, 1), "has_pvalues": True}),
+        ("g", "convex_hull", {"stat_range": (0, 1), "has_pvalues": True}),
+        ("g", "ellipse", {"stat_range": (0, 1), "has_pvalues": True}),
+        # Test Ripley K function with different hull types
+        ("k", "bbox", {"stat_range": (0, np.inf), "has_pvalues": True}),
+        ("k", "convex_hull", {"stat_range": (0, np.inf), "has_pvalues": True}),
+        # Test Ripley L function with different hull types
+        ("l", "bbox", {"stat_range": (0, np.inf), "has_pvalues": True}),
+        ("l", "convex_hull", {"stat_range": (0, np.inf), "has_pvalues": True}),
+    ],
+)
+def test_ripley_test(neoplastic_nuclei, ripley_alphabet, hull_type, expected_props):
+    """Test ripley_test function with different parameters"""
+    # Create distance array for testing
+    distances = np.linspace(0, 100, 5)  # Using fewer distances for speed
+    n_sim = 10  # Keep simulations low for test speed
+
+    # Run ripley test
+    ripley_stat, sims, pvalues = ripley_test(
+        neoplastic_nuclei,
+        distances=distances,
+        ripley_alphabet=ripley_alphabet,
+        n_sim=n_sim,
+        hull_type=hull_type,
+    )
+
+    # Basic output validation
+    assert isinstance(ripley_stat, np.ndarray), "ripley_stat should be numpy array"
+    assert isinstance(sims, np.ndarray), "sims should be numpy array"
+    assert isinstance(pvalues, np.ndarray), "pvalues should be numpy array"
+
+    # Check shapes
+    assert len(ripley_stat) == len(
+        distances
+    ), "ripley_stat length should match distances"
+    assert len(pvalues) == len(distances), "pvalues length should match distances"
+    assert sims.shape == (
+        n_sim,
+        len(distances),
+    ), f"sims shape should be ({n_sim}, {len(distances)})"
+
+    # Check p-values are valid probabilities
+    assert np.all(pvalues >= 0), "All p-values should be >= 0"
+    assert np.all(pvalues <= 1), "All p-values should be <= 1"
+
+    # Check expected statistical properties
+    if expected_props["stat_range"][0] == 0:
+        assert np.all(ripley_stat >= 0), f"All {ripley_alphabet} values should be >= 0"
+
+    if ripley_alphabet == "g":
+        # G function should be between 0 and 1
+        assert np.all(ripley_stat <= 1), "All G values should be <= 1"
+        # G function should be monotonically increasing
+        assert np.all(
+            np.diff(ripley_stat) >= 0
+        ), "G function should be monotonically increasing"
+
+    # Check that simulations have reasonable values
+    assert not np.any(np.isnan(sims)), "Simulations should not contain NaN values"
+    assert not np.any(np.isinf(sims)), "Simulations should not contain infinite values"
+
+
+def test_ripley_test_consistency():
+    """Test that ripley_test produces consistent results with same random seed"""
+    nuclei = hgsc_cancer_nuclei()
+    neoplastic = nuclei[nuclei["class_name"] == "neoplastic"].head(50)
+    distances = np.array([25, 50])
+
+    # Set random seed for reproducibility
+    np.random.seed(42)
+    ripley_stat1, sims1, pvalues1 = ripley_test(
+        neoplastic,
+        distances=distances,
+        ripley_alphabet="g",
+        n_sim=5,
+        hull_type="bbox",
+    )
+
+    # Reset seed and run again
+    np.random.seed(42)
+    ripley_stat2, sims2, pvalues2 = ripley_test(
+        neoplastic,
+        distances=distances,
+        ripley_alphabet="g",
+        n_sim=5,
+        hull_type="bbox",
+    )
+
+    # Observed statistics should be identical (deterministic)
+    np.testing.assert_array_equal(ripley_stat1, ripley_stat2)
+
+    # Simulations and p-values should be identical with same seed
+    np.testing.assert_array_equal(sims1, sims2)
+    np.testing.assert_array_equal(pvalues1, pvalues2)
