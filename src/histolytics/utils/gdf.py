@@ -4,12 +4,16 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import psutil
+import shapely
 from pandarallel import pandarallel
 from pandas.api.types import (
     is_bool_dtype,
     is_object_dtype,
     is_string_dtype,
 )
+from shapely import wkt
+from shapely.geometry.base import BaseGeometry
+from shapely.wkt import dumps
 
 __all__ = [
     "gdf_to_polars",
@@ -18,6 +22,7 @@ __all__ = [
     "is_categorical",
     "set_uid",
     "get_centroid_numpy",
+    "set_geom_precision",
 ]
 
 
@@ -124,6 +129,38 @@ def set_uid(
     return gdf
 
 
+def set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
+    """Set the crs to 4328 (metric).
+
+    Parameters:
+        gdf (gpd.GeoDataFrame):
+            Input GeoDataFrame.
+        crs (int, optional):
+            The EPSG code of the CRS to set. Default is 4328 (WGS 84).
+    """
+    return gdf.set_crs(epsg=crs, allow_override=True)
+
+
+def set_geom_precision(geom: BaseGeometry, precision: int = 6) -> BaseGeometry:
+    """Set the precision of a Shapely geometry.
+
+    Note:
+        Typically six decimals is sufficient for most applications.
+
+    Parameters:
+        geom (BaseGeometry):
+            Input Shapely geometry.
+        precision (int, default=6):
+            The number of decimal places to round the coordinates to.
+
+    Returns:
+        BaseGeometry:
+            The input geometry with coordinates rounded to the specified precision.
+    """
+    wkt_str = dumps(geom, rounding_precision=precision)
+    return wkt.loads(wkt_str)
+
+
 def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
     """Get the centroid coordinates of a GeoDataFrame as a numpy array.
 
@@ -135,19 +172,7 @@ def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
             A numpy array of shape (n, 2) containing the centroid coordinates
             of each geometry in the GeoDataFrame.
     """
-    return np.vstack([gdf.centroid.x, gdf.centroid.y]).T
-
-
-def set_crs(gdf: gpd.GeoDataFrame, crs: int = 4328) -> bool:
-    """Set the crs to 4328 (metric).
-
-    Parameters:
-        gdf (gpd.GeoDataFrame):
-            Input GeoDataFrame.
-        crs (int, optional):
-            The EPSG code of the CRS to set. Default is 4328 (WGS 84).
-    """
-    return gdf.set_crs(epsg=crs, allow_override=True)
+    return shapely.get_coordinates(gdf.centroid)
 
 
 def gdf_to_polars(gdf):
