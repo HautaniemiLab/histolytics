@@ -25,7 +25,7 @@ def get_objs(
             Predicate for the spatial query. One of contains", "contains_properly",
             "covered_by", "covers", "crosses", "intersects", "overlaps", "touches",
             "within", "dwithin"
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments to pass to the spatial query.
 
     Returns:

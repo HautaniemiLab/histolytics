@@ -20,7 +20,7 @@ def get_sub_grids(
 
     Parameters:
         coordinates (List[Tuple[int, int, int, int]]):
-            List of grid coordinates in (x, y, w, h) format.
+            List of grid bbox coordinates in (x, y, w, h) format.
         inds (Tuple[int, ...], default=None):
             Indices of the connected components to extract.
         min_size (int, default=1):

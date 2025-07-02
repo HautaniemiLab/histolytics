@@ -1,0 +1,4 @@
+::: histolytics.spatial_clust.density_clustering.density_clustering
+    options.extra:
+      heading_level: 2
+      show_type_hint: true

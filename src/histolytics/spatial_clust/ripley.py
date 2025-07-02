@@ -305,6 +305,8 @@ def ripley_test(
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.spatial_clust.ripley import ripley_test
+        >>> import numpy as np
         >>>
         >>> # Load the HGSC cancer nuclei dataset
         >>> nuc = hgsc_cancer_nuclei()

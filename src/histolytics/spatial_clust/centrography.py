@@ -23,8 +23,9 @@ def mean_center(xy: np.ndarray) -> np.ndarray:
             A numpy array of shape (n, 2) containing the x and y coordinates.
             (centroids of the nuclei).
 
-    Returns (np.ndarray):
-        The mean center of the centroids as a numpy array with shape (2,).
+    Returns:
+        np.ndarray:
+            The mean center of the centroids as a numpy array with shape (2,).
     """
     return xy.mean(axis=0)
 
@@ -37,8 +38,9 @@ def median_center(xy: np.ndarray) -> np.ndarray:
             A numpy array of shape (n, 2) containing the x and y coordinates.
             (centroids of the nuclei).
 
-    Returns (np.ndarray):
-        The median center of the centroids as a numpy array with shape (2,).
+    Returns:
+        np.ndarray:
+            The median center of the centroids as a numpy array with shape (2,).
     """
     return xy.median(axis=0)
 
@@ -51,8 +53,9 @@ def weighted_mean_center(xy: np.ndarray, weights: Sequence) -> np.ndarray:
             A numpy array of shape (n, 2) containing the x and y coordinates.
             (centroids of the nuclei).
 
-    Returns (np.ndarray):
-        The weighted mean center of the centroids as a numpy array with shape (2,).
+    Returns:
+        np.ndarray:
+            The weighted mean center of the centroids as a numpy array with shape (2,).
     """
     points, weights = np.asarray(xy), np.asarray(weights)
     w = weights * 1.0 / weights.sum()
@@ -71,8 +74,9 @@ def std_distance(xy: np.ndarray) -> float:
             A numpy array of shape (n, 2) containing the x and y coordinates.
             (centroids of the nuclei).
 
-    Returns (float):
-        The std_distance of the xy-coords as a float value.
+    Returns:
+        float:
+            The std_distance of the xy-coords as a float value.
     """
     n, p = xy.shape
     m = mean_center(xy)
@@ -81,7 +85,7 @@ def std_distance(xy: np.ndarray) -> float:
 
 def cluster_tendency(
     gdf: gpd.GeoDataFrame, centroid_method: str = "mean", weight_col: str = None
-) -> gpd.GeoDataFrame:
+) -> Point:
     """Get the centroid of a GeoDataFrame using specified method.
 
     Parameters:
@@ -97,29 +101,28 @@ def cluster_tendency(
             center. Required if `centroid_method` is "weighted_mean".
 
     Returns:
-        gpd.GeoDataFrame:
-            A GeoDataFrame containing a single Point geometry representing the centroid
-            of the input GeoDataFrame.
+        Point:
+            A shapely Point object representing the centroid of the GeoDataFrame.
 
     Examples:
         >>> from histolytics.spatial_clust.centrography import cluster_tendency
         >>> from histolytics.spatial_clust.density_clustering import density_clustering
         >>> from histolytics.data import hgsc_cancer_nuclei
-
+        >>>
         >>> nuc = hgsc_cancer_nuclei()
         >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
         >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
         >>> nuc_imm = nuc_imm.assign(labels=labels)
-
+        >>> # Calculate the centroids for each cluster
         >>> clust_centroids = (
         ...    nuc_imm.groupby("labels")
         ...    .apply(lambda g: cluster_tendency(g, "mean"), include_groups=False)
         ...    .reset_index(name="centroid")
-        >>> )
+        ... )
         >>> print(clust_centroids)
-        labels                                     centroid
-        0      -1  POINT (785.5438556958384 806.2601606856466)
-        1       0  POINT (665.1678800342971 695.4346142894398)
+            labels                                     centroid
+            0      -1  POINT (785.5438556958384 806.2601606856466)
+            1       0  POINT (665.1678800342971 695.4346142894398)
 
     """
     allowed_centroid_methods = ["mean", "median", "weighted_mean"]

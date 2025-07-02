@@ -51,20 +51,22 @@ AVAILABLE_BACKENDS = ("OPENSLIDE", "CUCIM", "BIOIO")
 
 
 class SlideReader:
-    """Reader class for histological slide images."""
-
     def __init__(
         self,
         path: Union[str, Path],
         backend: str = "OPENSLIDE",
     ) -> None:
-        """Initialize `SlideReader` instance.
+        """Reader class for histological whole slide images.
 
         Parameters:
             path (str, Path):
                 Path to slide image.
             backend (str, default="OPENSLIDE"):
-                Backend to use for reading slide images.
+                Backend to use for reading slide images. One of:
+
+                - "OPENSLIDE": Uses OpenSlideReader.
+                - "CUCIM": Uses CucimReader.
+                - "BIOIO": Uses BioIOReader.
 
         Raises:
             FileNotFoundError: Path does not exist.

@@ -45,7 +45,7 @@ def hed_decompose(img: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def kmeans_img(img: np.ndarray, n_clust: int = 3, seed: int = 42) -> np.ndarray:
-    """Performs KMeans clustering on an image.
+    """Performs KMeans clustering on the input image.
 
     Parameters:
         img (np.ndarray):

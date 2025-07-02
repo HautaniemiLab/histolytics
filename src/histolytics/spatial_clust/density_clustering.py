@@ -19,8 +19,9 @@ def density_clustering(
 ) -> np.ndarray:
     """Apply a density based clustering to centroids in a gdf.
 
-    This is a quick wrapper for a few clustering algos adapted
-    to geodataframes.
+    Note:
+        This is a wrapper for a scikit-learn density clustering algorithms
+        adapted to geodataframes.
 
     Note:
         Allowed clustering methods are:
@@ -61,7 +62,7 @@ def density_clustering(
         >>> import pandas as pd
         >>> from histolytics.spatial_clust.density_clustering import density_clustering
         >>> from histolytics.data import hgsc_cancer_nuclei
-
+        >>>
         >>> nuc = hgsc_cancer_nuclei()
         >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
         >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")

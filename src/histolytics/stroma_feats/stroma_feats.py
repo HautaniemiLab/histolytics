@@ -13,7 +13,7 @@ Number = Union[int, float]
 
 def stromal_intensity_features(
     img: np.ndarray,
-    label: np.ndarray,
+    label: np.ndarray = None,
     quantiles: Union[tuple, list] = (0.25, 0.5, 0.75),
 ) -> Dict[str, Number]:
     """Computes the mean, std, and quantiles of RGB intensities and areas of stromal components.
@@ -21,14 +21,21 @@ def stromal_intensity_features(
     Parameters:
         img (np.ndarray):
             The input image. Shape (H, W, 3).
-        label (np.ndarray):
-            The cell mask. Shape (H, W).
+        label (np.ndarray, default=None):
+            The nuclei mask. Shape (H, W). This is used to mask out the nuclei when
+            computing stromal features. If None, the entire image is used.
         quantiles (tuple or list, optional):
             The quantiles to compute. Default is (0.25, 0.5, 0.75).
+
+    Note:
+        The quantiles are named as `q25`, `q50`, `q75` for 0.25, 0.5, and 0.75 respectively.
+        If a quantile is not an integer, it is formatted as `q0.25`, `q0.50`, etc.
+        If the area of a stain is zero, the mean, std, and quantiles for that stain will be NaN.
 
     Returns:
         Dict[str, Number]:
             The computed features. Keys include:
+
                 - hematoxylin_area, eosin_area
                 - mean/std/q{quantile}_red_hematoxylin
                 - mean/std/q{quantile}_green_hematoxylin
@@ -36,25 +43,19 @@ def stromal_intensity_features(
                 - mean/std/q{quantile}_red_eosin
                 - mean/std/q{quantile}_green_eosin
                 - mean/std/q{quantile}_blue_eosin
-    Note:
-        The quantiles are named as `q25`, `q50`, `q75` for 0.25, 0.5, and 0.75 respectively.
-        If a quantile is not an integer, it is formatted as `q0.25`, `q0.50`, etc.
-        If the area of a stain is zero, the mean, std, and quantiles for that stain will be NaN.
 
     Examples:
-        >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
-        >>> from histolytics.utils.raster import gdf2inst
-        >>> from histolytics.stroma_feats.stroma_feats import stromal_intensity_features
-        >>> # Load example data
-        >>> he_image = hgsc_cancer_he()
-        >>> nuclei = hgsc_cancer_nuclei()
-        >>> # Convert nuclei GeoDataFrame to instance segmentation mask
-        >>> inst_mask = gdf2inst(nuclei, width=he_image.shape[1], height=he_image.shape[0])
-        >>> # Compute stromal intensity features
-        >>> features = stromal_intensity_features(he_image, inst_mask)
-        >>> # Print some features
-        >>> print(features)
-        {'hematoxylin_area': 739787, 'mean_red_hematoxylin': 0.726, 'std_red_hematoxylin': 0.115...
+        >>>from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
+        >>>from histolytics.utils.raster import gdf2inst
+        >>>from histolytics.stroma_feats.stroma_feats import stromal_intensity_features
+        >>># Load example data
+        >>>he_image = hgsc_cancer_he()
+        >>>nuclei = hgsc_cancer_nuclei()
+        >>># Compute stromal intensity features
+        >>>features = stromal_intensity_features(he_image)
+        >>># Print some features
+        >>>print(features)
+        {'hematoxylin_area': 762954, 'mean_red_hematoxylin': 0.7209352... }
     """
 
     def _get_quantile_names(qs):
@@ -71,12 +72,12 @@ def stromal_intensity_features(
     hematoxylin_mask = get_hematoxylin_mask(img_hematoxylin, eosin_mask)
 
     # mask out the cell objects
-    eosin_mask[label > 0] = 0
-    hematoxylin_mask[label > 0] = 0
-
-    features = {}
+    if label is not None:
+        eosin_mask[label > 0] = 0
+        hematoxylin_mask[label > 0] = 0
 
     # For each channel and mask, compute stats
+    features = {}
     for stain, mask, img_stain in [
         ("hematoxylin", hematoxylin_mask, img_hematoxylin),
         ("eosin", eosin_mask, img_eosin),

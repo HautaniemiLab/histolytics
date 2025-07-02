@@ -189,7 +189,7 @@ class WsiPanopticSegmenter:
         batch_size: int = 8,
         transforms: A.Compose = None,
     ) -> None:
-        """Class for segmenting WSIs.
+        """Class handling the panoptic segmentation of WSIs.
 
         Parameters:
             reader (SlideReader):

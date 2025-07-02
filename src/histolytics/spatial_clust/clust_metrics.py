@@ -140,23 +140,29 @@ def cluster_feats(
 ) -> Dict[str, float]:
     """Compute centrography features of a cluster represented by a GeoDataFrame.
 
+    Note:
+        Computes the following features:
+
+        - `area`: The area of the cluster.
+        - `dispersion`: The dispersion of the cluster.
+        - `size`: The size of the cluster (number of objects).
+        - `orientation`: The orientation angle of the cluster.
+
     Parameters:
         gdf (gpd.GeoDataFrame):
             The GeoDataFrame containing the cluster data.
         hull_type (str, default="alpha_shape"):
             The type of hull to compute. One of: "alpha_shape", "convex_hull", "ellipse".
+            The hull is used to compute the area and orientation of the cluster.
         normalize_orientation (bool, default=True):
             Whether to normalize the orientation angle to be within [0, 90].
-        **kwargs:
+        **kwargs (Any):
             Additional keyword arguments for the hull computation
             (e.g., `step` for alpha shape).
 
     Returns:
-        Dict[str, float]: A dictionary containing the computed features:
-            - "area": The area of the cluster.
-            - "dispersion": The dispersion of the cluster.
-            - "size": The size of the cluster (number of objects).
-            - "orientation": The orientation angle of the cluster.
+        Dict[str, float]:
+            A dictionary containing the computed features.
 
     Examples:
         >>> import pandas as pd
@@ -164,18 +170,12 @@ def cluster_feats(
         >>> from histolytics.data import hgsc_cancer_nuclei
         >>> from histolytics.spatial_clust.centrography import cluster_tendency
         >>> from histolytics.spatial_clust.clust_metrics import cluster_feats
-
+        >>>
         >>> nuc = hgsc_cancer_nuclei()
         >>> nuc_imm = nuc[nuc["class_name"] == "neoplastic"]
         >>> labels = density_clustering(nuc_imm, eps=250, min_samples=100, method="dbscan")
         >>> nuc_imm = nuc_imm.assign(labels=labels)
-
-        >>> clust_centroids = (
-        ...     nuc_imm.groupby("labels")
-        ...     .apply(lambda g: cluster_tendency(g, "mean"), include_groups=False)
-        ...     .reset_index(drop=False, name="geometry")
-        >>> )
-
+        >>> # Calculate cluster features for each cluster label
         >>> clust_features = (
         ...    nuc_imm.groupby("labels")
         ...    .apply(
@@ -185,7 +185,7 @@ def cluster_feats(
         ...        include_groups=False,
         ...    )
         ...    .reset_index(drop=False)
-        >>> )
+        ... )
         >>> print(clust_features)
             labels           area  dispersion   size  orientation
         0      -1  732641.332024  483.830111   83.0    34.979649
