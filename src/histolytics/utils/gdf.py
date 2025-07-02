@@ -39,7 +39,7 @@ def gdf_apply(
     """Apply or parallel apply a function to any col or row of a GeoDataFrame.
 
     Parameters:
-        gdf (gpd.GeoDataFrame):
+        gdf (gpd.GeoDataFramt an semantic e):
             Input GeoDataFrame.
         func (Callable):
             A callable function.
@@ -66,10 +66,17 @@ def gdf_apply(
 
     Examples:
         Get the compactness of the polygons in a gdf
-        >>> from cellseg_gsontools import gdf_apply
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.utils.gdf import gdf_apply
+        >>> from histolytics.spatial_geom.morphometrics import compactness
+        >>> gdf = hgsc_cancer_nuclei()
         >>> gdf["compactness"] = gdf_apply(
-        ...     gdf, compactness, columns=["geometry"], parallel=True
+        ...     gdf, compactness, columns=["geometry"], parallel=True, num_processes=3
         ... )
+                                                        geometry  class_name  compactness
+            0  POLYGON ((1394.01 0, 1395.01 1.99, 1398 3.99, ...  connective     0.578699
+            1  POLYGON ((1391 2.01, 1387 2.01, 1384.01 3.01, ...  connective     0.947018
+            2  POLYGON ((1382.99 156.01, 1380 156.01, 1376.01...  connective     0.604828
     """
     if columns is not None:
         if not isinstance(columns, (tuple, list)):
@@ -119,8 +126,16 @@ def set_uid(
             The input gdf with a "uid" column added to it.
 
     Examples:
-        >>> from cellseg_gsontools import set_uid
-        >>> gdf = set_uid(gdf, drop=True)
+        >>> from histolytics.utils.gdf import set_uid
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> gdf = hgsc_cancer_nuclei()
+        >>> gdf = set_uid(gdf, drop=False)
+        >>> print(gdf.head(3))
+                                                        geometry  class_name  uid
+            uid
+            0    POLYGON ((1394.01 0, 1395.01 1.99, 1398 3.99, ...  connective    0
+            1    POLYGON ((1391 2.01, 1387 2.01, 1384.01 3.01, ...  connective    1
+            2    POLYGON ((1382.99 156.01, 1380 156.01, 1376.01...  connective    2
     """
     # if id_col not in gdf.columns:
     gdf = gdf.assign(**{id_col: range(start_ix, len(gdf) + start_ix)})
@@ -156,6 +171,20 @@ def set_geom_precision(geom: BaseGeometry, precision: int = 6) -> BaseGeometry:
     Returns:
         BaseGeometry:
             The input geometry with coordinates rounded to the specified precision.
+
+    Examples:
+        >>> from histolytics.utils.gdf import gdf_apply, set_geom_precision
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from functools import partial
+        >>> # Set precision to 3 decimal places
+        >>> prec = partial(set_geom_precision, precision=3)
+        >>> gdf = hgsc_cancer_nuclei()
+        >>> gdf = gdf_apply(gdf, prec, columns=["geometry"])
+        >>> print(gdf.head(3))
+            0    POLYGON ((1394.01 0, 1395.01 1.99, 1398 3.99, ...
+            1    POLYGON ((1391 2.01, 1387 2.01, 1384.01 3.01, ...
+            2    POLYGON ((1382.99 156.01, 1380 156.01, 1376.01...
+            dtype: geometry
     """
     wkt_str = dumps(geom, rounding_precision=precision)
     return wkt.loads(wkt_str)
@@ -167,10 +196,25 @@ def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
     Parameters:
         gdf (gpd.GeoDataFrame):
             Input GeoDataFrame.
+
     Returns:
         np.ndarray:
             A numpy array of shape (n, 2) containing the centroid coordinates
             of each geometry in the GeoDataFrame.
+
+    Examples:
+        >>> from histolytics.utils.gdf import get_centroid_numpy
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> gdf = hgsc_cancer_nuclei()
+        >>> centroids = get_centroid_numpy(gdf)
+        >>> print(centroids)
+            [[1400.03798043    1.69248393]
+            [1386.45857876    9.58076168]
+            [1378.29668867  170.69547823]
+            ...
+            [ 847.54653982  425.80712554]
+            [ 954.08683652  520.35605096]
+            [ 784.46362434  483.4973545 ]]
     """
     return shapely.get_coordinates(gdf.centroid)
 
@@ -182,8 +226,28 @@ def gdf_to_polars(gdf):
         gdf: geopandas.GeoDataFrame
             The input GeoDataFrame
 
+    Raises:
+        ImportError: If polars is not installed.
+
     Returns:
         polars.DataFrame with Shapely objects preserved as Python objects
+
+    Examples:
+        >>> from histolytics.utils.gdf import gdf_to_polars
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> gdf = hgsc_cancer_nuclei()
+        >>> gdf_pl = gdf_to_polars(gdf)
+        >>> print(gdf_pl.head(3))
+            shape: (3, 2)
+            ┌────────────┬─────────────────────────────────┐
+            │ class_name ┆ geometry                        │
+            │ ---        ┆ ---                             │
+            │ str        ┆ object                          │
+            ╞════════════╪═════════════════════════════════╡
+            │ connective ┆ POLYGON ((1394.01 0, 1395.01 1… │
+            │ connective ┆ POLYGON ((1391 2.01, 1387 2.01… │
+            │ connective ┆ POLYGON ((1382.99 156.01, 1380… │
+            └────────────┴─────────────────────────────────┘
     """
     try:
         import polars as pl

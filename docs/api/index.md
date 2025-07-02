@@ -81,10 +81,35 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [kmeans_img](stroma_feats/kmeans_img.md): Perform KMeans clustering on an image.
 - [hed_decompose](stroma_feats/hed_decompose.md): Transform an image to HED space.
 
-### WSI (Whole Slide Imaging)
+### Nuclei Features
+
+**Extracting features from nuclei**
+
+- [chromatin_clumps](nuc_feats/chromatin_clumps.md): Extract chromatin clumps from a nuclei segmentation.
+- [grayscale_intensity](nuc_feats/grayscale_intensity.md): Extract grayscale intensity features from a nuclei segmentation.
+- [rgb_intensity](nuc_feats/rgb_intensity.md): Extract RGB intensity features from a nuclei segmentation.
+
+### WSI (Whole Slide Images)
 
 **WSI handling and WSI-level segmentation**
 
 - [SlideReader](wsi/slide_reader.md): Functions for reading whole slide images
 - [WsiPanopticSegmenter](wsi/wsi_segmenter.md): Class handling the panoptic segmentation of whole slide images
 - [get_sub_grids](wsi/get_sub_grids.md): Get sub-grids from a whole slide image.
+
+### Utils
+
+**Utility functions and classes**
+
+#### gdf
+- [gdf_apply](utils/gdf_apply.md): Apply a function to a GeoDataFrame in parallel.
+- [gdf_to_polars](utils/gdf_to_polars.md): Convert a GeoDataFrame to a Polars DataFrame.
+- [get_centroid_numpy](utils/get_centroid_numpy.md): Get the centroids of a GeoDataFrame as a NumPy array.
+- [set_uid](utils/set_uid.md): Set a unique identifier (UID) for each object in a GeoDataFrame.
+- [set_geom_precision](utils/set_geom_precision.md): Set the precision of geometries in a GeoDataFrame.
+
+#### raster
+- [inst2gdf](utils/inst2gdf.md): Convert an instance segmentation mask to a GeoDataFrame.
+- [sem2gdf](utils/sem2gdf.md): Convert a semantic tissue segmentation mask to a GeoDataFrame.
+- [gdf2inst](utils/gdf2inst.md): Convert a GeoDataFrame to an instance segmentation mask.
+- [gdf2sem](utils/gdf2sem.md): Convert a GeoDataFrame to a semantic tissue segmentation mask.

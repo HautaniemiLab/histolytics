@@ -73,7 +73,11 @@ def inst2gdf(
     min_size: int = 15,
     smooth_func: Callable = gaussian_smooth,
 ) -> gpd.GeoDataFrame:
-    """Convert an instance segmentation mask to a GeoDataFrame.
+    """Convert an instance segmentation raster mask to a GeoDataFrame.
+
+    Note:
+        This function should be applied to nuclei instance segmentation masks. Nuclei
+        types can be provided with the `type_map` and `class_dict` arguments if needed.
 
     Parameters:
         inst_map (np.ndarray):
@@ -82,22 +86,41 @@ def inst2gdf(
             A type segmentation mask. Shape (H, W). If provided, the types will be
             included in the resulting GeoDataFrame in column 'class_name'.
         xoff (int, default=None):
-            The x offset. Optional.
+            The x offset. Optional. The offset is used to translate the geometries
+            in the GeoDataFrame. If None, no translation is applied.
         yoff (int, default=None):
-            The y offset. Optional.
+            The y offset. Optional. The offset is used to translate the geometries
+            in the GeoDataFrame. If None, no translation is applied.
         class_dict (Dict[int, str], default=None):
-            A dictionary mapping class indices to class names. If None, the class indices
-            will be used. e.g. {1: 'neoplastic', 2: 'immune'}.
+            A dictionary mapping class indices to class names.
+            e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
         min_size (int, default=15):
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
         smooth_func (Callable, default=gaussian_smooth):
             A function to smooth the polygons. The function should take a shapely Polygon
             as input and return a shapely Polygon.
 
-
     returns:
-        gpd.GeoDataFrame: A GeoDataFrame of the instance map.
-        Containing columns 'id', 'class_name' and 'geometry'.
+        gpd.GeoDataFrame:
+            A GeoDataFrame of the raster instance mask. Contains columns:
+
+                - 'id' - the numeric pixel value of the instance mask,
+                - 'class_name' - the name or index of the instance class (requires `type_map` and `class_dict`),
+                - 'geometry' - the geometry of the polygon.
+
+    Examples:
+        >>> from histolytics.utils.raster import inst2gdf
+        >>> from histolytics.data import hgsc_cancer_inst_mask, hgsc_cancer_type_mask
+        >>> # load raster masks
+        >>> inst_mask = hgsc_cancer_inst_mask()
+        >>> type_mask = hgsc_cancer_type_mask()
+        >>> # convert to GeoDataFrame
+        >>> gdf = inst2gdf(inst_mask, type_mask)
+        >>> print(gdf.head(3))
+                id  class_name                                           geometry
+            0  135           1  POLYGON ((405.019 0.45, 405.43 1.58, 406.589 2...
+            1  200           1  POLYGON ((817.01 0.225, 817.215 0.804, 817.795...
+            2    0           1  POLYGON ((1394.01 0.45, 1394.215 1.58, 1394.79...
     """
 
     if type_map is None:
@@ -147,29 +170,51 @@ def sem2gdf(
     yoff: int = None,
     class_dict: Dict[int, str] = None,
     min_size: int = 15,
-    smooth_func: Callable = None,
+    smooth_func: Callable = gaussian_smooth,
 ) -> gpd.GeoDataFrame:
-    """Convert an semantic segmentation mask to a GeoDataFrame.
+    """Convert an semantic segmentation raster mask to a GeoDataFrame.
+
+    Note:
+        This function should be applied to semantic tissue segmentation masks.
 
     Parameters:
         sem_map (np.ndarray):
             A semantic segmentation mask. Shape (H, W).
         xoff (int, default=None):
-            The x offset. Optional.
+            The x offset. Optional. The offset is used to translate the geometries
+            in the GeoDataFrame. If None, no translation is applied.
         yoff (int, default=None):
-            The y offset. Optional.
+            The y offset. Optional. The offset is used to translate the geometries
+            in the GeoDataFrame. If None, no translation is applied.
         class_dict (Dict[int, str], default=None):
-            A dictionary mapping class indices to class names. If None, the class indices
-            will be used. e.g. {1: 'neoplastic', 2: 'immune'}.
+            A dictionary mapping class indices to class names.
+            e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
         min_size (int, default=15):
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
-        smooth_func (Callable, default=None):
+        smooth_func (Callable, default=gaussian_smooth):
             A function to smooth the polygons. The function should take a shapely Polygon
             as input and return a shapely Polygon.
 
     returns:
-        gpd.GeoDataFrame: A GeoDataFrame of the semantic segmenation map.
-        Containing columns 'id', 'class_name' and 'geometry'.
+        gpd.GeoDataFrame:
+            A GeoDataFrame of the raster semantic mask. Contains columns:
+
+                - 'id' - the numeric pixel value of the semantic mask,
+                - 'class_name' - the name of the class (same as id if class_dict is None),
+                - 'geometry' - the geometry of the polygon.
+
+    Examples:
+        >>> from histolytics.utils.raster import sem2gdf
+        >>> from histolytics.data import hgsc_cancer_type_mask
+        >>> # load semantic mask
+        >>> type_mask = hgsc_cancer_type_mask()
+        >>> # convert to GeoDataFrame
+        >>> gdf = sem2gdf(type_mask)
+        >>> print(gdf.head(3))
+                id  class_name                                           geometry
+            0   2           2  POLYGON ((850.019 0.45, 850.431 1.58, 851.657 ...
+            1   2           2  POLYGON ((1194.01 0.225, 1194.215 0.795, 1194....
+            2   1           1  POLYGON ((405.019 0.45, 405.43 1.58, 406.589 2...
     """
     if class_dict is None:
         class_dict = {int(i): int(i) for i in np.unique(sem_map)[1:]}
@@ -216,22 +261,43 @@ def gdf2inst(
     Parameters:
         gdf (gpd.GeoDataFrame):
             GeoDataFrame to convert to an instance segmentation mask.
-        xoff (int):
-            x offset.
-        yoff (int):
-            y offset.
-        width (int):
-            Width of the output. If None, the width will be calculated from the
-            input gdf.
-        height (int):
-            Height of the output. If None, the height will be calculated from the
-            input gdf.
-        reset_index (bool):
+        xoff (int, default=0):
+            X offset. This is used to translate the geometries in the GeoDataFrame to
+            burn the geometries in correctly to the raster mask.
+        yoff (int, default=0):
+            Y offset. This is used to translate the geometries in the GeoDataFrame to
+            burn the geometries in correctly to the raster mask.
+        width (int, default=None):
+            Width of the output. This should match with the underlying image width.
+            If None, the width will be calculated from the input gdf.
+        height (int, default=None):
+            Height of the output. This should match with the underlying image height.
+            If None, the height will be calculated from the input gdf.
+        reset_index (bool, default=False):
             Whether to reset the index of the output GeoDataFrame.
 
     Returns:
         np.ndarray:
             Instance segmentation mask of the input gdf. Shape (height, width).
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>> from skimage.measure import label
+        >>> from skimage.color import label2rgb
+        >>> import matplotlib.pyplot as plt
+        >>>
+        >>> nuc = hgsc_cancer_nuclei()
+        >>> # Convert the GeoDataFrame to an instance segmentation raster
+        >>> nuc_raster = gdf2inst(nuc, xoff=0, yoff=0, width=1500, height=1500)
+        >>> # Visualize the instance segmentation raster and the GeoDataFrame
+        >>> fig, ax = plt.subplots(1, 2, figsize=(8, 4))
+        >>> ax[0].imshow(label2rgb(label(nuc_raster), bg_label=0))
+        >>> ax[0].set_axis_off()
+        >>> nuc.plot(column="class_name", ax=ax[1])
+        >>> ax[1].set_axis_off()
+        >>> fig.tight_layout()
+    ![out](../../img/gdf2inst.png)
     """
     xmin, ymin, xmax, ymax = gdf.total_bounds
     xoff = xoff - xmin
@@ -273,22 +339,45 @@ def gdf2sem(
     Parameters:
         gdf (gpd.GeoDataFrame):
             GeoDataFrame with a "class_name" column.
-        xoff (int):
-            x offset.
-        yoff (int):
-            y offset.
-        class_dict (Dict[str, int]):
+        xoff (int, default=0):
+            X offset. This is used to translate the geometries in the GeoDataFrame to
+            burn the geometries in correctly to the raster mask.
+        yoff (int, default=0):
+            Y offset. This is used to translate the geometries in the GeoDataFrame to
+            burn the geometries in correctly to the raster mask.
+        class_dict (Dict[str, int], default=None):
             Dictionary mapping class names to integers. e.g. {"neoplastic":1, "immune":2}
             If None, the classes will be mapped to integers in the order they appear in
             the GeoDataFrame.
-        width (int):
-            Width of the output. If None, the width will be calculated from the input gdf.
-        height (int):
-            Height of the output. If None, the height will be calculated from the input gdf.
+        width (int, default=None):
+            Width of the output. This should match with the underlying image width.
+            If None, the width will be calculated from the input gdf.
+        height (int, default=None):
+            Height of the output. This should match with the underlying image height.
+            If None, the height will be calculated from the input gdf.
 
     Returns:
         np.ndarray:
             Semantic segmentation mask of the input gdf.
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2sem
+        >>> import matplotlib.pyplot as plt
+        >>> from skimage.measure import label
+        >>> from skimage.color import label2rgb
+        >>>
+        >>> nuc = hgsc_cancer_nuclei()
+        >>> # Convert the GeoDataFrame to an instance segmentation raster
+        >>> nuc_raster = gdf2sem(nuc, xoff=0, yoff=0, width=1500, height=1500)
+        >>> # Visualize the semantic segmentation raster and the GeoDataFrame
+        >>> fig, ax = plt.subplots(1, 2, figsize=(8, 4))
+        >>> ax[0].imshow(label2rgb(nuc_raster, bg_label=0))
+        >>> ax[0].set_axis_off()
+        >>> nuc.plot(column="class_name", ax=ax[1])
+        >>> ax[1].set_axis_off()
+        >>> fig.tight_layout()
+    ![out](../../img/gdf2sem.png)
     """
     xmin, ymin, xmax, ymax = gdf.total_bounds
     xoff = xoff - xmin

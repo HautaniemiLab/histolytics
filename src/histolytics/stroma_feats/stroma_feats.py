@@ -45,17 +45,17 @@ def stromal_intensity_features(
                 - mean/std/q{quantile}_blue_eosin
 
     Examples:
-        >>>from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
-        >>>from histolytics.utils.raster import gdf2inst
-        >>>from histolytics.stroma_feats.stroma_feats import stromal_intensity_features
-        >>># Load example data
-        >>>he_image = hgsc_cancer_he()
-        >>>nuclei = hgsc_cancer_nuclei()
-        >>># Compute stromal intensity features
-        >>>features = stromal_intensity_features(he_image)
-        >>># Print some features
-        >>>print(features)
-        {'hematoxylin_area': 762954, 'mean_red_hematoxylin': 0.7209352... }
+        >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>> from histolytics.stroma_feats.stroma_feats import stromal_intensity_features
+        >>> # Load example data
+        >>> he_image = hgsc_cancer_he()
+        >>> nuclei = hgsc_cancer_nuclei()
+        >>> # Compute stromal intensity features
+        >>> features = stromal_intensity_features(he_image)
+        >>> # Print some features
+        >>> print(features)
+            {'hematoxylin_area': 762954, 'mean_red_hematoxylin': 0.7209352... }
     """
 
     def _get_quantile_names(qs):

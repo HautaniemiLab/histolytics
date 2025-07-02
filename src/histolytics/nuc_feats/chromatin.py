@@ -43,26 +43,33 @@ def chromatin_clumps(
         >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
         >>> from histolytics.utils.raster import gdf2inst
         >>> from histolytics.nuc_feats.chromatin import chromatin_clumps
-
+        >>> import matplotlib.pyplot as plt
+        >>>
         >>> # Load example data
         >>> he_image = hgsc_cancer_he()
         >>> nuclei = hgsc_cancer_nuclei()
-
+        >>>
         >>> # Filter for a specific cell type if needed
         >>> neoplastic_nuclei = nuclei[nuclei["class_name"] == "neoplastic"]
-
+        >>>
         >>> # Convert nuclei GeoDataFrame to instance segmentation mask
         >>> inst_mask = gdf2inst(neoplastic_nuclei, width=he_image.shape[1], height=he_image.shape[0])
         >>> # Extract chromatin clumps
         >>> chrom_mask, chrom_areas, chrom_nuc_props = chromatin_clumps(he_image, inst_mask)
-
-        >>> # Print results
+        >>>
         >>> print(f"Number of nuclei analyzed: {len(chrom_areas)}")
         Number of nuclei analyzed: 258
         >>> print(f"Average chromatin area per nucleus: {sum(chrom_areas)/len(chrom_areas):.2f}")
         Average chromatin area per nucleus: 87.34
         >>> print(f"Average chromatin proportion: {sum(chrom_nuc_props)/len(chrom_nuc_props):.4f}")
         Average chromatin proportion: 0.1874
+        >>> fig,ax = plt.subplots(1, 2, figsize=(8, 4))
+        >>> ax[0].imshow(chrom_mask)
+        >>> ax[0].set_axis_off()
+        >>> ax[1].imshow(he_image)
+        >>> ax[1].set_axis_off()
+        >>> fig.tight_layout()
+    ![out](../../img/chrom_clump.png)
     """
     p2, p98 = np.percentile(img, (2, 98))
     img = rescale_intensity(img, in_range=(p2, p98))

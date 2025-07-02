@@ -53,6 +53,23 @@ def lisa_clustering(
     Returns:
         np.ndarray:
             The cluster labels for each object in the GeoDataFrame.
+
+    Examples:
+        >>> from histolytics.spatial_clust.lisa_clustering import lisa_clustering
+        >>> from histolytics.data import cervix_nuclei
+        >>> from histolytics.spatial_graph.graph import fit_graph
+        >>> from histolytics.spatial_geom.shape_metrics import shape_metric
+        >>>
+        >>> nuc = cervix_nuclei()
+        >>> nuc = nuc[nuc["class_name"] == "neoplastic"]
+        >>> # Fit distband graph to the neoplastic nuclei
+        >>> w, _ = fit_graph(nuc, "distband", threshold=100)
+        >>> # Compute the nuclei areas
+        >>> nuc = shape_metric(nuc, ["area"])
+        >>> # Perform LISA clustering on the area feature
+        >>> labels = lisa_clustering(nuc, w, feat="area", seed=4, permutations=999)
+        >>> print(labels)
+            array(['LL', 'ns', 'LL', ..., 'ns', 'ns', 'ns'], dtype='<U2')
     """
     lisa = esda.Moran_Local(
         gdf[feat],

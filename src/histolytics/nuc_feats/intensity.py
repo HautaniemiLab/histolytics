@@ -32,6 +32,22 @@ def grayscale_intensity(
             Standard deviation of each object. Shape (N,).
         quantile_vals (np.ndarray):
             Quantile values for each object. Shape (N, len(quantiles)).
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>> from histolytics.nuc_feats.intensity import grayscale_intensity
+        >>>
+        >>> he_image = hgsc_cancer_he()
+        >>> nuclei = hgsc_cancer_nuclei()
+        >>> neoplastic_nuclei = nuclei[nuclei["class_name"] == "neoplastic"]
+        >>> inst_mask = gdf2inst(
+        ...     neoplastic_nuclei, width=he_image.shape[1], height=he_image.shape[0]
+        ... )
+        >>> # Extract grayscale intensity features from the neoplastic nuclei
+        >>> means, stds, quantiles = grayscale_intensity(he_image, inst_mask)
+        >>> print(means.mean())
+            0.21791865214466258
     """
     if label is not None and img.shape[:2] != label.shape:
         raise ValueError(
@@ -79,11 +95,28 @@ def rgb_intensity(
 
     Returns:
         means (Tuple[np.ndarray, np.ndarray, np.ndarray]):
-            Mean intensity of each object for each channel. Each array shape (N,).
+            Mean intensity of each object for each channel (RGB). Each array shape (N,).
         std (Tuple[np.ndarray, np.ndarray, np.ndarray]):
-            Standard deviation of each object for each channel. Each array shape (N,).
+            Standard deviation of each object for each channel (RGB). Each array shape (N,).
         quantile_vals (Tuple[np.ndarray, np.ndarray, np.ndarray]):
-            Quantile values for each object for each channel. Each array shape (N, len(quantiles)).
+            Quantile values for each object for each channel (RGB). Each array shape (N, len(quantiles)).
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>> from histolytics.nuc_feats.intensity import rgb_intensity
+        >>>
+        >>> he_image = hgsc_cancer_he()
+        >>> nuclei = hgsc_cancer_nuclei()
+        >>> neoplastic_nuclei = nuclei[nuclei["class_name"] == "neoplastic"]
+        >>> inst_mask = gdf2inst(
+        ...     neoplastic_nuclei, width=he_image.shape[1], height=he_image.shape[0]
+        ... )
+        >>> # Extract RGB intensity features from the neoplastic nuclei
+        >>> means, stds, quantiles = rgb_intensity(he_image, inst_mask)
+        >>> # RED channel mean intensity
+        >>> print(means[0].mean())
+            0.3659444588664546
     """
     if label is not None and img.shape[:2] != label.shape:
         raise ValueError(

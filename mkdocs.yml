@@ -103,6 +103,8 @@ nav:
       - hgsc_tissue_wsi: api/data/hgsc_tissue_wsi.md
       - hgsc_cancer_nuclei: api/data/hgsc_cancer_nuclei.md
       - hgsc_cancer_he: api/data/hgsc_cancer_he.md
+      - hgsc_cancer_inst_mask: api/data/hgsc_cancer_inst_mask.md
+      - hgsc_cancer_type_mask: api/data/hgsc_cancer_type_mask.md
       - hgsc_stroma_nuclei: api/data/hgsc_stroma_nuclei.md
       - hgsc_stroma_he: api/data/hgsc_stroma_he.md
     - spatial_ops:
@@ -180,8 +182,24 @@ nav:
         - tissue_components: api/stroma_feats/tissue_components.md
         - kmeans_img: api/stroma_feats/kmeans_img.md
         - hed_decompose: api/stroma_feats/hed_decompose.md
+    - nuc_feats:
+      - chromatin_clumps: api/nuc_feats/chromatin_clumps.md
+      - grayscale_intensity: api/nuc_feats/grayscale_intensity.md
+      - rgb_intensity: api/nuc_feats/rgb_intensity.md
     - wsi:
       - SlideReader: api/wsi/slide_reader.md
       - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
       - utils:
         - get_sub_grids: api/wsi/get_sub_grids.md
+    - utils:
+      - gdf:
+        - gdf_apply: api/utils/gdf_apply.md
+        - gdf_to_polars: api/utils/gdf_to_polars.md
+        - get_centroid_numpy: api/utils/get_centroid_numpy.md
+        - set_geom_precision: api/utils/set_geom_precision.md
+        - set_uid: api/utils/set_uid.md
+      - raster:
+        - sem2gdf: api/utils/sem2gdf.md
+        - inst2gdf: api/utils/inst2gdf.md
+        - gdf2inst: api/utils/gdf2inst.md
+        - gdf2sem: api/utils/gdf2sem.md
