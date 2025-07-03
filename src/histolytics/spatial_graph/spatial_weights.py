@@ -25,7 +25,7 @@ def fit_delaunay(
             Input GeoDataFrame.
         id_col (str):
             The column name to use as the ID for the Delaunay triangulation.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the Delaunay constructor.
@@ -59,9 +59,9 @@ def fit_knn(
             Input GeoDataFrame.
         id_col (str):
             The column name to use as the ID for the KNN.
-        k (int, default=5):
+        k (int):
             The number of nearest neighbors to consider.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the KNN constructor.
@@ -87,7 +87,7 @@ def fit_rel_nhood(
             Input GeoDataFrame.
         id_col (str):
             The column name to use as the ID for the Relative Neighborhood.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the RelativeNeighborhood constructor.
@@ -119,7 +119,7 @@ def fit_distband(
             The distance threshold for the weights.
         id_col (str):
             The column name to use as the ID for the Distance Band.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the DistanceBand constructor.
@@ -149,7 +149,7 @@ def fit_gabriel(
             Input GeoDataFrame.
         id_col (str):
             The column name to use as the ID for the Gabriel polygons.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the Gabriel constructor.
@@ -175,7 +175,7 @@ def fit_voronoi(
             Input GeoDataFrame.
         id_col (str):
             The column name to use as the ID for the Voronoi polygons.
-        silence_warnings (bool, default=True):
+        silence_warnings (bool):
             Whether to silence warnings from libpysal.
         **kwargs (Any):
             Additional keyword arguments passed to the Voronoi constructor.

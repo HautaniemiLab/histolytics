@@ -54,23 +54,23 @@ class CellposePanoptic(BaseModelPanoptic):
     ) -> None:
         """CellposePanoptic model for panoptic segmentation of nuclei and tissues.
 
-        Cellpose:
-        - https://www.nature.com/articles/s41592-020-01018-x
+        Note:
+            - [Cellpose article](https://www.nature.com/articles/s41592-020-01018-x)
 
         Parameters:
             n_nuc_classes (int):
                 Number of nuclei type classes.
             n_tissue_classes (int):
                 Number of tissue type classes.
-            enc_name (str, default="efficientnet_b5"):
+            enc_name (str):
                 Name of the pytorch-image-models encoder.
-            enc_pretrain (bool, default=True):
+            enc_pretrain (bool):
                 Whether to use pretrained weights in the encoder.
-            enc_freeze (bool, default=False):
+            enc_freeze (bool):
                 Freeze encoder weights for training.
-            device (torch.device, default=torch.device("cuda")):
+            device (torch.device):
                 Device to run the model on. Default is "cuda".
-            model_kwargs (Dict[str, Any], default={}):
+            model_kwargs (Dict[str, Any]):
                 Additional keyword arguments for the model.
         """
         super().__init__()

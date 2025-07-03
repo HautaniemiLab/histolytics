@@ -34,16 +34,16 @@ def density_clustering(
     Parameters:
         gdf (gpd.GeoDataFrame):
             Input geo dataframe with a properly set geometry column.
-        eps (float, default=350.0):
+        eps (float):
             The maximum distance between two samples for one to be considered as in the
             neighborhood of the other. This is not a maximum bound on the distances of
             gdf within a cluster.
-        min_samples (int, default=30):
+        min_samples (int):
             The number of samples (or total weight) in a neighborhood for a point to be
             considered as a core point. This includes the point itself.
-        method (str, default="dbscan"):
+        method (str):
             The clustering method to be used. Allowed: ("dbscan", "adbscan", "optics").
-        num_processes (int, default=-1):
+        num_processes (int):
             The number of parallel processes. None means 1. -1 means using all
             processors.
         **kwargs (Dict[str, Any]):

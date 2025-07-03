@@ -50,13 +50,13 @@ def local_diversity(
             The name of the column in the gdf for which the diversity is computed.
             You can also pass in a list of columns, in which case the diversity is
             computed for each column.
-        id_col (str, default=None):
+        id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
         metrics (Tuple[str, ...], default=("simpson_index",)):
             A Tuple/List of diversity metrics. Allowed metrics: "shannon_index",
             "simpson_index", "gini_index", "theil_index".
-        scheme (str, default="fisherjenks"):
+        scheme (str):
             `mapclassify` classification scheme. Defaults to "FisherJenks". One of:
             - quantiles
             - boxplot
@@ -74,20 +74,20 @@ def local_diversity(
             - prettybreaks
             - stdmean
             - userdefined
-        k (int, default=5):
+        k (int):
             Number of classes for the classification scheme. Defaults to 5.
-        parallel (bool, default=False):
+        parallel (bool):
             Flag whether to use parallel apply operations when computing the diversities.
             Defaults to False.
-        num_processes (int, default=1):
+        num_processes (int):
             The number of processes to use when parallel=True. If -1,
             this will use all available cores.
-        rm_nhood_cols (bool, default=True):
+        rm_nhood_cols (bool):
             Flag, whether to remove the extra neighborhood columns from the result gdf.
             Defaults to True.
-        col_prefix (str, default=None):
+        col_prefix (str):
             Prefix for the new column names. Defaults to None.
-        create_copy (bool, default=True):
+        create_copy (bool):
             Flag whether to create a copy of the input gdf or not. Defaults to True.
 
     Raises:

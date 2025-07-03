@@ -28,7 +28,7 @@ def chromatin_clumps(
             Mean intensity of the image.
         std (float):
             Standard deviation of the image.
-        erode (bool, default=True):
+        erode (bool):
             Whether to erode the chromatin clumps after thresholding.
 
     Returns:

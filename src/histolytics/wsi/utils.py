@@ -23,7 +23,7 @@ def get_sub_grids(
             List of grid bbox coordinates in (x, y, w, h) format.
         inds (Tuple[int, ...], default=None):
             Indices of the connected components to extract.
-        min_size (int, default=1):
+        min_size (int):
             Minimum size of the sub grid.
 
     Returns:

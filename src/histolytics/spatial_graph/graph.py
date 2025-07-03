@@ -33,17 +33,17 @@ def fit_graph(
         method (str):
             Type of spatial graph to fit. Options are: "delaunay", "knn", "rel_nhood",
             "distband", "gabriel", "voronoi".
-        id_col (str, default="uid):
+        id_col (str):
             Column name for unique identifiers in the GeoDataFrame.
-        threshold (int, default=100):
+        threshold (int):
             Distance threshold (in pixels) for distance-based graphs.
-        use_polars (bool, default=False):
+        use_polars (bool):
             If True, use Polars for computations during gdf conversion. This can speed
             up the process for large datasets. Requires `polars` to be installed.
-        use_parallel (bool, default=False):
+        use_parallel (bool):
             If True, use parallel processing for computations during gdf conversion. If
             `use_polars` is True, this will be ignored.
-        num_processes (int, default=1):
+        num_processes (int):
             Number of processes to use for parallel processing. If -1, uses all
             available cores. Ignored if `use_polars` is True. If `use_parallel` is
             False, this will be ignored.

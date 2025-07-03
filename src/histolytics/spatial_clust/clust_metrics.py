@@ -151,10 +151,10 @@ def cluster_feats(
     Parameters:
         gdf (gpd.GeoDataFrame):
             The GeoDataFrame containing the cluster data.
-        hull_type (str, default="alpha_shape"):
+        hull_type (str):
             The type of hull to compute. One of: "alpha_shape", "convex_hull", "ellipse".
             The hull is used to compute the area and orientation of the cluster.
-        normalize_orientation (bool, default=True):
+        normalize_orientation (bool):
             Whether to normalize the orientation angle to be within [0, 90].
         **kwargs (Any):
             Additional keyword arguments for the hull computation

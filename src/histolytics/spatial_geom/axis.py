@@ -22,7 +22,7 @@ def axis_len(geom: BaseGeometry, which: str = "major", **kwargs) -> float:
     Parameters:
         geom (BaseGeometry):
             Input shapely geometry object.
-        which (str, default="major"):
+        which (str):
             One of ("major", "minor").
 
     Returns:
@@ -54,9 +54,9 @@ def axis_angle(
     Parameters:
         geom (BaseGeometry):
             Input shapely geometry object.
-        which (str, default="major"):
+        which (str):
             One of ("major", "minor").
-        normalize (bool, default=True):
+        normalize (bool):
             Whether to normalize the angle to be within [0, 90]. Otherwise, the angle will be
             in the range [0, 180].
 

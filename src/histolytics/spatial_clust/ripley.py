@@ -59,9 +59,9 @@ def get_nn_distances(
     Parameters:
         coords (np.ndarray):
             An array containing xy-centroid coordinates. Shape (N, 2).
-        k (int, default=1):
+        k (int):
             The number of nearest neighbors to find.
-        metric (str, default="euclidean"):
+        metric (str):
             The distance metric to use.
 
     Returns:
@@ -95,7 +95,7 @@ def ripley_g(
         support (np.ndarray):
             The support at which to calculate the Ripley's K function. Shape (N, ).
             Contains the distances at which to calculate the K function.
-        dist_metric (str, default="euclidean"):
+        dist_metric (str):
             The distance metric to use.
 
     Returns:
@@ -137,9 +137,9 @@ def ripley_k(
         support (np.ndarray):
             The support at which to calculate the Ripley's K function. Shape (N, ).
             Contains the distances at which to calculate the K function.
-        dist_metric (str, default="euclidean"):
+        dist_metric (str):
             The distance metric to use.
-        hull_poly (Polygon | None, default=None):
+        hull_poly (Polygon | None):
             A Polygon object representing the hull of the points. If None, the convex hull
             will be calculated from the coordinates.
 
@@ -184,12 +184,12 @@ def ripley_l(
         support (np.ndarray):
             The support at which to calculate the Ripley's K function. Shape (N, ).
             Contains the distances at which to calculate the K function.
-        dist_metric (str, default="euclidean"):
+        dist_metric (str):
             The distance metric to use.
-        hull_poly (Polygon | None, default=None):
+        hull_poly (Polygon | None):
             A Polygon object representing the hull of the points. If None, the convex hull
             will be calculated from the coordinates.
-        linearized (bool, default=False):
+        linearized (bool):
             If True, the L function is linearized by subtracting the support distances.
 
     Returns:
@@ -233,12 +233,12 @@ def poisson(
             Coordinates of the points to simulate around. Shape: (n_points, 2).
         n_obs (int):
             Number of observations to simulate.
-        n_sim (int, default=1):
+        n_sim (int):
             Number of simulations to perform.
-        hull_poly (Polygon | None, default=None):
+        hull_poly (Polygon | None):
             A Polygon object representing the hull of the points. If None, the hull
             will be calculated from the coordinates.
-        hull_type (str, default="convex_hull"):
+        hull_type (str):
             Type of hull to calculate if `hull_poly` is None. Options are "convex_hull"
             "alpha_shape", "ellipse".
 
@@ -288,11 +288,11 @@ def ripley_test(
             A GeoDataFrame containing the segmented objects.
         distances (np.ndarray):
             An array of distances at which to compute the Ripley alphabet function.
-        ripley_alphabet (str, default="g"):
+        ripley_alphabet (str):
             The Ripley alphabet statistic to compute. Must be one of "k", "g", or "l".
-        n_sim (int, default=100):
+        n_sim (int):
             The number of simulations to perform for the random point process.
-        hull_type (str, default="bbox"):
+        hull_type (str):
             The type of hull to use for the Ripley test. Options are "convex_hull",
             "alpha_shape", "ellipse", or "bbox".
 

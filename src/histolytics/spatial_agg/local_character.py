@@ -37,27 +37,27 @@ def local_character(
             Libpysal spatial weights object.
         val_cols (Tuple[str, ...]):
             The name of the columns in the gdf for which the reduction is computed.
-        id_col (str, default=None):
+        id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
         reductions (Tuple[str, ...], default=("mean",)):
             A list of reduction methods for the neighborhood. One of
             "sum", "mean", "median", "min", "max", "std". Defaults to ("mean", ).
-        weight_by_area (bool, default=False):
+        weight_by_area (bool):
             Flag whether to weight the neighborhood values by the area of the object.
             Defaults to False.
-        parallel (bool, default=False):
+        parallel (bool):
             Flag whether to use parallel apply operations when computing the character.
             Defaults to False.
-        num_processes (int, default=1):
+        num_processes (int):
             The number of processes to use when parallel=True. If -1,
             this will use all available cores.
-        rm_nhood_cols (bool, default=True):
+        rm_nhood_cols (bool):
             Flag, whether to remove the extra neighborhood columns from the result gdf.
             Defaults to True.
-        col_prefix (str, default=None):
+        col_prefix (str):
             Prefix for the new column names.
-        create_copy (bool, default=True):
+        create_copy (bool):
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 

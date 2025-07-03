@@ -30,14 +30,14 @@ def local_vals(
             The column name in `gdf` from which to derive neighborhood values.
         new_col_name (str):
             The name of the new column to store neighborhood values.
-        id_col (str, default=None):
+        id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
-        parallel (bool, default=False):
+        parallel (bool):
             Whether to apply the function in parallel. Defaults to False.
-        num_processes (int, default=1):
+        num_processes (int):
             The number of processes to use if `parallel` is True. Defaults to 1.
-        create_copy (bool, default=True):
+        create_copy (bool):
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 
@@ -133,17 +133,17 @@ def local_type_counts(
             A libpysal weights object defining the spatial relationships.
         class_name (str):
             The name of the class for which to count local types.
-        id_col (str, default=None):
+        id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
-        frac (bool, default=False):
+        frac (bool):
             Whether to return the counts as fractions of the total neighborhood size.
             Defaults to False.
-        parallel (bool, default=False):
+        parallel (bool):
             Whether to apply the function in parallel. Defaults to False.
-        num_processes (int, default=1):
+        num_processes (int):
             The number of processes to use if `parallel` is True. Defaults to 1.
-        create_copy (bool, default=True):
+        create_copy (bool):
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 

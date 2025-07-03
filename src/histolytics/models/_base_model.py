@@ -101,12 +101,12 @@ class BaseModelPanoptic:
         Parameters:
             x (Union[torch.Tensor, np.ndarray, Image]):
                 Input image (H, W, C) or input image batch (B, C, H, W).
-            use_sliding_win (bool, default=False):
+            use_sliding_win (bool):
                 Whether to use sliding window for prediction.
             window_size (Tuple[int, int], default=None):
                 The height and width of the sliding window. If `use_sliding_win` is False
                 this argument is ignored.
-            stride (int, default=None):
+            stride (int):
                 The stride for the sliding window. If `use_sliding_win` is False this
                 argument is ignored.
 
@@ -155,11 +155,11 @@ class BaseModelPanoptic:
         Parameters:
             x (Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]):
                 The output of the .predict() method.
-            use_async_postproc (bool, default=True):
+            use_async_postproc (bool):
                 Whether to use async post-processing. Can give some run-time benefits.
-            start_method (str, default="threading"):
+            start_method (str):
                 The start method. One of: "threading", "fork", "spawn". See mpire docs.
-            n_jobs (int, default=4):
+            n_jobs (int):
                 The number of workers for the post-processing.
             save_paths_nuc (List[Union[Path, str]], default=None):
                 The paths to save the panlei masks. If None, the masks are not saved.

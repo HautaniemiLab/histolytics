@@ -91,7 +91,7 @@ def cluster_tendency(
     Parameters:
         gdf (gpd.GeoDataFrame):
             Input GeoDataFrame with a properly set geometry column.
-        centroid_method (str, default="mean"):
+        centroid_method (str):
             The method to use for calculating the centroid. Options are:
             - "mean": Calculate the mean center of the centroids.
             - "median": Calculate the median center of the centroids.

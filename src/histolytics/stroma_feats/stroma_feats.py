@@ -21,7 +21,7 @@ def stromal_intensity_features(
     Parameters:
         img (np.ndarray):
             The input image. Shape (H, W, 3).
-        label (np.ndarray, default=None):
+        label (np.ndarray):
             The nuclei mask. Shape (H, W). This is used to mask out the nuclei when
             computing stromal features. If None, the entire image is used.
         quantiles (tuple or list, optional):

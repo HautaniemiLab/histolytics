@@ -50,9 +50,9 @@ def kmeans_img(img: np.ndarray, n_clust: int = 3, seed: int = 42) -> np.ndarray:
     Parameters:
         img (np.ndarray):
             Image to cluster. Shape (H, W, 3).
-        n_clust (int, default=3):
+        n_clust (int):
             Number of clusters.
-        seed (int, default=42):
+        seed (int):
             Random seed.
 
     Returns:

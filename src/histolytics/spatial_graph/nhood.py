@@ -33,10 +33,10 @@ def nhood(
             Input node uid.
         spatial_weights (libysal.weights.W):
             Libpysal spatial weights object.
-        include_self (bool, default=True):
+        include_self (bool):
             Flag, whether to include the node itself in the neighborhood.
             Defaults to True.
-        ret_n_neighbors (bool, default=False):
+        ret_n_neighbors (bool):
             If True, instead of returning a sequence of the neighbor node uids
             returns just the number of neighbors. Defaults to False.
 
@@ -130,7 +130,7 @@ def nhood_type_count(
             A array/list (int or str) containing a category for each value in the data.
         value (int | str):
             The specific category.
-        frac (bool, default=True):
+        frac (bool):
             Flag, whether to return the fraction instead of the count. Defaults to True.
         **kwargs (Dict[str, Any])]):
             Additional keyword arguments. Not used.
@@ -181,9 +181,9 @@ def nhood_dists(
             the center node.
         centroids (pd.Series):
             A pd.Series array containing the centroid Points of the full gdf.
-        ids (pd.Series, default=None):
+        ids (pd.Series):
             A pd.Series array containing the ids of the full gdf.
-        invert (bool, default=False):
+        invert (bool):
             Flag, whether to invert the distances. E.g. 1/dists. Defaults to False.
 
     Returns:

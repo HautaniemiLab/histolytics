@@ -169,7 +169,7 @@ def line_metric(
             A Tuple/List of line metrics.
         parallel (bool):
             Flag whether to use parallel apply operations when computing the diversities.
-        num_processes (int, default=1):
+        num_processes (int):
             The number of processes to use when parallel=True. If -1,
             this will use all available cores.
         col_prefix (str):

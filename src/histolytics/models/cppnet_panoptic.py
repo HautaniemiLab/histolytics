@@ -70,17 +70,17 @@ class CPPNetPanoptic(BaseModelPanoptic):
                 Number of nuclei type classes.
             n_tissue_classes (int):
                 Number of tissue type classes.
-            n_rays (int, default=32):
+            n_rays (int):
                 Number of rays for the Stardist model.
-            enc_name (str, default="efficientnet_b5"):
+            enc_name (str):
                 Name of the pytorch-image-models encoder.
-            enc_pretrain (bool, default=True):
+            enc_pretrain (bool):
                 Whether to use pretrained weights in the encoder.
-            enc_freeze (bool, default=False):
+            enc_freeze (bool):
                 Freeze encoder weights for training.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
-            model_kwargs (dict, default={}):
+            model_kwargs (dict):
                 Additional keyword arguments for the model.
         """
         super().__init__()

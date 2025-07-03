@@ -69,7 +69,7 @@ def get_interfaces(
         areas (gpd.GeoDataFrame):
             A geodataframe containing polygons (tissue areas) that might intersect
             with the `buffer_area`.
-        buffer_dist (int, default=200):
+        buffer_dist (int):
             The radius (in pixels) of the buffer
 
 

@@ -59,13 +59,13 @@ def weights2gdf(
             GeoDataFrame of the nodes.
         w (W):
             PySAL weights object.
-        use_polars (bool, default=False):
+        use_polars (bool):
             Whether to use Polars for computations. For large datasets, this can
             significantly speed up the process. Note that this requires `polars`
             to be installed. If set to True, the `parallel` argument will be ignored.
-        parallel (bool, default=False):
+        parallel (bool):
             Whether to use parallel processing.
-        num_processes (int, default=1):
+        num_processes (int):
             Number of processes to use for parallel processing. If -1, uses all
             available cores. Ignored if `use_polars` is True. If `parallel` is
             False, this will be ignored.

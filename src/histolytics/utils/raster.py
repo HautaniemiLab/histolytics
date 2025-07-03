@@ -82,21 +82,21 @@ def inst2gdf(
     Parameters:
         inst_map (np.ndarray):
             An instance segmentation mask. Shape (H, W).
-        type_map (np.ndarray, default=None):
+        type_map (np.ndarray):
             A type segmentation mask. Shape (H, W). If provided, the types will be
             included in the resulting GeoDataFrame in column 'class_name'.
-        xoff (int, default=None):
+        xoff (int):
             The x offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
-        yoff (int, default=None):
+        yoff (int):
             The y offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
         class_dict (Dict[int, str], default=None):
             A dictionary mapping class indices to class names.
             e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
-        min_size (int, default=15):
+        min_size (int):
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
-        smooth_func (Callable, default=gaussian_smooth):
+        smooth_func (Callable):
             A function to smooth the polygons. The function should take a shapely Polygon
             as input and return a shapely Polygon.
 
@@ -180,18 +180,18 @@ def sem2gdf(
     Parameters:
         sem_map (np.ndarray):
             A semantic segmentation mask. Shape (H, W).
-        xoff (int, default=None):
+        xoff (int):
             The x offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
-        yoff (int, default=None):
+        yoff (int):
             The y offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
         class_dict (Dict[int, str], default=None):
             A dictionary mapping class indices to class names.
             e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
-        min_size (int, default=15):
+        min_size (int):
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
-        smooth_func (Callable, default=gaussian_smooth):
+        smooth_func (Callable):
             A function to smooth the polygons. The function should take a shapely Polygon
             as input and return a shapely Polygon.
 
@@ -261,19 +261,19 @@ def gdf2inst(
     Parameters:
         gdf (gpd.GeoDataFrame):
             GeoDataFrame to convert to an instance segmentation mask.
-        xoff (int, default=0):
+        xoff (int):
             X offset. This is used to translate the geometries in the GeoDataFrame to
             burn the geometries in correctly to the raster mask.
-        yoff (int, default=0):
+        yoff (int):
             Y offset. This is used to translate the geometries in the GeoDataFrame to
             burn the geometries in correctly to the raster mask.
-        width (int, default=None):
+        width (int):
             Width of the output. This should match with the underlying image width.
             If None, the width will be calculated from the input gdf.
-        height (int, default=None):
+        height (int):
             Height of the output. This should match with the underlying image height.
             If None, the height will be calculated from the input gdf.
-        reset_index (bool, default=False):
+        reset_index (bool):
             Whether to reset the index of the output GeoDataFrame.
 
     Returns:
@@ -339,20 +339,20 @@ def gdf2sem(
     Parameters:
         gdf (gpd.GeoDataFrame):
             GeoDataFrame with a "class_name" column.
-        xoff (int, default=0):
+        xoff (int):
             X offset. This is used to translate the geometries in the GeoDataFrame to
             burn the geometries in correctly to the raster mask.
-        yoff (int, default=0):
+        yoff (int):
             Y offset. This is used to translate the geometries in the GeoDataFrame to
             burn the geometries in correctly to the raster mask.
         class_dict (Dict[str, int], default=None):
             Dictionary mapping class names to integers. e.g. {"neoplastic":1, "immune":2}
             If None, the classes will be mapped to integers in the order they appear in
             the GeoDataFrame.
-        width (int, default=None):
+        width (int):
             Width of the output. This should match with the underlying image width.
             If None, the width will be calculated from the input gdf.
-        height (int, default=None):
+        height (int):
             Height of the output. This should match with the underlying image height.
             If None, the height will be calculated from the input gdf.
 

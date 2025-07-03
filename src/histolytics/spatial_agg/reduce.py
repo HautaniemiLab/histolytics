@@ -18,7 +18,7 @@ def reduce(
             The input value-vector. Shape (n, )
         areas (Sequence, optional):
             The areas of the spatial objects. This is for weighting. Optional.
-        how (str, default="sum"):
+        how (str):
             The reduction method for the neighborhood. One of:
             "sum", "mean", "median", "min", "max", "std".
 

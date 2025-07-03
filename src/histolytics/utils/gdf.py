@@ -43,18 +43,18 @@ def gdf_apply(
             Input GeoDataFrame.
         func (Callable):
             A callable function.
-        axis (int, default=1):
+        axis (int):
             The gdf axis to apply the function on.axis=1 means rowise. axis=0
             means columnwise.
-        parallel (bool, default=True):
+        parallel (bool):
             Flag, whether to parallelize the operation with `pandarallel`.
-        num_processes (int, default=-1):
+        num_processes (int):
             The number of processes to use when parallel=True. If -1,
             this will use all available cores.
-        pbar (bool, default=False):
+        pbar (bool):
             Show progress bar when executing in parallel mode. Ignored if
             `parallel=False`.
-        columns (Optional[Tuple[str, ...]], default=None):
+        columns (Optional[Tuple[str, ...]]):
             A tuple of column names to apply the function on. If None,
             this will apply the function to all columns.
         **kwargs (Dict[str, Any]): Arbitrary keyword args for the `func` callable.
@@ -114,11 +114,11 @@ def set_uid(
     Parameters:
         gdf (gpd.GeoDataFrame):
             Input Geodataframe.
-        start_ix (int, default=0):
+        start_ix (int):
             The starting index of the id column.
-        id_col (str, default="uid"):
+        id_col (str):
             The name of the column that will be used or set to the id.
-        drop (bool, default=False):
+        drop (bool):
             Drop the column after it is added to index.
 
     Returns:
@@ -165,7 +165,7 @@ def set_geom_precision(geom: BaseGeometry, precision: int = 6) -> BaseGeometry:
     Parameters:
         geom (BaseGeometry):
             Input Shapely geometry.
-        precision (int, default=6):
+        precision (int):
             The number of decimal places to round the coordinates to.
 
     Returns:
@@ -219,7 +219,7 @@ def get_centroid_numpy(gdf: gpd.GeoDataFrame) -> np.ndarray:
     return shapely.get_coordinates(gdf.centroid)
 
 
-def gdf_to_polars(gdf):
+def gdf_to_polars(gdf: gpd.GeoDataFrame):
     """Convert a GeoDataFrame to a polars DataFrame while preserving Shapely geometries.
 
     Parameters:
@@ -230,7 +230,7 @@ def gdf_to_polars(gdf):
         ImportError: If polars is not installed.
 
     Returns:
-        polars.DataFrame with Shapely objects preserved as Python objects
+        pl.DataFrame: with Shapely objects preserved as Python objects
 
     Examples:
         >>> from histolytics.utils.gdf import gdf_to_polars

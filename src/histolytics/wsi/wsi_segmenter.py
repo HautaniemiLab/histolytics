@@ -319,9 +319,9 @@ class WsiPanopticSegmenter:
             dst (str):
                 The destination path for the output file. Allowed formats are
                 '.parquet', '.geojson', and '.feather'.
-            clear_in_dir (bool, default=False):
+            clear_in_dir (bool):
                 Whether to clear the source directory after merging.
-            simplify_level (float, default=0.5):
+            simplify_level (float):
                 The level of simplification to apply to the merged instances.
         """
         if not self._has_processed:
@@ -352,9 +352,9 @@ class WsiPanopticSegmenter:
             dst (str):
                 The destination path for the output file. Allowed formats are
                 '.parquet', '.geojson', and '.feather'.
-            clear_in_dir (bool, default=False):
+            clear_in_dir (bool):
                 Whether to clear the source directory after merging.
-            simplify_level (float, default=1):
+            simplify_level (float):
                 The level of simplification to apply to the merged tissues.
         """
         if not self._has_processed:

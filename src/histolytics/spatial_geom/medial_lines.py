@@ -25,9 +25,9 @@ def _equal_interval_points(obj: Any, n: int = None, delta: float = None):
     Parameters:
         obj (Any):
             Any shapely object that has length property.
-        n (int, default=None):
+        n (int):
             Number of points, defaults to None
-        delta (float, default=None):
+        delta (float):
             Distance between points, defaults to None
 
     Returns:
@@ -115,9 +115,9 @@ def medial_lines(
     Parameters:
         poly (shapely.geometry.Polygon):
             Polygon to compute the medial lines of.
-        num_points (int, default=100):
+        num_points (int):
             Number of resampled points in the input polygon, defaults to None
-        delta (float, default=0.3):
+        delta (float):
             Distance between resampled polygon points, defaults to None. Ignored
             if n is not None.
 

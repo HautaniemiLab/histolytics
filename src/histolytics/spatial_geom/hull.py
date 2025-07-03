@@ -52,7 +52,7 @@ def hull(xy: np.ndarray, hull_type: str = "alpha_shape", **kwargs: Any) -> Polyg
     Parameters:
         xy (np.ndarray):
             An array of shape (N, 2) representing N 2D points.
-        hull_type (str, default="alpha_shape"):
+        hull_type (str):
             The type of hull to compute. Must be one of
             "alpha_shape", "convex_hull", "bbox", or "ellipse".
         **kwargs (Any):

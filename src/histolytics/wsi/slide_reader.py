@@ -61,7 +61,7 @@ class SlideReader:
         Parameters:
             path (str, Path):
                 Path to slide image.
-            backend (str, default="OPENSLIDE"):
+            backend (str):
                 Backend to use for reading slide images. One of:
 
                 - "OPENSLIDE": Uses OpenSlideReader.
@@ -158,7 +158,7 @@ class SlideReader:
         Parameters:
             xywh (tuple[int, int, int, int]):
                 Coordinates for the region.
-            level (int, default=0):
+            level (int):
                 Slide pyramid level to read from.
 
         Raises:
@@ -175,7 +175,7 @@ class SlideReader:
         If one isn't found, return the last pyramid level.
 
         Parameters:
-            max_dimension (int, default=4096):
+            max_dimension (int):
                 Maximum dimension for the level.
 
         Returns:
@@ -217,17 +217,17 @@ class SlideReader:
         """Detect tissue from slide pyramid level image.
 
         Parameters:
-            level (int, default=None):
+            level (int):
                 Slide pyramid level to use for tissue detection. If None, uses the
                 `level_from_max_dimension` method.
-            threshold (int, default=None):
+            threshold (int):
                 Threshold for tissue detection. If set, will detect tissue by global
                 thresholding. Otherwise Otsu's method is used to find a threshold.
-            multiplier (float, default=1.05):
+            multiplier (float):
                 Otsu's method finds an optimal threshold by minimizing the weighted
                 within-class variance. This threshold is then multiplied with
                 `multiplier`. Ignored if `threshold` is not None.
-            sigma (float, default=0.0):
+            sigma (float):
                 Sigma for gaussian blurring.
 
         Raises:
@@ -265,20 +265,20 @@ class SlideReader:
         Parameters:
             width (int):
                 Width of a tile.
-            tissue_mask (np.ndarray, default=None):
+            tissue_mask (np.ndarray):
                 Tissue mask for filtering tiles with too much background. If None,
                 the filtering is disabled.
-            annotations (Optional[Polygon], default=None):
+            annotations (Optional[Polygon]):
                 Annotations to filter tiles by. If provided, only tiles that intersect
                 with the annotations will be returned.
-            height (int, default=None):
+            height (int):
                 Height of a tile. If None, will be set to `width`.
-            overlap (float, default=0.0):
+            overlap (float):
                 Overlap between neighbouring tiles.
-            max_background (float, default=0.95):
+            max_background (float):
                 Maximum proportion of background in tiles. Ignored if `tissue_mask`
                 is None.
-            out_of_bounds (bool, default=True):
+            out_of_bounds (bool):
                 Keep tiles which contain regions outside of the image.
 
         Raises:
@@ -357,15 +357,15 @@ class SlideReader:
                 Tissue mask of the slide. It's recommended to increase `sigma` value when
                 detecting tissue to remove non-TMA spots from the mask. Rest of the areas
                 can be handled with the following arguments.
-            min_area_pixel (int, default=10):
+            min_area_pixel (int):
                 Minimum pixel area for contours.
-            max_area_pixel (int, default=None):
+            max_area_pixel (int):
                 Maximum pixel area for contours.
-            min_area_relative (float, default=0.2):
+            min_area_relative (float):
                 Relative minimum contour area, calculated from the median contour area
                 after filtering contours with `[min,max]_pixel` arguments
                 (`min_area_relative * median(contour_areas)`).
-            max_area_relative (float, default=2.0):
+            max_area_relative (float):
                 Relative maximum contour area, calculated from the median contour area
                 after filtering contours with `[min,max]_pixel` arguments
                 (`max_area_relative * median(contour_areas)`).
@@ -407,7 +407,7 @@ class SlideReader:
                 Input image.
             coordinates (Iterator[tuple[int, int, int, int]]):
                 Coordinates to annotate.
-            linewidth (int, default=1):
+            linewidth (int):
                 Width of rectangle lines.
 
         Returns:

@@ -22,12 +22,12 @@ def extract_collagen_fibers(
     Parameters:
         img (np.ndarray):
             The input image. Shape (H, W, 3).
-        label (np.ndarray, default=None):
+        label (np.ndarray):
             The nuclei mask. Shape (H, W). This is used to mask out the nuclei when
             extracting collagen fibers. If None, the entire image is used.
-        sigma (float, default=2.5):
+        sigma (float):
             The sigma parameter for the Canny edge detector.
-        rm_bg (bool, default=False):
+        rm_bg (bool):
             Whether to remove the background component from the edges.
 
     Returns:

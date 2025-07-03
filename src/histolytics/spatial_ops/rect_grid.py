@@ -24,9 +24,9 @@ def rect_grid(
             to fit the grid.
         resolution (Tuple[int, int], default=(256, 256)):
             Patch size/resolution of the grid (in pixels).
-        overlap (int, default=0):
+        overlap (int):
             overlap of the cells in the grid (in percentages).
-        predicate (str, default="intersects"):
+        predicate (str):
             Predicate to use for the spatial join, by default "intersects".
             Allowed values are "intersects" and "within".
 
