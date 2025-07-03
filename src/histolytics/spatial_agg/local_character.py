@@ -24,8 +24,12 @@ def local_character(
     col_prefix: str = None,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Compute the local sum/mean/median/min/max/std/var of a specified metric for each
-    neighborhood of geometry objects in a gdf.
+    """Compute the summary characteristics of neighboring feature values
+
+    Note:
+        Neighborhoods are defined by the `spatial_weights` object, which can be created
+        with the `fit_graph` function. The function should be applied to the input
+        GeoDataFrame before using this function.
 
     Note:
         Option to weight the nhood values by their area before reductions.
@@ -40,9 +44,9 @@ def local_character(
         id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
-        reductions (Tuple[str, ...], default=("mean",)):
-            A list of reduction methods for the neighborhood. One of
-            "sum", "mean", "median", "min", "max", "std". Defaults to ("mean", ).
+        reductions (Tuple[str, ...]):
+            A list of reduction methods for the neighborhood feature values. Allowed are
+            "sum", "mean", "median", "min", "max", "std".
         weight_by_area (bool):
             Flag whether to weight the neighborhood values by the area of the object.
             Defaults to False.
@@ -61,7 +65,8 @@ def local_character(
             Flag whether to create a copy of the input gdf and return that.
             Defaults to True.
 
-    Returns (gpd.GeoDataFrame):
+    Returns:
+        gpd.GeoDataFrame:
             The input geodataframe with computed character column added.
 
     Examples:

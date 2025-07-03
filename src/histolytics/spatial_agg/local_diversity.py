@@ -26,7 +26,12 @@ def local_diversity(
     col_prefix: str = None,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Compute the local diversity/heterogenity metric for cell neighborhood.
+    """Compute the diversity of neighboring feature values for every object in a GeoDataFrame.
+
+    Note:
+        Neighborhoods are defined by the `spatial_weights` object, which can be created
+        with the `fit_graph` function. The function should be applied to the input
+        GeoDataFrame before using this function.
 
     Note:
         Allowed diversity metrics:

@@ -47,7 +47,12 @@ def grid_aggregate(
     pbar: bool = False,
     **kwargs,
 ) -> gpd.GeoDataFrame:
-    """Aggregate the grid based on objs inside the grid cells.
+    """Compute a metric for each grid cell based on the objects within/intersecting it.
+
+    Note:
+        This function can be used to spatially aggregate tissue regions. The spatial
+        aggregation metric function is self defined and can be any function that takes in
+        a GeoDataFrame of objects and returns a single value.
 
     Parameters:
         grid (gpd.GeoDataFrame):
@@ -77,21 +82,51 @@ def grid_aggregate(
             The grid with the new columns added.
 
     Examples:
+        >>> from histolytics.spatial_ops.h3 import h3_grid
+        >>> from histolytics.data import cervix_tissue, cervix_nuclei
+        >>> from histolytics.spatial_agg.grid_agg import grid_aggregate
+        >>>
+        >>> # Define the immune density metric function
         >>> def immune_density(nuclei):
         >>>     if "inflammatory" in nuclei.value_counts("class_name"):
-        >>>         cnt = nuclei.value_counts("class_name", normalize=True)["inflammatory"]
+        >>>         frac = nuclei.value_counts("class_name", normalize=True)["inflammatory"]
         >>>     else:
-        >>>         cnt = 0
-        >>>     return float(cnt)
+        >>>         frac = 0
+        >>>     return float(frac)
         >>>
+        >>> # Load the cervix nuclei and tissue data
+        >>> nuc = cervix_nuclei()
+        >>> tis = cervix_tissue()
+        >>> # get the stromal tissue
+        >>> stroma = tis[tis["class_name"] == "stroma"]
+        >>> # Fit an H3 grid to the stromal tissue
+        >>> h3_gr = h3_grid(stroma, resolution=9)
+        >>> # Compute the immune density within the H3 grid cells
         >>> grid = grid_aggregate(
-        >>>     objs=nuc_gdf,
-        >>>     grid=grid,
-        >>>     metric_func=immune_density,
-        >>>     new_col_names=["immune_density"],
-        >>>     predicate="contains",
-        >>>     num_processes=1,
-        >>> )
+        ...     objs=nuc,
+        ...     grid=h3_gr,
+        ...     metric_func=immune_density,
+        ...     new_col_names=["immune_density"],
+        ...     predicate="intersects",
+        ...     num_processes=1,
+        ... )
+        >>> print(grid.head(3))
+                                                                  geometry  immune_density
+        8982a939503ffff  POLYGON ((6672.79721 859.08743, 6647.90711 661...        0.500000
+        8982a939877ffff  POLYGON ((2556.61731 5658.46273, 2581.53692 58...        0.621951
+        8982a939c4bffff  POLYGON ((4546.44516 4059.58249, 4366.53531 39...        0.045455
+        >>> # Plot the results
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> h3_gr.plot(
+        ...     ax=ax,
+        ...     column="immune_density",
+        ...     legend=True,
+        ...     facecolor="none",
+        ...     lw=1,
+        ...     cmap="turbo",
+        ... )
+        >>> ax.set_axis_off()
+    ![out](../../img/grid_aggregate.png)
     """
     allowed = ["intersects", "within", "contains", "contains_properly"]
     if predicate not in allowed:

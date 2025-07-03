@@ -19,7 +19,12 @@ def local_vals(
     num_processes: int = 1,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Get the local neighborhood values for every object in a GeoDataFrame.
+    """Get the neighboring feature values for every object in a GeoDataFrame.
+
+    Note:
+        Neighborhoods are defined by the `spatial_weights` object, which can be created
+        with the `fit_graph` function. The function should be applied to the input
+        GeoDataFrame before using this function.
 
     Parameters:
         gdf (gpd.GeoDataFrame):
@@ -124,7 +129,12 @@ def local_type_counts(
     num_processes: int = 1,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Get the local type counts for every object in a GeoDataFrame.
+    """Get the neighboring cell/nuclei type counts for every object in a GeoDataFrame.
+
+    Note:
+        Neighborhoods are defined by the `spatial_weights` object, which can be created
+        with the `fit_graph` function. The function should be applied to the input
+        GeoDataFrame before using this function.
 
     Parameters:
         gdf (gpd.GeoDataFrame):

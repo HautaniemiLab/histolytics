@@ -24,8 +24,13 @@ def local_distances(
     col_prefix: str = None,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Compute the local sum/mean/median/min/max/std/var distance of the neighborhood
-    distances for each geometry object in a gdf.
+    """Compute the distances to the neighboring objects for every object in a GeoDataFrame.
+    and aggregate them by the specified reduction methods.
+
+    Note:
+        Neighborhoods are defined by the `spatial_weights` object, which can be created
+        with the `fit_graph` function. The function should be applied to the input
+        GeoDataFrame before using this function.
 
     Note:
         Option to weight the nhood values by their area before reductions.
@@ -39,8 +44,8 @@ def local_distances(
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
         reductions (Tuple[str, ...], default=("mean",)):
-            A list of reduction methods for the neighborhood. One of "sum", "mean",
-            "median", "min", "max", "std". Defaults to ("mean", ).
+            A list of reduction methods for the neighborhood feature values. Allowed are
+            "sum", "mean", "median", "min", "max", "std".
         weight_by_area (bool):
             Flag whether to weight the neighborhood values by the area of the object.
             Defaults to False.
