@@ -168,6 +168,9 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [gdf2inst](utils/gdf2inst.md): Convert a GeoDataFrame to an instance segmentation mask.
 - [gdf2sem](utils/gdf2sem.md): Convert a GeoDataFrame to a semantic tissue segmentation mask.
 
+#### plot
+- [draw_thing_contours](utils/draw_thing_contours.md): Draw contours of segmented nuclei and overlay them on an image.
+- [legendgram](utils/legendgram.md): Create a histogram legend for a specified column in a GeoDataFrame.
 
 ### WSI (Whole Slide Images)
 

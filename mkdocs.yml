@@ -254,6 +254,7 @@ nav:
         - gdf2sem: api/utils/gdf2sem.md
       - plot:
         - draw_thing_contours: api/utils/draw_thing_contours.md
+        - legendgram: api/utils/legendgram.md
     - wsi:
       - SlideReader: api/wsi/slide_reader.md
       - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
