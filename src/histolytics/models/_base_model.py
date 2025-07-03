@@ -34,8 +34,11 @@ class BaseModelPanoptic:
                 Name of the pretrained model.
             device (torch.device, default=torch.device("cuda")):
                 Device to run the model on. Default is "cuda".
-            model_kwargs (Dict[str, Any], default={}):
+            model_kwargs (Dict[str, Any]):
                 Additional arguments for the model.
+
+        Examples:
+            >>> model = Model.from_pretrained(<str or Path to weights>, device=torch.device("cuda"))
         """
         weights_path = Path(weights)
         if not weights_path.is_file():
@@ -103,7 +106,7 @@ class BaseModelPanoptic:
                 Input image (H, W, C) or input image batch (B, C, H, W).
             use_sliding_win (bool):
                 Whether to use sliding window for prediction.
-            window_size (Tuple[int, int], default=None):
+            window_size (Tuple[int, int]):
                 The height and width of the sliding window. If `use_sliding_win` is False
                 this argument is ignored.
             stride (int):
@@ -113,8 +116,16 @@ class BaseModelPanoptic:
         Returns:
             Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]:
                 Dictionary of soft outputs:
-                    - "pan": SoftInstanceOutput (type_map, aux_map).
+
+                    - "nuclei": SoftInstanceOutput (type_map, aux_map).
                     - "tissue": SoftSemanticOutput (type_map).
+
+        Examples:
+            >>> my_model.set_inference_mode()
+            >>> # with sliding window if image is large
+            >>> x = my_model.predict(x=image, use_sliding_win=True, window_size=(256, 256), stride=128)
+            >>> # without sliding window if image is small enough
+            >>> x = my_model.predict(x=image, use_sliding_win=False)
         """
         if not self.inference_mode:
             raise ValueError("Run `.set_inference_mode()` before running `predict`")
@@ -161,28 +172,39 @@ class BaseModelPanoptic:
                 The start method. One of: "threading", "fork", "spawn". See mpire docs.
             n_jobs (int):
                 The number of workers for the post-processing.
-            save_paths_nuc (List[Union[Path, str]], default=None):
+            save_paths_nuc (List[Union[Path, str]]):
                 The paths to save the panlei masks. If None, the masks are not saved.
-            save_paths_cyto (List[Union[Path, str]], default=None):
+            save_paths_cyto (List[Union[Path, str]]):
                 The paths to save the cytoplasm masks. If None, the masks are not saved.
-            save_paths_tissue (List[Union[Path, str]], default=None):
+            save_paths_tissue (List[Union[Path, str]]):
                 The paths to save the tissue masks. If None, the masks are not saved.
-            coords (List[Tuple[int, int, int, int]], default=None):
+            coords (List[Tuple[int, int, int, int]]):
                 The XYWH coordinates of the image patch. If not None, the coordinates are
                 saved in the filenames of outputs.
-            class_dict_nuc (Dict[int, str], default=None):
+            class_dict_nuc (Dict[int, str]):
                 The dictionary of panlei classes. E.g. {0: "bg", 1: "neoplastic"}
-            class_dict_cyto (Dict[int, str], default=None):
+            class_dict_cyto (Dict[int, str]):
                 The dictionary of cytoplasm classes. E.g. {0: "bg", 1: "macrophage_cyto"}
-            class_dict_tissue (Dict[int, str], default=None):
+            class_dict_tissue (Dict[int, str]):
                 The dictionary of tissue classes. E.g. {0: "bg", 1: "stroma", 2: "tumor"}
 
         Returns:
             Dict[str, List[np.ndarray]]:
                 Dictionary of post-processed outputs:
-                    - "pan": List of output panlei masks (H, W).
-                    - "cyto": List of output cytoplasm masks (H, W).
-                    - "tissue": List of output tissue masks (H, w).
+
+                - "nuclei": List of output nuclei masks (H, W).
+                - "cyto": List of output cytoplasm masks (H, W).
+                - "tissue": List of output tissue masks (H, W).
+
+        Examples:
+            >>> my_model.set_inference_mode()
+            >>> x = my_model.predict(x=image, use_sliding_win=False)
+            >>> x = my_model.post_process(
+            ...     x,
+            ...     use_async_postproc=True,
+            ...     start_method="threading",
+            ...     n_jobs=4,
+            ... )
         """
         if not self.inference_mode:
             raise ValueError(

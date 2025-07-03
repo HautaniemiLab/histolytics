@@ -62,8 +62,8 @@ class CellVitPanoptic(BaseModelPanoptic):
     ) -> None:
         """CellVitPanoptic model for panoptic segmentation of nuclei and tissues.
 
-        CellVit:
-        - https://arxiv.org/abs/2306.15350
+        Note:
+            [CellVit article](https://arxiv.org/abs/2306.15350)
 
         Parameters:
             n_nuc_classes (int):
@@ -95,7 +95,7 @@ class CellVitPanoptic(BaseModelPanoptic):
         self.model.to(device)
 
     def set_inference_mode(self, mixed_precision: bool = True) -> None:
-        """Set to inference mode."""
+        """Set model to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
             model=self.model,

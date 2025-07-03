@@ -62,8 +62,8 @@ class CPPNetPanoptic(BaseModelPanoptic):
     ) -> None:
         """CPPNetPanoptic model for panoptic segmentation of nuclei and tissues.
 
-        CPP-Net:
-        - https://arxiv.org/abs/2102.06867
+        Note:
+            [CPP-Net article](https://arxiv.org/abs/2102.06867)
 
         Parameters:
             n_nuc_classes (int):
@@ -102,7 +102,7 @@ class CPPNetPanoptic(BaseModelPanoptic):
         mixed_precision: bool = True,
         postproc_kwargs: Dict[str, Any] = {"trim_bboxes": True},
     ) -> None:
-        """Set to inference mode."""
+        """Set model to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
             model=self.model,

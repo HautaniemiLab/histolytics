@@ -91,7 +91,7 @@ class CellposePanoptic(BaseModelPanoptic):
         mixed_precision: bool = True,
         postproc_kwargs: Dict[str, Any] = {"use_gpu": True},
     ) -> None:
-        """Set to inference mode."""
+        """Set to model inference mode."""
         self.model.eval()
         self.predictor = Predictor(
             model=self.model,

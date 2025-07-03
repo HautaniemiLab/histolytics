@@ -60,8 +60,8 @@ class HoverNetPanoptic(BaseModelPanoptic):
     ) -> None:
         """HovernetPanoptic model for panoptic segmentation of nuclei and tissues.
 
-        HoVer-Net:
-        - https://www.sciencedirect.com/science/article/pii/S1361841519301045?via%3Dihub
+        Note:
+            [HoVer-Net article](https://www.sciencedirect.com/science/article/pii/S1361841519301045?via%3Dihub)
 
         Parameters:
             n_nuc_classes (int):
@@ -93,7 +93,7 @@ class HoverNetPanoptic(BaseModelPanoptic):
         self.model.to(device)
 
     def set_inference_mode(self, mixed_precision: bool = True) -> None:
-        """Set to inference mode."""
+        """Set model to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
             model=self.model,

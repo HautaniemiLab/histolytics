@@ -19,6 +19,16 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [hgsc_stroma_nuclei](data/hgsc_stroma_nuclei.md): A GeoDataframe of segmented nuclei of a HGSC stroma.
 - [hgsc_stroma_he](data/hgsc_stroma_he.md): A 1500x1500 H&E image of HGSC containing stroma.
 
+### Models
+
+**Panoptic segmentation models**
+
+- [CellposePanoptic](models/cellpose_panoptic.md): Panoptic segmentation model based on Cellpose.
+- [CellVitPanoptic](models/cellvit_panoptic.md): Panoptic segmentation model based on CellVit.
+- [CPPNetPanoptic](models/cppnet_panoptic.md): Panoptic segmentation model based on CPPNet.
+- [HoverNetPanoptic](models/hovernet_panoptic.md): Panoptic segmentation model based on HoverNet.
+- [StarDistPanoptic](models/stardist_panoptic.md): Panoptic segmentation model based on StarDist.
+
 ### Spatial Operations
 
 **Spatial querying and partitioning**

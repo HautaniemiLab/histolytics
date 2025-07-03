@@ -39,6 +39,12 @@ plugins:
             show_source: true
             show_root_heading: true
             show_root_full_path: false
+          options:
+            inherited_members: true
+            docstring_options:
+              ignore_init_summary: false
+            merge_init_into_class: false
+
   - mkdocs-jupyter:
       include: ["*.ipynb"]
 
@@ -107,6 +113,12 @@ nav:
       - hgsc_cancer_type_mask: api/data/hgsc_cancer_type_mask.md
       - hgsc_stroma_nuclei: api/data/hgsc_stroma_nuclei.md
       - hgsc_stroma_he: api/data/hgsc_stroma_he.md
+    - models:
+      - CellposePanoptic: api/models/cellpose_panoptic.md
+      - CellVitPanoptic: api/models/cellvit_panoptic.md
+      - CPPNetPanoptic: api/models/cppnet_panoptic.md
+      - HoverNetPanoptic: api/models/hovernet_panoptic.md
+      - StarDistPanoptic: api/models/stardist_panoptic.md
     - spatial_ops:
       - get_objs: api/spatial_ops/get_objs.md
       - get_interfaces: api/spatial_ops/get_interfaces.md

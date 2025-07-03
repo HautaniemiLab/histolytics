@@ -64,8 +64,8 @@ class StarDistPanoptic(BaseModelPanoptic):
     ) -> None:
         """StardistPanoptic model for panoptic segmentation of nuclei and tissues.
 
-        Stardist:
-        - https://arxiv.org/abs/1806.03535
+        Note:
+            [Stardist article](https://arxiv.org/abs/1806.03535)
 
         Parameters:
             n_nuc_classes (int):
@@ -104,7 +104,7 @@ class StarDistPanoptic(BaseModelPanoptic):
         mixed_precision: bool = True,
         postproc_kwargs: Dict[str, Any] = {"trim_bboxes": True},
     ) -> None:
-        """Set to inference mode."""
+        """Set model to inference mode."""
         self.model.eval()
         self.predictor = Predictor(
             model=self.model,
