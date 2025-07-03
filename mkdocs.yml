@@ -40,11 +40,15 @@ plugins:
             show_root_heading: true
             show_root_full_path: false
           options:
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
             inherited_members: true
+            merge_init_into_class: false
+            preload_modules:
+            - cellseg_models_pytorch
             docstring_options:
               ignore_init_summary: false
-            merge_init_into_class: false
-
   - mkdocs-jupyter:
       include: ["*.ipynb"]
 
@@ -113,46 +117,40 @@ nav:
       - hgsc_cancer_type_mask: api/data/hgsc_cancer_type_mask.md
       - hgsc_stroma_nuclei: api/data/hgsc_stroma_nuclei.md
       - hgsc_stroma_he: api/data/hgsc_stroma_he.md
+    - losses:
+      - BCELoss: api/losses/bce.md
+      - CELoss: api/losses/ce.md
+      - DiceLoss: api/losses/dice.md
+      - FocalLoss: api/losses/focal.md
+      - JointLoss: api/losses/joint_loss.md
+      - MSE: api/losses/mse.md
+      - MAE: api/losses/mae.md
+      - MultiTaskLoss: api/losses/multi_task_loss.md
+      - SSIM: api/losses/ssim.md
+      - TverskyLoss: api/losses/tversky_loss.md
+    - metrics:
+      - accuracy_multiclass: api/metrics/accuracy_multiclass.md
+      - aggregated_jaccard_index: api/metrics/aggregated_jaccard_index.md
+      - average_precision: api/metrics/average_precision.md
+      - dice2: api/metrics/dice2.md
+      - dice_multiclass: api/metrics/dice_multiclass.md
+      - f1score_multiclass: api/metrics/f1score_multiclass.md
+      - iou_multiclass: api/metrics/iou_multiclass.md
+      - pairwise_object_stats: api/metrics/pairwise_object_stats.md
+      - pairwise_pixel_stats: api/metrics/pairwise_pixel_stats.md
+      - panoptic_quality: api/metrics/panoptic_quality.md
+      - sensitivity_multiclass: api/metrics/sensitivity_multiclass.md
+      - specificity_multiclass: api/metrics/specificity_multiclass.md
     - models:
       - CellposePanoptic: api/models/cellpose_panoptic.md
       - CellVitPanoptic: api/models/cellvit_panoptic.md
       - CPPNetPanoptic: api/models/cppnet_panoptic.md
       - HoverNetPanoptic: api/models/hovernet_panoptic.md
       - StarDistPanoptic: api/models/stardist_panoptic.md
-    - spatial_ops:
-      - get_objs: api/spatial_ops/get_objs.md
-      - get_interfaces: api/spatial_ops/get_interfaces.md
-      - h3_grid: api/spatial_ops/h3_grid.md
-      - quadbin_grid: api/spatial_ops/quadbin_grid.md
-      - rect_grid: api/spatial_ops/rect_grid.md
-    - spatial_geom:
-      - shape_metric: api/spatial_geom/shape_metrics.md
-      - line_metric: api/spatial_geom/line_metrics.md
-      - medial_lines: api/spatial_geom/medial_lines.md
-      - hull: api/spatial_geom/hull.md
-      - morphometrics:
-        - average_turning_angle: api/spatial_geom/average_turning_angle.md
-        - circularity: api/spatial_geom/circularity.md
-        - compactness: api/spatial_geom/compactness.md
-        - convexity: api/spatial_geom/convexity.md
-        - eccentricity: api/spatial_geom/eccentricity.md
-        - elongation: api/spatial_geom/elongation.md
-        - equivalent_rectangular_index: api/spatial_geom/equivalent_rectangular_index.md
-        - fractal_dimension: api/spatial_geom/fractal_dimension.md
-        - major_axis_angle: api/spatial_geom/major_axis_angle.md
-        - major_axis_len: api/spatial_geom/major_axis_len.md
-        - minor_axis_angle: api/spatial_geom/minor_axis_angle.md
-        - minor_axis_len: api/spatial_geom/minor_axis_len.md
-        - rectangularity: api/spatial_geom/rectangularity.md
-        - shape_index: api/spatial_geom/shape_index.md
-        - solidity: api/spatial_geom/solidity.md
-        - squareness: api/spatial_geom/squareness.md
-        - tortuosity: api/spatial_geom/tortuosity.md
-    - spatial_graph:
-      - fit_graph: api/spatial_graph/graph.md
-      - utils:
-          - connected_components: api/spatial_graph/connected_components.md
-          - weights2gdf: api/spatial_graph/weights2gdf.md
+    - nuc_feats:
+      - chromatin_clumps: api/nuc_feats/chromatin_clumps.md
+      - grayscale_intensity: api/nuc_feats/grayscale_intensity.md
+      - rgb_intensity: api/nuc_feats/rgb_intensity.md
     - spatial_agg:
       - local_character: api/spatial_agg/local_character.md
       - local_distances: api/spatial_agg/local_distances.md
@@ -185,6 +183,40 @@ nav:
         - cluster_dispersion: api/spatial_clust/cluster_dispersion.md
         - cluster_area: api/spatial_clust/cluster_area.md
         - cluster_size: api/spatial_clust/cluster_size.md
+    - spatial_geom:
+      - shape_metric: api/spatial_geom/shape_metrics.md
+      - line_metric: api/spatial_geom/line_metrics.md
+      - medial_lines: api/spatial_geom/medial_lines.md
+      - hull: api/spatial_geom/hull.md
+      - morphometrics:
+        - average_turning_angle: api/spatial_geom/average_turning_angle.md
+        - circularity: api/spatial_geom/circularity.md
+        - compactness: api/spatial_geom/compactness.md
+        - convexity: api/spatial_geom/convexity.md
+        - eccentricity: api/spatial_geom/eccentricity.md
+        - elongation: api/spatial_geom/elongation.md
+        - equivalent_rectangular_index: api/spatial_geom/equivalent_rectangular_index.md
+        - fractal_dimension: api/spatial_geom/fractal_dimension.md
+        - major_axis_angle: api/spatial_geom/major_axis_angle.md
+        - major_axis_len: api/spatial_geom/major_axis_len.md
+        - minor_axis_angle: api/spatial_geom/minor_axis_angle.md
+        - minor_axis_len: api/spatial_geom/minor_axis_len.md
+        - rectangularity: api/spatial_geom/rectangularity.md
+        - shape_index: api/spatial_geom/shape_index.md
+        - solidity: api/spatial_geom/solidity.md
+        - squareness: api/spatial_geom/squareness.md
+        - tortuosity: api/spatial_geom/tortuosity.md
+    - spatial_graph:
+      - fit_graph: api/spatial_graph/graph.md
+      - utils:
+          - connected_components: api/spatial_graph/connected_components.md
+          - weights2gdf: api/spatial_graph/weights2gdf.md
+    - spatial_ops:
+      - get_objs: api/spatial_ops/get_objs.md
+      - get_interfaces: api/spatial_ops/get_interfaces.md
+      - h3_grid: api/spatial_ops/h3_grid.md
+      - quadbin_grid: api/spatial_ops/quadbin_grid.md
+      - rect_grid: api/spatial_ops/rect_grid.md
     - stroma_feats:
       - extract_collagen_fibers: api/stroma_feats/collagen.md
       - stromal_intensity_features: api/stroma_feats/stroma_feats.md
@@ -194,15 +226,20 @@ nav:
         - tissue_components: api/stroma_feats/tissue_components.md
         - kmeans_img: api/stroma_feats/kmeans_img.md
         - hed_decompose: api/stroma_feats/hed_decompose.md
-    - nuc_feats:
-      - chromatin_clumps: api/nuc_feats/chromatin_clumps.md
-      - grayscale_intensity: api/nuc_feats/grayscale_intensity.md
-      - rgb_intensity: api/nuc_feats/rgb_intensity.md
-    - wsi:
-      - SlideReader: api/wsi/slide_reader.md
-      - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
-      - utils:
-        - get_sub_grids: api/wsi/get_sub_grids.md
+    - transforms:
+      - AlbuStrongAugment: api/transforms/strong_augment.md
+      - ApplyEach: api/transforms/apply_each.md
+      - BinarizeTransform: api/transforms/binarize.md
+      - CellposeTransform: api/transforms/cellpose.md
+      - ContourTransform: api/transforms/contour.md
+      - DistTransform: api/transforms/dist.md
+      - EdgeWeightTransform: api/transforms/edge_weight.md
+      - HoverNetTransform: api/transforms/hovernet.md
+      - MinMaxNormalization: api/transforms/minmax.md
+      - Normalization: api/transforms/norm.md
+      - PercentileNormalization: api/transforms/percentile.md
+      - SmoothDistTransform: api/transforms/smooth_dist.md
+      - StardistTransform: api/transforms/stardist.md
     - utils:
       - gdf:
         - gdf_apply: api/utils/gdf_apply.md
@@ -215,3 +252,10 @@ nav:
         - inst2gdf: api/utils/inst2gdf.md
         - gdf2inst: api/utils/gdf2inst.md
         - gdf2sem: api/utils/gdf2sem.md
+      - plot:
+        - draw_thing_contours: api/utils/draw_thing_contours.md
+    - wsi:
+      - SlideReader: api/wsi/slide_reader.md
+      - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
+      - utils:
+        - get_sub_grids: api/wsi/get_sub_grids.md

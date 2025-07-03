@@ -32,8 +32,8 @@ class BaseModelPanoptic:
         Parameters:
             model_name (str):
                 Name of the pretrained model.
-            device (torch.device, default=torch.device("cuda")):
-                Device to run the model on. Default is "cuda".
+            device (torch.device):
+                Device to run the model on.
             model_kwargs (Dict[str, Any]):
                 Additional arguments for the model.
 

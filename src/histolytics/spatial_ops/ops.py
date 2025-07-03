@@ -14,7 +14,7 @@ def get_objs(
     predicate: str = "intersects",
     **kwargs,
 ) -> Union[gpd.GeoDataFrame, None]:
-    """Get objects that intersect with the given area.
+    """Query objects in relation to the given `area` GeoDataFrame (tissue segmentations).
 
     Parameters:
         area (gpd.GeoDataFrame):
@@ -35,17 +35,23 @@ def get_objs(
     Examples:
         >>> from histolytics.data import cervix_nuclei, cervix_tissue
         >>> from histolytics.spatial_ops import get_objs
-        >>> # get the CIN tissue
+        >>> # load the data
+        >>> nuc = cervix_nuclei()
         >>> tis = cervix_tissue()
+        >>> # select the CIN tissue
         >>> cin_tissue = tis[tis["class_name"] == "cin"]
         >>>
         >>> # select all the nuclei contained within CIN tissue
         >>> nuc_within_cin = get_objs(cin_tissue, nuc, predicate="contains")
         >>> print(nuc_within_cin.head(3))
-                                                        geometry         class_name
-            1  POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...         connective
-            2  POLYGON ((866 5137.02, 862.77 5137.94, 860 513...   squamous_epithel
-            3  POLYGON ((932 4777.02, 928 4778.02, 922.81 478...  glandular_epithel
+                                                    geometry         class_name
+        1  POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...         connective
+        2  POLYGON ((866 5137.02, 862.77 5137.94, 860 513...   squamous_epithel
+        3  POLYGON ((932 4777.02, 928 4778.02, 922.81 478...  glandular_epithel
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> nuc_within_cin.plot(ax=ax, color="blue")
+        >>> ax.set_axis_off()
+    ![out](../../img/get_objs.png)
     """
     # NOTE, gdfs need to have same crs, otherwise warning flood.
     inds = objects.geometry.sindex.query(area.geometry, predicate=predicate, **kwargs)
@@ -59,9 +65,10 @@ def get_interfaces(
 ) -> gpd.GeoDataFrame:
     """Get the interfaces b/w the polygons defined in a `areas` and `buffer_area`.
 
-    Identifies the interface regions between polygons in `areas` and in `buffer_area`
-    by buffering the `buffer_area` polygons and finding their intersections with `areas`.
-    The width of the interface is controlled by the `buffer_dist` parameter.
+    Note:
+        Identifies the interface regions between polygons in `areas` and in `buffer_area`
+        by buffering the `buffer_area` polygons and finding their intersections with `areas`.
+        The width of the interface is controlled by the `buffer_dist` parameter.
 
     Parameters:
         buffer_area (gpd.GeoDataFrame):
@@ -70,8 +77,7 @@ def get_interfaces(
             A geodataframe containing polygons (tissue areas) that might intersect
             with the `buffer_area`.
         buffer_dist (int):
-            The radius (in pixels) of the buffer
-
+            The radius (in pixels) of the buffer.
 
     Returns:
         gpd.GeoDataFrame:
@@ -79,22 +85,26 @@ def get_interfaces(
 
     Examples:
         >>> from histolytics.spatial_ops import get_interfaces
-        >>> from histolytics.data import cervix_nuclei, cervix_tissue
-        >>>
+        >>> from histolytics.data import cervix_tissue
+        >>> # load the tissue data
         >>> tis = cervix_tissue()
-        >>> nuc = cervix_nuclei()
         >>>
         >>> # get the stromal and CIN tissue
         >>> stroma = tis[tis["class_name"] == "stroma"]
         >>> cin_tissue = tis[tis["class_name"] == "cin"]
         >>>
-        >>> # get the interface between stroma and cin tissue
-        >>> interface = get_interfaces(stroma, cin_tissue, buffer_dist=200)
+        >>> # get the interface between cin lesion and stroma
+        >>> interface = get_interfaces(cin_tissue, stroma, buffer_dist=300)
         >>> print(interface.head(3))
-                    class_name                                           geometry
-            0        cin  POLYGON ((3263.52 10109.06, 3256.98 10112.3, 3...
-            1        cin  POLYGON ((1848.02 4655.29, 1849.62 4656.52, 18...
-            2        cin  POLYGON ((2645.39 10817.62, 2646.52 10815.23, ...
+            class_name                                           geometry
+        0     stroma  POLYGON ((1588.71 4829.03, 1591.18 4828.83, 15...
+        1     stroma  POLYGON ((743.07 5587.48, 743.63 5589, 744.07 ...
+        2     stroma  POLYGON ((1151 7566, 1150 7567, 1148.2 7568.2,...
+        >>> # plot the tissue and the interface
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> interface.plot(ax=ax, color="blue", lw=1, alpha=0.3)
+        >>> ax.set_axis_off()
+    ![out](../../img/interfaces.png)
     """
     buffer_area = set_crs(buffer_area)
     areas = set_crs(areas)

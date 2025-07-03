@@ -23,31 +23,51 @@ NUM_COLORS = {
 
 
 def draw_thing_contours(
-    inst_map: np.ndarray,
     image: np.ndarray,
+    inst_map: np.ndarray,
     type_map: np.ndarray,
     thickness: int = 2,
 ) -> np.ndarray:
     """Find coloured contours for an instance labelled mask.
 
     Parameters:
+        image (np.ndarray):
+            Original image. Shape (H, W, 3).
         inst_map (np.ndarray):
             Instance segmentation map. Shape (H, W).
-        image (np.ndarray)
-            Original image. Shape (H, W, 3).
-        type_map : np.ndarray, optional
+        type_map (np.ndarray):
             Semantic segmentation map. Shape (H, W).
-        thickness : int, default=2
+        thickness (int):
             Thickness of the contour lines
-        classes : Dict[str, int], optional
-            Classes dict e.g. {"bg":0, "cancer":1, "immune":2}
-        colors : Dict[str, Tuple[float, float, float]], optional
-            Color dict for the classes.
-            E.g. {"cancer": (125., 100. ,122.), "immune": (56., 37, 160.)}
 
     Returns:
         np.ndarray:
             The contours overlaid on top of original image. Shape: (H, W, 3).
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>> from histolytics.utils.plot import draw_thing_contours
+        >>> from histolytics.data import (
+        ...     hgsc_cancer_he,
+        ...     hgsc_cancer_inst_mask,
+        ...     hgsc_cancer_type_mask,
+        ... )
+        >>> # Load the HE image, instance mask and type mask
+        >>> he_image = hgsc_cancer_he()
+        >>> inst_mask = hgsc_cancer_inst_mask()
+        >>> type_mask = hgsc_cancer_type_mask()
+        >>> # Draw contours of the instance segmentation mask
+        >>> overlay = draw_thing_contours(
+        ...     he_image,
+        ...     inst_mask,
+        ...     type_mask,
+        ...     thickness=2,
+        ... )
+        >>> # Display the overlay
+        >>> fig, ax = plt.subplots(figsize=(5, 5))
+        >>> ax.imshow(overlay)
+        >>> ax.set_axis_off()
+    ![out](../../img/overlay.png)
     """
     bg = np.copy(image)
 

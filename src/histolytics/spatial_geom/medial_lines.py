@@ -116,25 +116,31 @@ def medial_lines(
         poly (shapely.geometry.Polygon):
             Polygon to compute the medial lines of.
         num_points (int):
-            Number of resampled points in the input polygon, defaults to None
+            Number of resampled points in the input polygon.
         delta (float):
-            Distance between resampled polygon points, defaults to None. Ignored
-            if n is not None.
+            Distance between resampled polygon points. Ignored
+            if `num_points` is not None.
 
     Returns:
         shapely.geometry.MultiLineString or shapely.geometry.LineString:
             the medial line(s).
 
     Examples:
-        >>> from shapely.geometry import Polygon
         >>> from histolytics.spatial_geom.medial_lines import medial_lines
+        >>> from histolytics.data import cervix_tissue
+        >>> import geopandas as gpd
         >>>
         >>> # Create a simple polygon
-        >>> poly = Polygon([(0, 0), (0, 10), (10, 10), (10, 0)])
+        >>> cervix_tis = cervix_tissue()
+        >>> lesion = cervix_tis[cervix_tis["class_name"] == "cin"]
         >>>
-        >>> # Compute medial lines
-        >>> medial_lines(poly, num_points=200)
-            MULTILINESTRING ((0.100503 0.100503, 0.301508 0.301508, 0.502513 0.502513))
+        >>> # Compute medial lines for the largest lesion segmentation
+        >>> medials = medial_lines(lesion.geometry.iloc[2], num_points=240)
+        >>> medial_gdf = gpd.GeoDataFrame({"geometry": [medials]}, crs=lesion.crs)
+        >>> ax = cervix_tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> medial_gdf.plot(ax=ax, color="red", lw=1, alpha=0.5)
+        >>> ax.set_axis_off()
+    ![out](../../img/medial_lines.png)
     """
     coords = _equal_interval_points(poly.exterior, n=num_points, delta=delta)
     vor = Voronoi(coords)

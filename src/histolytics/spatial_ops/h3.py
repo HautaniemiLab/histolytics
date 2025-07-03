@@ -31,19 +31,23 @@ def h3_grid(
             Fitted h3 hex grid.
 
     Examples:
-        Fit a hexagonal h3 grid to a gdf:
         >>> from histolytics.spatial_ops.h3 import h3_grid
-        >>> from histolytics.data import cervix_nuclei, cervix_tissue
+        >>> from histolytics.data import cervix_tissue
         >>>
         >>> # get the stromal tissue
         >>> tis = cervix_tissue()
         >>> stroma = tis[tis["class_name"] == "stroma"]
-        >>> h3_grid = h3_grid(stroma, resolution=9)
-        >>> print(h3_grid.head(3))
+        >>> # Fit an H3 grid to the stromal tissue
+        >>> h3_gr = h3_grid(stroma, resolution=9)
+        >>> print(h3_gr.head(3))
                                                                   geometry
         8982a939503ffff  POLYGON ((6672.79721 859.08743, 6647.90711 661...
         8982a939877ffff  POLYGON ((2556.61731 5658.46273, 2581.53692 58...
         8982a939c4bffff  POLYGON ((4546.44516 4059.58249, 4366.53531 39...
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> h3_gr.plot(ax=ax, edgecolor="black", facecolor="none", lw=1)
+        >>> ax.set_axis_off()
+    ![out](../../img/h3_grid.png)
     """
     if gdf.empty or gdf is None:
         return

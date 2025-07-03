@@ -19,6 +19,39 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [hgsc_stroma_nuclei](data/hgsc_stroma_nuclei.md): A GeoDataframe of segmented nuclei of a HGSC stroma.
 - [hgsc_stroma_he](data/hgsc_stroma_he.md): A 1500x1500 H&E image of HGSC containing stroma.
 
+### Losses
+
+**Loss functions for panoptic segmentation**
+
+- [BCELoss](losses/bce.md): Binary Cross Entropy Loss.
+- [CELoss](losses/ce.md): Cross Entropy Loss.
+- [DiceLoss](losses/dice.md): Dice Loss.
+- [FocalLoss](losses/focal.md): Focal Loss.
+- [JointLoss](losses/joint_loss.md): Joint Loss. Combines arbitrary number of losses into one.
+- [MSE](losses/mse.md): Mean Squared Error Loss.
+- [MAE](losses/mae.md): Mean Absolute Error Loss.
+- [MultiTaskLoss](losses/multi_task_loss.md): Multi-task loss for panoptic segmentation.
+  Combines multiple losses for multi prediction tasks like panoptic segmentation.
+- [SSIM](losses/ssim.md): Structural Similarity Index Loss.
+- [TverskyLoss](losses/tversky_loss.md): Tversky Loss.
+
+### Metrics
+
+**Metrics for panoptic segmentation**
+
+- [accuracy_multiclass](metrics/accuracy_multiclass.md): Accuracy metric for multiclass segmentation.
+- [aggregated_jaccard_index](metrics/aggregated_jaccard_index.md): Aggregated Jaccard Index for multiclass segmentation.
+- [average_precision](metrics/average_precision.md): Average Precision metric for multiclass segmentation.
+- [dice_multiclass](metrics/dice_multiclass.md): Dice metric for multiclass segmentation.
+- [dice2](metrics/dice2.md): Alternative Dice metric for multiclass segmentation.
+- [f1score_multiclass](metrics/f1score_multiclass.md): F1 score metric for multiclass segmentation.
+- [iou_multiclass](metrics/iou_multiclass.md): Intersection over Union (IoU) metric for multiclass segmentation.
+- [pairwise_object_stats](metrics/pairwise_object_stats.md): Pairwise object statistics (TP, FP, TN, FN) for instance segmentation.
+- [pairwise_pixel_stats](metrics/pairwise_pixel_stats.md): Pairwise pixel-level statistics (TP, FP, TN, FN) for instance segmentation.
+- [panoptic_quality](metrics/panoptic_quality.md): Panoptic Quality metric for panoptic segmentation.
+- [sensitivity_multiclass](metrics/sensitivity_multiclass.md): Sensitivity metric for multiclass segmentation.
+- [specificity_multiclass](metrics/specificity_multiclass.md): Specificity metric for multiclass segmentation.
+
 ### Models
 
 **Panoptic segmentation models**
@@ -29,32 +62,14 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [HoverNetPanoptic](models/hovernet_panoptic.md): Panoptic segmentation model based on HoverNet.
 - [StarDistPanoptic](models/stardist_panoptic.md): Panoptic segmentation model based on StarDist.
 
-### Spatial Operations
+### Nuclei Features
 
-**Spatial querying and partitioning**
+**Extracting features from nuclei**
 
-- [get_objs](spatial_ops/get_objs.md): Query segmented objects from specified regions.
-- [get_interfaces](spatial_ops/get_interfaces.md): Get interfaces of two segmented tissues.
-- [rect_grid](spatial_ops/rect_grid.md): Partition a GeoDataFrame into a rectangular grid.
-- [h3_grid](spatial_ops/h3_grid.md): Partition a GeoDataFrame into an H3 hexagonal spatial index (grid).
-- [quadbin_grid](spatial_ops/quadbin_grid.md): Partition a GeoDataFrame into a Quadbin spatial index (grid).
+- [chromatin_clumps](nuc_feats/chromatin_clumps.md): Extract chromatin clumps from a nuclei segmentation.
+- [grayscale_intensity](nuc_feats/grayscale_intensity.md): Extract grayscale intensity features from a nuclei segmentation.
+- [rgb_intensity](nuc_feats/rgb_intensity.md): Extract RGB intensity features from a nuclei segmentation.
 
-### Spatial Geometry
-
-**Morphometrics and shapes**
-
-- [shape_metric](spatial_geom/shape_metrics.md): Calculate shape moprhometrics for polygon geometries.
-- [line_metric](spatial_geom/line_metrics.md): Calculate shape moprhometrics for line geometries.
-- [medial_lines](spatial_geom/medial_lines.md): Create medial lines of input polygons.
-- [hull](spatial_geom/hull.md): Create various hull types around point sets.
-
-### Spatial Graph
-
-**Graph fitting**
-
-- [fit_graph](spatial_graph/graph.md): Fit a graph to a GeoDataFrame of segmented objects.
-- [get_connected_components](spatial_graph/connected_components.md): Get connected components of a spatial graph.
-- [weights2gdf](spatial_graph/weights2gdf.md): Convert spatial weights to a GeoDataFrame.
 
 ### Spatial Aggregation
 
@@ -79,6 +94,33 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [global_autocorr](spatial_clust/global_autocorr.md): Calculate global Moran's I for a GeoDataFrame.
 - [ripley_test](spatial_clust/ripley_test.md): Perform Ripley's alphabet analysis for GeoDataFrames.
 
+### Spatial Geometry
+
+**Morphometrics and shapes**
+
+- [shape_metric](spatial_geom/shape_metrics.md): Calculate shape moprhometrics for polygon geometries.
+- [line_metric](spatial_geom/line_metrics.md): Calculate shape moprhometrics for line geometries.
+- [medial_lines](spatial_geom/medial_lines.md): Create medial lines of input polygons.
+- [hull](spatial_geom/hull.md): Create various hull types around point sets.
+
+### Spatial Graph
+
+**Graph fitting**
+
+- [fit_graph](spatial_graph/graph.md): Fit a graph to a GeoDataFrame of segmented objects.
+- [get_connected_components](spatial_graph/connected_components.md): Get connected components of a spatial graph.
+- [weights2gdf](spatial_graph/weights2gdf.md): Convert spatial weights to a GeoDataFrame.
+
+### Spatial Operations
+
+**Spatial querying and partitioning**
+
+- [get_objs](spatial_ops/get_objs.md): Query segmented objects from specified regions.
+- [get_interfaces](spatial_ops/get_interfaces.md): Get interfaces of two segmented tissues.
+- [rect_grid](spatial_ops/rect_grid.md): Partition a GeoDataFrame into a rectangular grid.
+- [h3_grid](spatial_ops/h3_grid.md): Partition a GeoDataFrame into an H3 hexagonal spatial index (grid).
+- [quadbin_grid](spatial_ops/quadbin_grid.md): Partition a GeoDataFrame into a Quadbin spatial index (grid).
+
 ### Stroma Features
 
 **Extracting features from stroma**
@@ -91,21 +133,23 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [kmeans_img](stroma_feats/kmeans_img.md): Perform KMeans clustering on an image.
 - [hed_decompose](stroma_feats/hed_decompose.md): Transform an image to HED space.
 
-### Nuclei Features
+### Transforms
 
-**Extracting features from nuclei**
+**Image and instance label transforms for model training**
 
-- [chromatin_clumps](nuc_feats/chromatin_clumps.md): Extract chromatin clumps from a nuclei segmentation.
-- [grayscale_intensity](nuc_feats/grayscale_intensity.md): Extract grayscale intensity features from a nuclei segmentation.
-- [rgb_intensity](nuc_feats/rgb_intensity.md): Extract RGB intensity features from a nuclei segmentation.
-
-### WSI (Whole Slide Images)
-
-**WSI handling and WSI-level segmentation**
-
-- [SlideReader](wsi/slide_reader.md): Functions for reading whole slide images
-- [WsiPanopticSegmenter](wsi/wsi_segmenter.md): Class handling the panoptic segmentation of whole slide images
-- [get_sub_grids](wsi/get_sub_grids.md): Get sub-grids from a whole slide image.
+- [AlbuStrongAugment](transforms/strong_augment.md): Apply StrongAugment augmentation algorithm.
+- [ApplyEach](transforms/apply_each.md): Apply a functions to label masks and return each output separately.
+- [BinarizeTransform](transforms/binarize.md): Binarize label masks.
+- [CellposeTransform](transforms/cellpose.md): Transform label masks to Cellpose flow maps.
+- [ContourTransform](transforms/contour.md): Transform label masks to contour maps.
+- [DistTransform](transforms/dist.md): Transform label masks to distance maps.
+- [EdgeWeightTransform](transforms/edge_weight.md): Transform label masks to edge weight maps.
+- [HoverNetTransform](transforms/hovernet.md): Transform label masks to HoverNet horizontal and vertical gradient maps.
+- [MinMaxNormalization](transforms/minmax.md): Apply Min-Max normalization to input image.
+- [Normalization](transforms/norm.md): Normalize/Standardize input image.
+- [PercentileNormalization](transforms/percentile.md): Normalize input image using percentiles.
+- [SmoothDistTransform](transforms/smooth_dist.md): Transform label masks to smooth distance maps.
+- [StarDistTransform](transforms/stardist.md): Transform label masks to StarDist star-distance maps.
 
 ### Utils
 
@@ -123,3 +167,12 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [sem2gdf](utils/sem2gdf.md): Convert a semantic tissue segmentation mask to a GeoDataFrame.
 - [gdf2inst](utils/gdf2inst.md): Convert a GeoDataFrame to an instance segmentation mask.
 - [gdf2sem](utils/gdf2sem.md): Convert a GeoDataFrame to a semantic tissue segmentation mask.
+
+
+### WSI (Whole Slide Images)
+
+**WSI handling and WSI-level segmentation**
+
+- [SlideReader](wsi/slide_reader.md): Functions for reading whole slide images
+- [WsiPanopticSegmenter](wsi/wsi_segmenter.md): Class handling the panoptic segmentation of whole slide images
+- [get_sub_grids](wsi/get_sub_grids.md): Get sub-grids from a whole slide image.

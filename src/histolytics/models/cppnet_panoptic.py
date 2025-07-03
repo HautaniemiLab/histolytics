@@ -78,8 +78,8 @@ class CPPNetPanoptic(BaseModelPanoptic):
                 Whether to use pretrained weights in the encoder.
             enc_freeze (bool):
                 Freeze encoder weights for training.
-            device (torch.device, default=torch.device("cuda")):
-                Device to run the model on. Default is "cuda".
+            device (torch.device):
+                Device to run the model on.
             model_kwargs (dict):
                 Additional keyword arguments for the model.
         """

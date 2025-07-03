@@ -16,19 +16,24 @@ def rect_grid(
     """Overlay a square grid to the given areas of a `gpd.GeoDataFrame`.
 
     Note:
+        This function fits a rectangular grid with user defined resolution and optional
+        overlap. The spatial predicates can be used to filter the grid cells that
+        intersect, or are contained strictly within the given input GeoDataFrame.
+
+    Note:
         Returns None if the gdf is empty.
 
     Parameters:
         gdf (gpd.GeoDataFrame):
             GeoDataFrame to fit the grid to. Uses the bounding box of the GeoDataFrame
             to fit the grid.
-        resolution (Tuple[int, int], default=(256, 256)):
+        resolution (Tuple[int, int]):
             Patch size/resolution of the grid (in pixels).
         overlap (int):
             overlap of the cells in the grid (in percentages).
         predicate (str):
             Predicate to use for the spatial join, by default "intersects".
-            Allowed values are "intersects" and "within".
+            Allowed values are "intersects", "within", "contains", "contains_properly".
 
     Returns:
         gpd.GeoDataFrame:
@@ -38,21 +43,24 @@ def rect_grid(
         ValueError: If predicate is not one of "intersects" or "within".
 
     Examples:
-        Fit a square grid to a gdf:
-        >>> from histolytics.spatial_ops.quadbin import quadbin_grid
-        >>> from histolytics.data import cervix_nuclei, cervix_tissue
+        >>> from histolytics.spatial_ops.rect_grid import rect_grid
+        >>> from histolytics.data import cervix_tissue
         >>>
         >>> # get the stromal tissue
         >>> tis = cervix_tissue()
         >>> stroma = tis[tis["class_name"] == "stroma"]
         >>>
-        >>> # fit a rectangular grid to the stroma tissue
-        >>> grid = rect_grid(stroma, resolution=(256, 256), overlap=0)
+        >>> # fit a rectangular grid strictly within the stromal tissue
+        >>> grid = rect_grid(stroma, resolution=(256, 256), overlap=0, predicate="contains")
         >>> print(grid.head(3))
                                                     geometry
-            0  POLYGON ((5955 114, 6211 114, 6211 370, 5955 3...
-            1  POLYGON ((6211 114, 6467 114, 6467 370, 6211 3...
-            2  POLYGON ((6467 114, 6723 114, 6723 370, 6467 3...
+        0  POLYGON ((5443 626, 5699 626, 5699 882, 5443 8...
+        1  POLYGON ((4419 882, 4675 882, 4675 1138, 4419 ...
+        2  POLYGON ((4675 882, 4931 882, 4931 1138, 4675 ...
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> grid.plot(ax=ax, edgecolor="black", facecolor="none", lw=1)
+        >>> ax.set_axis_off()
+    ![out](../../img/rect_grid.png)
     """
     if gdf.empty or gdf is None:
         return

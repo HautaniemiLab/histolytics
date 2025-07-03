@@ -69,7 +69,7 @@ class CellposePanoptic(BaseModelPanoptic):
             enc_freeze (bool):
                 Freeze encoder weights for training.
             device (torch.device):
-                Device to run the model on. Default is "cuda".
+                Device to run the model on.
             model_kwargs (Dict[str, Any]):
                 Additional keyword arguments for the model.
         """

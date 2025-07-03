@@ -51,28 +51,34 @@ def fit_graph(
             Additional keyword arguments for specific graph fitting functions.
             For example, `k` for KNN etc.
 
-    Examples:
-        >>> from histolytics.data import cervix_nuclei
-        >>> from histolytics.utils.gdf import set_uid
-        >>> nuc = cervix_nuclei()
-        >>> nuc = set_uid(nuc, id_col="uid")
-        >>> w, w_gdf = fit_graph(
-        ...    nuc, "delaunay", id_col="uid", threshold=100, return_gdf=True
-        ... )
-        >>> print(w.neighbors)  # Access the neighbors of the weights object
-        {0: [12, 16, 17, 28, 31],
-         1: [6, 13, 21, 27, 30, 1147, 1153, 1159],
-         2: [4, 9, 19, 1151],
-         3: [10, 23, 26, 1151, 1493, 1534, 1535, 1637, 1689],
-         4: [2, 9, 14, 19, 1148, 1156, 1173, 1174],
-         5: [7, 9, 1151, 1162],
-         6: [1, 27, 1159, 1169, 1682],
-         7: [5, 8, 9, 24, 1152, 1162], ...
-
     Returns:
         W and gpd.GeoDataFrame:
             returns a libpysal weights object and a GeoDataFrame containing the spatial
             graph edges.
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_nuclei
+        >>> from histolytics.utils.gdf import set_uid
+        >>> from histolytics.spatial_graph.graph import fit_graph
+        >>> # load the HGSC cancer nuclei dataset
+        >>> nuc = hgsc_cancer_nuclei()
+        >>> # set unique identifiers if not present
+        >>> nuc = set_uid(nuc, id_col="uid")
+        >>> # Fit a Delaunay triangulation graph
+        >>> w, w_gdf = fit_graph(
+        ...     nuc, "delaunay", id_col="uid", threshold=100
+        ... )
+        >>> print(w_gdf.head(3))
+        index  ...                                     geometry
+        0      0  ...  LINESTRING (1400.038 1.692, 1386.459 9.581)
+        1      1  ...   LINESTRING (1400.038 1.692, 1306.06 2.528)
+        2      6  ...   LINESTRING (1386.459 9.581, 1306.06 2.528)
+        [3 rows x 12 columns]
+        >>> # Plot the spatial graph
+        >>> ax = nuc.plot(column="class_name", figsize=(5, 5), aspect=1)
+        >>> w_gdf.plot(ax=ax, column="class_name", aspect=1, lw=0.5)
+        >>> ax.set_axis_off()
+    ![out](../../img/delaunay.png)
     """
     allowed_types = ["delaunay", "knn", "rel_nhood", "distband", "gabriel", "voronoi"]
     if method not in allowed_types:
