@@ -6,9 +6,9 @@ Pre-trained weights can be found on the [histolytics model hub](https://huggingf
 
 Available segmentation model architectures are:
 
-- `CellPosePanoptic`
+- `CellposePanoptic`
 - `HoverNetPanoptic`
-- `StardistPanoptic`
+- `StarDistPanoptic`
 - `CellVitPanoptic`
 - `CPPNetPanoptic`
 
@@ -16,12 +16,12 @@ Available segmentation model architectures are:
 ```python
 from histolytics.models.cellpose_panoptic import CellposePanoptic
 # from histolytics.models.hovernet_panoptic import HoverNetPanoptic
-# from histolytics.models.stardist_panoptic import StardistPanoptic
+# from histolytics.models.stardist_panoptic import StarDistPanoptic
 
 
 model = CellposePanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 # model = HoverNetPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
-# model = StardistPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
+# model = StarDistPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 ```
 
 ## 2. Run inference for one image
