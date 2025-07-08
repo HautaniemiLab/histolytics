@@ -14,12 +14,12 @@ Available segmentation model architectures are:
 
 
 ```python
-from histolytics.models.cellpose_panoptic import CellPosePanoptic
+from histolytics.models.cellpose_panoptic import CellposePanoptic
 # from histolytics.models.hovernet_panoptic import HoverNetPanoptic
 # from histolytics.models.stardist_panoptic import StardistPanoptic
 
 
-model = CellPosePanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
+model = CellposePanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 # model = HoverNetPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 # model = StardistPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 ```
