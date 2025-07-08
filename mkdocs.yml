@@ -101,7 +101,7 @@ nav:
     - Spatial Neighborhoods: user_guide/spatial/nhood_analysis.ipynb
     - Spatial Clustering: user_guide/spatial/clustering.ipynb
     - Chromatin Patterns: user_guide/spatial/chromatin_patterns.ipynb
-    - Collagen Fibers & Stromal Features: user_guide/spatial/collagen_fibers.ipynb
+    - Collagen Fibers: user_guide/spatial/collagen_fibers.ipynb
   - API Reference:
     - Overview: api/index.md
     - data:
