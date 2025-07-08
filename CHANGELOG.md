@@ -2,7 +2,7 @@
 
 All notable changes to Histolytics will be documented in this file.
 
-## [0.1.1] - 2024-07-03
+## [0.1.1] - 2025-07-03
 
 ### Added
 - Added `legendgram` utility for creating histogram legends from GeoDataFrames
@@ -10,7 +10,7 @@ All notable changes to Histolytics will be documented in this file.
 - Added `ripley_test`, `local_autocorr`, `global_autocorr` functions.
 - Improved documentation
 
-## [0.1.0] - 2024-05-28
+## [0.1.0] - 2025-05-28
 
 ### Added
 - Initial release of Histolytics

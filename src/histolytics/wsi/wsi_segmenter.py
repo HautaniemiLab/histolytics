@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from histolytics.models._base_model import BaseModelPanoptic
+from histolytics.utils.gdf import set_crs, set_uid
 from histolytics.wsi.slide_reader import SlideReader
 
 try:
@@ -124,6 +125,7 @@ class TissueMerger:
         merged = merged.explode().reset_index(drop=True)
         merged = merged[~merged.isnull()]
         merged.geometry = merged.geometry.buffer(1)
+        merged = set_uid(set_crs(merged), drop=True)
 
         if dst is not None:
             if suff == ".parquet":
