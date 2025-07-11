@@ -143,8 +143,9 @@ def sem2gdf(
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
         smooth_func (Callable):
             A function to smooth the polygons. The function should take a shapely Polygon
-            as input and return a shapely Polygon.
-
+            as input and return a shapely Polygon. Defaults to `uniform_smooth`, which
+            applies a uniform filter. `histolytics.utils._filters` also provides
+            `gaussian_smooth` and `median_smooth` for smoothing.
     returns:
         gpd.GeoDataFrame:
             A GeoDataFrame of the raster semantic mask. Contains columns:
