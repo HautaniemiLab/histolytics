@@ -1,66 +1,14 @@
-from typing import Any, Callable, Dict
+from typing import Callable, Dict
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import rasterio
-import shapely
-from rasterio.features import geometry_mask, shapes
-from scipy.ndimage import gaussian_filter
-from shapely.geometry import (
-    GeometryCollection,
-    LineString,
-    MultiLineString,
-    MultiPolygon,
-    Polygon,
-    shape,
-)
+from rasterio.features import rasterize, shapes
+from shapely.geometry import shape
 
-__all__ = ["gdf2inst", "gdf2sem", "inst2gdf", "sem2gdf", "gaussian_smooth"]
+from histolytics.utils._filters import uniform_smooth
 
-
-def gaussian_filter_2d(x: np.ndarray, y: np.ndarray, sigma: float = 0.7):
-    x_smooth = gaussian_filter(x, sigma=sigma)
-    y_smooth = gaussian_filter(y, sigma=sigma)
-
-    return x_smooth, y_smooth
-
-
-def gaussian_smooth(obj: Any, sigma: float = 0.7):
-    """Smooth a shapely (multi)polygon|(multi)linestring using a Gaussian filter."""
-    if isinstance(obj, Polygon):
-        x, y = obj.exterior.xy
-        x_smooth, y_smooth = gaussian_filter_2d(x, y, sigma=sigma)
-        smoothed = Polygon(zip(x_smooth, y_smooth))
-    elif isinstance(obj, MultiPolygon):
-        smoothed = MultiPolygon(
-            [gaussian_smooth(poly.exterior, sigma=sigma) for poly in obj.geoms]
-        )
-    elif isinstance(obj, LineString):
-        x, y = obj.xy
-        x_smooth, y_smooth = gaussian_filter_2d(x, y, sigma=sigma)
-        smoothed = LineString(zip(x_smooth, y_smooth))
-    elif isinstance(obj, MultiLineString):
-        smoothed = MultiLineString(
-            [
-                LineString(
-                    zip(*gaussian_filter_2d(line.xy[0], line.xy[1], sigma=sigma))
-                )
-                for line in obj.geoms
-            ]
-        )
-    elif isinstance(obj, GeometryCollection):
-        smoothed = GeometryCollection(
-            [
-                gaussian_smooth(geom, sigma=sigma)
-                for geom in obj.geoms
-                if isinstance(geom, (Polygon, LineString))
-            ]
-        )
-    else:
-        raise ValueError(f"Unsupported object type: {type(obj)}")
-
-    return smoothed
+__all__ = ["gdf2inst", "gdf2sem", "inst2gdf", "sem2gdf"]
 
 
 # adapted form https://github.com/corteva/geocube/blob/master/geocube/vector.py
@@ -71,7 +19,7 @@ def inst2gdf(
     yoff: int = None,
     class_dict: Dict[int, str] = None,
     min_size: int = 15,
-    smooth_func: Callable = gaussian_smooth,
+    smooth_func: Callable = uniform_smooth,
 ) -> gpd.GeoDataFrame:
     """Convert an instance segmentation raster mask to a GeoDataFrame.
 
@@ -91,14 +39,16 @@ def inst2gdf(
         yoff (int):
             The y offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
-        class_dict (Dict[int, str], default=None):
+        class_dict (Dict[int, str]):
             A dictionary mapping class indices to class names.
             e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
         min_size (int):
             The minimum size (in pixels) of the polygons to include in the GeoDataFrame.
         smooth_func (Callable):
             A function to smooth the polygons. The function should take a shapely Polygon
-            as input and return a shapely Polygon.
+            as input and return a shapely Polygon. Defaults to `uniform_smooth`, which
+            applies a uniform filter. `histolytics.utils._filters` also provides
+            `gaussian_smooth` and `median_smooth` for smoothing.
 
     returns:
         gpd.GeoDataFrame:
@@ -136,28 +86,28 @@ def inst2gdf(
         mask = type_map == t
         vectorized_data = (
             (value, class_dict[int(t)], shape(polygon))
-            for polygon, value in shapes(
-                inst_map,
-                mask=mask,
-            )
+            for polygon, value in shapes(inst_map, mask=mask)
         )
 
         res = gpd.GeoDataFrame(
             vectorized_data,
-            columns=["id", "class_name", "geometry"],
+            columns=["uid", "class_name", "geometry"],
         )
-        res["id"] = res["id"].astype(int)
+        res["uid"] = res["uid"].astype(int)
         inst_maps_per_type.append(res)
 
     res = pd.concat(inst_maps_per_type)
+
+    # filter out small geometries
     res = res.loc[res.area > min_size].reset_index(drop=True)
 
-    if xoff is not None:
-        res["geometry"] = res["geometry"].translate(xoff, 0)
+    # translate geometries if offsets are provided
+    if xoff is not None or yoff is not None:
+        res["geometry"] = res["geometry"].translate(
+            xoff if xoff is not None else 0, yoff if yoff is not None else 0
+        )
 
-    if yoff is not None:
-        res["geometry"] = res["geometry"].translate(0, yoff)
-
+    # smooth geometries if a smoothing function is provided
     if smooth_func is not None:
         res["geometry"] = res["geometry"].apply(smooth_func)
 
@@ -170,7 +120,7 @@ def sem2gdf(
     yoff: int = None,
     class_dict: Dict[int, str] = None,
     min_size: int = 15,
-    smooth_func: Callable = gaussian_smooth,
+    smooth_func: Callable = uniform_smooth,
 ) -> gpd.GeoDataFrame:
     """Convert an semantic segmentation raster mask to a GeoDataFrame.
 
@@ -186,7 +136,7 @@ def sem2gdf(
         yoff (int):
             The y offset. Optional. The offset is used to translate the geometries
             in the GeoDataFrame. If None, no translation is applied.
-        class_dict (Dict[int, str], default=None):
+        class_dict (Dict[int, str]):
             A dictionary mapping class indices to class names.
             e.g. {1: 'neoplastic', 2: 'immune'}. If None, the class indices will be used.
         min_size (int):
@@ -229,18 +179,17 @@ def sem2gdf(
 
     res = gpd.GeoDataFrame(
         vectorized_data,
-        columns=["id", "geometry"],
+        columns=["uid", "geometry"],
     )
-    res["id"] = res["id"].astype(int)
+    res["uid"] = res["uid"].astype(int)
     res = res.loc[res.area > min_size].reset_index(drop=True)
-    res["class_name"] = res["id"].map(class_dict)
-    res = res[["id", "class_name", "geometry"]]  # reorder columns
+    res["class_name"] = res["uid"].map(class_dict)
+    res = res[["uid", "class_name", "geometry"]]  # reorder columns
 
-    if xoff is not None:
-        res["geometry"] = res["geometry"].translate(xoff, 0)
-
-    if yoff is not None:
-        res["geometry"] = res["geometry"].translate(0, yoff)
+    if xoff is not None or yoff is not None:
+        res["geometry"] = res["geometry"].translate(
+            xoff if xoff is not None else 0, yoff if yoff is not None else 0
+        )
 
     if smooth_func is not None:
         res["geometry"] = res["geometry"].apply(smooth_func)
@@ -255,6 +204,7 @@ def gdf2inst(
     width: int = None,
     height: int = None,
     reset_index: bool = False,
+    id_col: str = None,
 ) -> gpd.GeoDataFrame:
     """Converts a GeoDataFrame to an instance segmentation raster mask.
 
@@ -275,6 +225,10 @@ def gdf2inst(
             If None, the height will be calculated from the input gdf.
         reset_index (bool):
             Whether to reset the index of the output GeoDataFrame.
+        id_col (str):
+            If provided, the column name to use for the instance IDs. If None, the index
+            of the GeoDataFrame will be used as instance IDs. Ignored if `reset_index`
+            is set to True.
 
     Returns:
         np.ndarray:
@@ -308,20 +262,24 @@ def gdf2inst(
     if height is None:
         height = int(ymax - ymin)
 
-    image_shape = (int(height), int(width))
-    out_mask = np.zeros(image_shape, dtype=np.int32)
-    for i, (ix, row) in enumerate(gdf.iterrows()):
-        mask = geometry_mask(
-            [shapely.affinity.translate(row.geometry, -xmin - xoff, -ymin - yoff)],
-            out_shape=image_shape,
-            transform=rasterio.Affine(1, 0, 0, 0, 1, 0),
-            invert=True,
-            all_touched=True,
-        )
-        if reset_index:
-            out_mask[mask] = int(i + 1)
+    geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+
+    if reset_index:
+        labels = range(len(gdf))
+    else:
+        if id_col is not None:
+            labels = gdf[id_col].values
         else:
-            out_mask[mask] = int(ix)
+            labels = gdf.index.values
+
+    image_shape = (int(height), int(width))
+    shapes = list(zip(geoms, labels))
+    out_mask = rasterize(
+        shapes,
+        out_shape=image_shape,
+        fill=0,
+        dtype=np.int32,
+    )
 
     return out_mask
 
@@ -388,19 +346,22 @@ def gdf2sem(
     if height is None:
         height = int(ymax - ymin)
 
+    # Translate geometries to the correct position
+    geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+
+    # Map class names to integer labels
+    if class_dict is None:
+        labels = gdf["class_name"].astype("category").cat.codes + 1
+    else:
+        labels = gdf["class_name"].map(class_dict).astype(np.int32)
+
     image_shape = (int(height), int(width))
-    out_mask = np.zeros(image_shape, dtype=np.int32)
-    for i, (cl, gdf) in enumerate(gdf.explode(index_parts=True).groupby("class_name")):
-        mask = geometry_mask(
-            gdf.geometry.translate(-xmin - xoff, -ymin - yoff),
-            out_shape=image_shape,
-            transform=rasterio.Affine(1, 0, 0, 0, 1, 0),
-            invert=True,
-            all_touched=True,
-        )
-        if class_dict is None:
-            out_mask[mask] = int(i + 1)
-        else:
-            out_mask[mask] = class_dict[cl]
+    shapes = list(zip(geoms, labels))
+    out_mask = rasterize(
+        shapes,
+        out_shape=image_shape,
+        fill=0,
+        dtype=np.int32,
+    )
 
     return out_mask
