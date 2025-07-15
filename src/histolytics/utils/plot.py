@@ -240,8 +240,8 @@ def legendgram(
 
     # Check if breaks are provided, if not, calculate them
     if breaks is None:
-        min_val = int(np.round((y.min()), 1))
-        max_val = int(np.round((y.max()), 1))
+        min_val = np.round((y.min()), 1)
+        max_val = np.round((y.max()), 1)
         step = np.round(((max_val - min_val) / n_bins), 3)
         breaks = np.arange(min_val, max_val, step)
 
