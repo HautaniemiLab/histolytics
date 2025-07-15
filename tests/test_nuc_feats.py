@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
-from histolytics.nuc_feats.chromatin import chromatin_clumps
+from histolytics.nuc_feats.chromatin import chromatin_feats
 from histolytics.nuc_feats.intensity import grayscale_intensity, rgb_intensity
 from histolytics.utils.raster import gdf2inst
 
@@ -54,8 +54,8 @@ def sample_data():
         (0.5, 0.5, {"has_chromatin": True, "areas_positive": True}),
     ],
 )
-def test_chromatin_clumps(sample_data, mean, std, expected_properties):
-    """Test chromatin_clumps with different parameters"""
+def test_chromatin_feats(sample_data, mean, std, expected_properties):
+    """Test chromatin_feats with different parameters"""
     img, label_mask, _ = sample_data
 
     # Skip test if no valid data
@@ -63,15 +63,15 @@ def test_chromatin_clumps(sample_data, mean, std, expected_properties):
         pytest.skip("No valid nuclei in mask")
 
     # Run the function
-    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_clumps(
+    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_feats(
         img, label=label_mask, mean=mean, std=std
     )
 
     # Basic validation
     assert isinstance(chrom_mask, np.ndarray)
     assert chrom_mask.shape == label_mask.shape
-    assert isinstance(chrom_areas, list)
-    assert isinstance(chrom_nuc_props, list)
+    assert isinstance(chrom_areas, np.ndarray)
+    assert isinstance(chrom_nuc_props, np.ndarray)
 
     # Count unique nuclei in the label mask
     unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
@@ -98,25 +98,29 @@ def test_chromatin_clumps(sample_data, mean, std, expected_properties):
     assert np.all(np.logical_or(chrom_mask == 0, label_mask > 0))
 
 
-def test_chromatin_clumps_empty_mask(sample_data):
-    """Test chromatin_clumps with an empty mask"""
+def test_chromatin_feats_empty_mask(sample_data):
+    """Test chromatin_feats with an empty mask"""
     img, _, _ = sample_data
 
     # Create empty label mask
     empty_mask = np.zeros(img.shape[:2], dtype=np.int32)
 
     # Run the function
-    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_clumps(img, label=empty_mask)
+    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_feats(img, label=empty_mask)
 
     # Check that results are as expected for empty input
     assert isinstance(chrom_mask, np.ndarray)
     assert np.all(chrom_mask == 0)
-    assert chrom_areas == []
-    assert chrom_nuc_props == []
+    assert isinstance(chrom_areas, np.ndarray)
+    assert chrom_areas.shape == (0,)
+    assert chrom_areas.size == 0
+    assert isinstance(chrom_nuc_props, np.ndarray)
+    assert chrom_nuc_props.shape == (0,)
+    assert chrom_nuc_props.size == 0
 
 
-def test_chromatin_clumps_invalid_input():
-    """Test chromatin_clumps with invalid input"""
+def test_chromatin_feats_invalid_input():
+    """Test chromatin_feats with invalid input"""
     # Create small random RGB image
     img = np.random.rand(50, 50, 3)
 
@@ -125,7 +129,7 @@ def test_chromatin_clumps_invalid_input():
 
     # Function should raise ValueError for shape mismatch
     with pytest.raises(ValueError):
-        chromatin_clumps(img, label=invalid_mask)
+        chromatin_feats(img, label=invalid_mask)
 
 
 @pytest.mark.parametrize(
