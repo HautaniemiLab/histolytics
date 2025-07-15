@@ -148,7 +148,8 @@ nav:
       - HoverNetPanoptic: api/models/hovernet_panoptic.md
       - StarDistPanoptic: api/models/stardist_panoptic.md
     - nuc_feats:
-      - chromatin_clumps: api/nuc_feats/chromatin_clumps.md
+      - extract_chromatin_clumps: api/nuc_feats/extract_chromatin_clumps.md
+      - chromatin_feats: api/nuc_feats/chromatin_feats.md
       - grayscale_intensity: api/nuc_feats/grayscale_intensity.md
       - rgb_intensity: api/nuc_feats/rgb_intensity.md
     - spatial_agg:
