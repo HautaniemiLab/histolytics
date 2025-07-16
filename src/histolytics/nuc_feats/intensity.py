@@ -140,6 +140,8 @@ def _norm_np(
     p2, p98 = np.percentile(img, (2, 98))
     img = rescale_intensity(img, in_range=(p2, p98), **kwargs)
 
+    return img, label
+
 
 def _to_grayscale_np(
     img: np.ndarray, label: np.ndarray, mask: np.ndarray = None
