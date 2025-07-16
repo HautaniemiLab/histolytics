@@ -208,41 +208,41 @@ def test_rgb_intensity(sample_data, quantiles, expected_shape):
 
     # Run the function
     means, stds, quantile_vals = rgb_intensity(
-        img, label=label_mask, quantiles=quantiles
+        img, label=label_mask, quantiles=quantiles, device="cpu"
     )
 
     # Count unique nuclei in the label mask
     unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
 
     # Basic validation - should be a tuple of 3 arrays (R,G,B)
-    assert isinstance(means, tuple)
-    assert isinstance(stds, tuple)
-    assert isinstance(quantile_vals, tuple)
-    assert len(means) == 3
-    assert len(stds) == 3
-    assert len(quantile_vals) == 3
+    assert isinstance(means, np.ndarray)
+    assert isinstance(stds, np.ndarray)
+    assert isinstance(quantile_vals, np.ndarray)
+    assert means.shape[-1] == 3
+    assert stds.shape[-1] == 3
+    assert quantile_vals.shape[-1] == 3
 
     # Check shapes for all channels
     for channel in range(3):
-        assert means[channel].shape == (unique_nuclei,)
-        assert stds[channel].shape == (unique_nuclei,)
-        assert quantile_vals[channel].shape == (unique_nuclei, expected_shape)
+        assert means[..., channel].shape == (unique_nuclei,)
+        assert stds[..., channel].shape == (unique_nuclei,)
+        assert quantile_vals[..., channel].shape == (unique_nuclei, expected_shape)
 
         # Check range for means (should be between 0 and 1 after rescaling)
-        assert np.all(means[channel] >= 0)
-        assert np.all(means[channel] <= 1)
+        assert np.all(means[..., channel] >= 0)
+        assert np.all(means[..., channel] <= 1)
 
         # Check that stds are non-negative
-        assert np.all(stds[channel] >= 0)
+        assert np.all(stds[..., channel] >= 0)
 
         # Check quantile values are between 0 and 1
-        assert np.all(quantile_vals[channel] >= 0)
-        assert np.all(quantile_vals[channel] <= 1)
+        assert np.all(quantile_vals[..., channel] >= 0)
+        assert np.all(quantile_vals[..., channel] <= 1)
 
         # Check quantile ordering (values should increase along the quantile axis)
         for i in range(unique_nuclei):
             assert np.all(
-                np.diff(quantile_vals[channel][i]) >= -1e-10
+                np.diff(quantile_vals[..., channel][i]) >= -1e-10
             )  # Allow small numerical errors
 
 
@@ -254,19 +254,21 @@ def test_intensity_empty_mask(sample_data):
     empty_mask = np.zeros(img.shape[:2], dtype=np.int32)
 
     # Test grayscale_intensity
-    g_means, g_stds, g_quantiles = grayscale_intensity(img, label=empty_mask)
+    g_means, g_stds, g_quantiles = grayscale_intensity(
+        img, label=empty_mask, device="cpu"
+    )
     assert isinstance(g_means, np.ndarray)
     assert g_means.size == 0
     assert g_stds.size == 0
     assert g_quantiles.size == 0
 
     # Test rgb_intensity
-    r_means, r_stds, r_quantiles = rgb_intensity(img, label=empty_mask)
+    r_means, r_stds, r_quantiles = rgb_intensity(img, label=empty_mask, device="cpu")
     for channel in range(3):
-        assert isinstance(r_means[channel], np.ndarray)
-        assert r_means[channel].size == 0
-        assert r_stds[channel].size == 0
-        assert r_quantiles[channel].size == 0
+        assert isinstance(r_means[..., channel], np.ndarray)
+        assert r_means[..., channel].size == 0
+        assert r_stds[..., channel].size == 0
+        assert r_quantiles[..., channel].size == 0
 
 
 def test_intensity_invalid_input():

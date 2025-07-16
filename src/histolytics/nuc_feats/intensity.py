@@ -87,8 +87,8 @@ def _intensity_features_cp(
 
     # Vectorized std computation and mean computation
     # this is faster on cpu side with ndimage than with cupy
-    means = ndimage_cp.mean(img, labels=label, index=unique_labels)
-    stds = ndimage_cp.standard_deviation(img, labels=label, index=unique_labels)
+    means = ndimage_cp.mean(img, labels=label, index=unique_labels).get()
+    stds = ndimage_cp.standard_deviation(img, labels=label, index=unique_labels).get()
     quantile_vals = _compute_quantiles_np(
         img.get(), label.get(), unique_labels.get(), quantiles=quantiles
     )
