@@ -66,7 +66,8 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 
 **Extracting features from nuclei**
 
-- [chromatin_clumps](nuc_feats/chromatin_clumps.md): Extract chromatin clumps from a nuclei segmentation.
+- [extract_chromatin_clumps](nuc_feats/extract_chromatin_clumps.md): Extract chromatin clumps from a nuclei segmentation.
+- [chromatin_feats](nuc_feats/chromatin_feats.md): Extract chromatin clumps and measurements from a nuclei segmentation.
 - [grayscale_intensity](nuc_feats/grayscale_intensity.md): Extract grayscale intensity features from a nuclei segmentation.
 - [rgb_intensity](nuc_feats/rgb_intensity.md): Extract RGB intensity features from a nuclei segmentation.
 
