@@ -1,13 +1,13 @@
+from collections import defaultdict
 from functools import partial
-from typing import Any, List, Union
+from typing import Union
 
 import geopandas as gpd
 import numpy as np
 import shapely
 from scipy.spatial import Voronoi
-from shapely import vectorized
+from shapely import contains_xy, get_coordinates
 from shapely.geometry import LineString, MultiLineString, Polygon
-from shapely.ops import linemerge
 
 from histolytics.utils.gdf import gdf_apply
 
@@ -19,12 +19,12 @@ __all__ = [
 ]
 
 
-def _equal_interval_points(obj: Any, n: int = None, delta: float = None):
+def _equal_interval_points(obj: LineString, n: int = None, delta: float = None):
     """Resample the points of a shapely object at equal intervals.
 
     Parameters:
-        obj (Any):
-            Any shapely object that has length property.
+        obj (LineString):
+            A LineString shapely object that has length property.
         n (int):
             Number of points, defaults to None
         delta (float):
@@ -42,42 +42,191 @@ def _equal_interval_points(obj: Any, n: int = None, delta: float = None):
         n = round(length / delta)
 
     distances = np.linspace(0, length, n)
-    points = [obj.interpolate(distance) for distance in distances]
-    points = np.array([(p.x, p.y) for p in points])
+    points = obj.interpolate(distances)
+    points = get_coordinates(points)
 
     return points
 
 
-def _group_contiguous_vertices(vertices: np.ndarray) -> List[LineString]:
-    """Group contiguous vertices into lines."""
-    grouped_lines = []
-    used_indices = set()
+def _group_contiguous_vertices(
+    vertices: np.ndarray,
+) -> Union[MultiLineString, LineString]:
+    """Group contiguous vertices from voronoi edges into a MultiLineString."""
+    if len(vertices) == 0:
+        return LineString()
 
-    for i in range(len(vertices)):
-        if i in used_indices:
+    # Build point-to-point connectivity
+    graph = defaultdict(set)
+    edge_map = {}
+
+    for i, edge in enumerate(vertices):
+        start, end = tuple(edge[0]), tuple(edge[1])
+        graph[start].add(end)
+        graph[end].add(start)
+        edge_map[(start, end)] = i
+        edge_map[(end, start)] = i
+
+    used_edges = set()
+    all_lines = []
+
+    # Find all connected components
+    for start_vertex in graph.keys():
+        if not graph[start_vertex]:  # Skip if no connections
             continue
 
-        current_line = [vertices[i][0], vertices[i][1]]
-        used_indices.add(i)
+        # Check if we can start a new path from this vertex
+        available_edges = []
+        for neighbor in graph[start_vertex]:
+            edge_id = edge_map.get((start_vertex, neighbor))
+            if edge_id is not None and edge_id not in used_edges:
+                available_edges.append((neighbor, edge_id))
 
-        while True:
-            found = False
-            for j in range(len(vertices)):
-                if j in used_indices:
-                    continue
+        if not available_edges:
+            continue
 
-                if np.array_equal(vertices[j][0], current_line[-1]):
-                    current_line.append(vertices[j][1])
-                    used_indices.add(j)
-                    found = True
+        # Start tracing from this vertex
+        for first_neighbor, first_edge_id in available_edges:
+            if first_edge_id in used_edges:
+                continue
+
+            path = [start_vertex, first_neighbor]
+            used_edges.add(first_edge_id)
+            current = first_neighbor
+
+            # Extend the path as far as possible
+            while True:
+                found_next = False
+                for next_vertex in graph[current]:
+                    edge_id = edge_map.get((current, next_vertex))
+                    if edge_id is not None and edge_id not in used_edges:
+                        path.append(next_vertex)
+                        used_edges.add(edge_id)
+                        current = next_vertex
+                        found_next = True
+                        break
+
+                if not found_next:
                     break
 
-            if not found:
-                break
+            # Only add lines with at least 2 points
+            if len(path) >= 2:
+                all_lines.append(LineString(path))
 
-        grouped_lines.append(LineString(current_line))
+    if len(all_lines) == 0:
+        return LineString()
+    elif len(all_lines) == 1:
+        return all_lines[0]
+    else:
+        return MultiLineString(all_lines)
 
-    return grouped_lines
+
+def _merge_close_linestrings(
+    geom: Union[LineString, MultiLineString], tolerance: float = 1e-6
+) -> Union[LineString, MultiLineString]:
+    """Merge LineStrings in a MultiLineString when their endpoints are very close.
+
+    Parameters:
+        geom (Union[LineString, MultiLineString]):
+            LineString or MultiLineString to process
+        tolerance (float):
+            Maximum distance between endpoints to consider them "close"
+
+    Returns:
+        LineString if all lines can be merged into one
+        MultiLineString if multiple separate line groups exist
+        Original geometry if it's already a single LineString
+    """
+    if isinstance(geom, LineString):
+        return geom
+
+    if not isinstance(geom, MultiLineString) or len(geom.geoms) <= 1:
+        return geom
+
+    lines = list(geom.geoms)
+    merged_lines = []
+
+    while lines:
+        # Start with the first remaining line
+        current_line = lines.pop(0)
+        current_coords = list(current_line.coords)
+
+        # Keep trying to extend this line
+        merged_something = True
+        while merged_something:
+            merged_something = False
+
+            # Check if any remaining line can be connected
+            for i, other_line in enumerate(lines):
+                other_coords = list(other_line.coords)
+
+                # Get endpoints of both lines
+                current_start = np.array(current_coords[0])
+                current_end = np.array(current_coords[-1])
+                other_start = np.array(other_coords[0])
+                other_end = np.array(other_coords[-1])
+
+                # Check all possible connections
+                connections = [
+                    # Connect current_end to other_start
+                    (
+                        np.linalg.norm(current_end - other_start),
+                        "end_to_start",
+                        other_coords,
+                    ),
+                    # Connect current_end to other_end (reverse other)
+                    (
+                        np.linalg.norm(current_end - other_end),
+                        "end_to_end",
+                        other_coords[::-1],
+                    ),
+                    # Connect current_start to other_start (reverse current)
+                    (
+                        np.linalg.norm(current_start - other_start),
+                        "start_to_start",
+                        other_coords,
+                    ),
+                    # Connect current_start to other_end
+                    (
+                        np.linalg.norm(current_start - other_end),
+                        "start_to_end",
+                        other_coords[::-1],
+                    ),
+                ]
+
+                # Find the closest connection within tolerance
+                min_dist, connection_type, coords_to_add = min(connections)
+
+                if min_dist <= tolerance:
+                    # Merge the lines
+                    if connection_type == "end_to_start":
+                        current_coords.extend(coords_to_add[1:])  # Skip duplicate point
+                    elif connection_type == "end_to_end":
+                        current_coords.extend(
+                            coords_to_add[:-1]
+                        )  # Skip duplicate point
+                    elif connection_type == "start_to_start":
+                        current_coords = (
+                            coords_to_add[::-1] + current_coords[1:]
+                        )  # Reverse and prepend
+                    elif connection_type == "start_to_end":
+                        current_coords = coords_to_add + current_coords[1:]  # Prepend
+
+                    # Remove the merged line from the list
+                    lines.pop(i)
+                    merged_something = True
+                    break
+
+        # Add the merged line to results
+        if len(current_coords) >= 2:
+            merged_lines.append(LineString(current_coords))
+
+    # Return appropriate geometry type
+    if len(merged_lines) == 0:
+        return LineString()
+    elif len(merged_lines) == 1:
+        return merged_lines[0]
+    else:
+        return MultiLineString(merged_lines)
 
 
 def _perpendicular_line(
@@ -145,13 +294,13 @@ def medial_lines(
     coords = _equal_interval_points(poly.exterior, n=num_points, delta=delta)
     vor = Voronoi(coords)
 
-    contains = vectorized.contains(poly, *vor.vertices.T)
+    contains = contains_xy(poly, *vor.vertices.T)
     contains = np.append(contains, False)
     ridge = np.asanyarray(vor.ridge_vertices, dtype=np.int64)
     edges = ridge[contains[ridge].all(axis=1)]
 
     grouped_lines = _group_contiguous_vertices(vor.vertices[edges])
-    medial = linemerge(grouped_lines)
+    medial = _merge_close_linestrings(grouped_lines, tolerance=1.0)
 
     return medial
 
