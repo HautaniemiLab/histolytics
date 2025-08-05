@@ -186,6 +186,38 @@ def fiber_feats(
         num_processes (int):
             The number of processes to use to extract the fiber features. If -1, all
             available processes will be used. Default is 1.
+
+    Returns:
+        gpd.GeoDataFrame: A GeoDataFrame containing the extracted collagen fibers as
+        LineString geometries and the computed metrics as columns.
+
+    Examples:
+        >>> from histolytics.data import hgsc_stroma_he, hgsc_stroma_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>>
+        >>> # Load example image and nuclei annotation
+        >>> img = hgsc_stroma_he()
+        >>> label = gdf2inst(hgsc_stroma_nuclei(), width=1500, height=1500)
+        >>>
+        >>> # Extract fiber features
+        >>> edge_gdf = fiber_feats(
+        ...    img,
+        ...    label=label,
+        ...    metrics=("length", "tortuosity", "average_turning_angle"),
+        ...    device="cpu",
+        ...    num_processes=4,
+        ...    normalize=True,
+        ... )
+        >>> print(edge_gdf.head(3))
+            uid  class_name                                           geometry  \
+        0   43           1  LINESTRING (1376.319 1.245, 1376.392 1.336, 13...
+        1   33           1  LINESTRING (911.201 1.68, 911.167 1.77, 911.12...
+        2   41           1  LINESTRING (1238.654 14.556, 1238.556 14.439, ...
+
+            length  tortuosity  average_turning_angle
+        0  0.172616    0.702666               0.385901
+        1  0.140985    0.884320               0.706733
+        2  0.491188    0.946679               0.952101
     """
     edges = extract_collagen_fibers(
         img, label=label, mask=mask, device=device, rm_bg=rm_bg, rm_fg=rm_fg
