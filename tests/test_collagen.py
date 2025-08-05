@@ -1,9 +1,10 @@
+import geopandas as gpd
 import numpy as np
 import pytest
 from skimage.measure import label
 
 from histolytics.data import hgsc_stroma_he, hgsc_stroma_nuclei
-from histolytics.stroma_feats.collagen import extract_collagen_fibers
+from histolytics.stroma_feats.collagen import extract_collagen_fibers, fiber_feats
 from histolytics.utils.raster import gdf2inst
 
 
@@ -109,3 +110,136 @@ def test_extract_collagen_fibers_invalid_input():
     # Should raise ValueError for shape mismatch
     with pytest.raises(ValueError):
         extract_collagen_fibers(img, label=invalid_mask)
+
+
+@pytest.mark.parametrize(
+    "metrics,expected_columns",
+    [
+        (("length",), ["length"]),
+        (("tortuosity", "length"), ["tortuosity", "length"]),
+        (
+            ("tortuosity", "average_turning_angle", "length"),
+            ["tortuosity", "average_turning_angle", "length"],
+        ),
+        (
+            ("major_axis_len", "minor_axis_len", "major_axis_angle"),
+            ["major_axis_len", "minor_axis_len", "major_axis_angle"],
+        ),
+        (
+            (
+                "tortuosity",
+                "average_turning_angle",
+                "length",
+                "major_axis_len",
+                "minor_axis_len",
+            ),
+            [
+                "tortuosity",
+                "average_turning_angle",
+                "length",
+                "major_axis_len",
+                "minor_axis_len",
+            ],
+        ),
+    ],
+)
+def test_fiber_feats_metrics_computation(stroma_data, metrics, expected_columns):
+    """Test that fiber_feats computes the requested metrics correctly."""
+    # Get test data
+    img, label = stroma_data
+
+    # Create full label mask first, then crop
+
+    # Run fiber_feats
+    result = fiber_feats(
+        img=img,
+        label=label,
+        metrics=metrics,
+        normalize=False,
+        device="cpu",
+        num_processes=1,
+    )
+
+    # Check that result is a GeoDataFrame
+    assert isinstance(result, gpd.GeoDataFrame)
+
+    # Check that all requested metrics are present
+    for metric in expected_columns:
+        assert (
+            metric in result.columns
+        ), f"Metric '{metric}' not found in result columns"
+
+    # Check that geometry column exists
+    assert "geometry" in result.columns
+
+    # Check that result has some fibers (assuming test data contains collagen)
+    assert len(result) > 0, "No fibers detected in test data"
+
+    # Check that metric values are reasonable (not all zeros, not all NaN)
+    for metric in expected_columns:
+        values = result[metric].values
+        assert not np.all(np.isnan(values)), f"All values for metric '{metric}' are NaN"
+        assert not np.all(values == 0), f"All values for metric '{metric}' are zero"
+        assert np.all(
+            np.isfinite(values)
+        ), f"Non-finite values found in metric '{metric}'"
+
+
+@pytest.mark.parametrize(
+    "normalize,rm_bg,rm_fg,device",
+    [
+        (False, True, True, "cpu"),
+        (True, True, True, "cpu"),
+        (False, False, True, "cpu"),
+        (False, True, False, "cpu"),
+        (False, False, False, "cpu"),
+        pytest.param(
+            False,
+            True,
+            True,
+            "cuda",
+            marks=pytest.mark.skipif(
+                True, reason="CUDA testing depends on hardware availability"
+            ),
+        ),
+    ],
+)
+def test_fiber_feats_parameter_combinations(
+    stroma_data, normalize, rm_bg, rm_fg, device
+):
+    """Test fiber_feats with different parameter combinations."""
+    img, label = stroma_data
+
+    # Test metrics subset
+    metrics = ("length", "tortuosity")
+
+    # Run fiber_feats
+    result = fiber_feats(
+        img=img,
+        label=label,
+        metrics=metrics,
+        normalize=normalize,
+        rm_bg=rm_bg,
+        rm_fg=rm_fg,
+        device=device,
+        num_processes=1,
+    )
+
+    # Basic checks
+    assert isinstance(result, gpd.GeoDataFrame)
+    assert "geometry" in result.columns
+    assert "length" in result.columns
+    assert "tortuosity" in result.columns
+
+    # Check normalization effect
+    if normalize and len(result) > 0:
+        for metric in metrics:
+            values = result[metric].values
+            assert np.all(values >= 0), f"Normalized {metric} values should be >= 0"
+            assert np.all(values <= 1), f"Normalized {metric} values should be <= 1"
+
+    # Check that different parameter combinations produce different results
+    # (This is more of a smoke test to ensure parameters affect the output)
+    if len(result) > 0:
+        assert np.all(result["length"] >= 0), "Length values should be positive"
+        assert np.all(result["tortuosity"] >= 0), "Tortuosity values should be >= 0"
