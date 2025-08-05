@@ -2,6 +2,7 @@ from typing import Optional, Tuple, Union
 
 import geopandas as gpd
 import numpy as np
+from scipy.stats import rankdata
 from shapely.geometry import LineString, MultiLineString
 
 from histolytics.spatial_geom.shape_metrics import (
@@ -155,6 +156,7 @@ LINE_SHAPE_LOOKUP = {
 def line_metric(
     gdf: gpd.GeoDataFrame,
     metrics: Tuple[str, ...],
+    normalize: bool = False,
     parallel: bool = True,
     num_processes: int = 1,
     col_prefix: str = None,
@@ -167,6 +169,8 @@ def line_metric(
             The input GeoDataFrame.
         metrics (Tuple[str, ...]):
             A Tuple/List of line metrics.
+        normalize (bool):
+            Flag whether to column (quantile) normalize the computed metrics or not.
         parallel (bool):
             Flag whether to use parallel apply operations when computing the diversities.
         num_processes (int):
@@ -234,16 +238,23 @@ def line_metric(
     met = list(metrics)
     if "length" in metrics:
         gdf[f"{col_prefix}length"] = gdf.length
+        if normalize:
+            ranks = rankdata(gdf[f"{col_prefix}length"], method="average")
+            quantiles = (ranks - 1) / (len(ranks) - 1)
+            gdf[f"{col_prefix}length"] = quantiles
         met.remove("length")
 
-    met = list(metrics)
     for metric in met:
-        gdf[metric] = gdf_apply(
+        gdf[f"{col_prefix}{metric}"] = gdf_apply(
             gdf,
             LINE_SHAPE_LOOKUP[metric],
             columns=["geometry"],
             parallel=parallel,
             num_processes=num_processes,
         )
+        if normalize:
+            ranks = rankdata(gdf[f"{col_prefix}{metric}"], method="average")
+            quantiles = (ranks - 1) / (len(ranks) - 1)
+            gdf[f"{col_prefix}{metric}"] = quantiles
 
     return gdf
