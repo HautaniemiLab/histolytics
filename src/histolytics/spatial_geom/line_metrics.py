@@ -239,9 +239,7 @@ def line_metric(
     if "length" in metrics:
         gdf[f"{col_prefix}length"] = gdf.length
         if normalize:
-            ranks = rankdata(gdf[f"{col_prefix}length"], method="average")
-            quantiles = (ranks - 1) / (len(ranks) - 1)
-            gdf[f"{col_prefix}length"] = quantiles
+            gdf[f"{col_prefix}length"] = _col_norm(gdf[f"{col_prefix}length"])
         met.remove("length")
 
     for metric in met:
@@ -253,8 +251,12 @@ def line_metric(
             num_processes=num_processes,
         )
         if normalize:
-            ranks = rankdata(gdf[f"{col_prefix}{metric}"], method="average")
-            quantiles = (ranks - 1) / (len(ranks) - 1)
-            gdf[f"{col_prefix}{metric}"] = quantiles
+            gdf[f"{col_prefix}{metric}"] = _col_norm(gdf[f"{col_prefix}{metric}"])
 
     return gdf
+
+
+def _col_norm(column: np.ndarray) -> np.ndarray:
+    ranks = rankdata(column, method="average")
+    quantiles = (ranks - 1) / (len(ranks) - 1)
+    return quantiles
