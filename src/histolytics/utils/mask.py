@@ -1,8 +1,18 @@
 from typing import List, Tuple
 
 import numpy as np
+import scipy.ndimage as ndimage
 from skimage.measure import label, regionprops
 from skimage.morphology import dilation, disk, erosion
+
+try:
+    import cupy as cp
+    import cupyx.scipy.ndimage as ndimage_cp
+
+    _has_cp = True
+except ImportError:
+    _has_cp = False
+
 
 __all__ = [
     "bounding_box",
@@ -10,7 +20,6 @@ __all__ = [
     "maskout_array",
     "rm_closed_edges",
     "rm_objects_mask",
-    "fill_holes_mask",
 ]
 
 
@@ -114,83 +123,65 @@ def rm_closed_edges(edges: np.ndarray) -> np.ndarray:
     return labeled_edges > 0
 
 
-def rm_objects_mask(mask: np.ndarray, min_size: int = 5000) -> np.ndarray:
-    """Removes small objects from a binary mask.
+def _rm_objects_mask_np(mask: np.ndarray, min_size: int = 1000) -> np.ndarray:
+    """Remove objects in a binary mask smaller than min_size."""
+    objs = ndimage.label(mask)[0]
+    labels = np.unique(objs)
+    labels = labels[labels > 0]
+
+    areas = ndimage.sum(mask, labels=objs, index=labels).astype(int)
+
+    # Remove all label masks smaller than min_size
+    mask = np.isin(objs, labels[areas > min_size])
+
+    return mask
+
+
+def _rm_objects_mask_cp(mask: np.ndarray, min_size: int = 1000) -> np.ndarray:
+    """Remove objects in a binary mask smaller than min_size."""
+    mask = cp.array(mask).astype(cp.int32)
+
+    objs = ndimage_cp.label(mask)[0]
+    labels = cp.unique(objs)
+    labels = labels[labels > 0]
+
+    areas = ndimage_cp.sum(mask, labels=objs, index=labels).astype(int)
+
+    # Remove all label masks smaller than min_size
+    mask = cp.isin(objs, labels[areas > min_size])
+
+    return mask.get()
+
+
+def rm_objects_mask(
+    mask: np.ndarray, min_size: int = 1000, device: str = "cuda"
+) -> np.ndarray:
+    """Remove objects in a binary mask smaller than min_size.
 
     Parameters:
         mask (np.ndarray):
-            Semantic mask. Shape (H, W).
+            The input binary mask.
         min_size (int):
-            Minimum size of the object to keep.
+            Minimum size of objects to keep.
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
+            Cuml will be used for GPU acceleration.
 
     Returns:
         np.ndarray:
-            Mask with small objects removed. Shape (H, W).
+            The binary mask with small objects removed.
     """
-    res = np.zeros_like(mask)
-    objs = label(mask)
-    for i in np.unique(objs)[1:]:
-        y1, y2, x1, x2 = bounding_box(objs == i)
-        y1 = y1 - 2 if y1 - 2 >= 0 else y1
-        x1 = x1 - 2 if x1 - 2 >= 0 else x1
-        x2 = x2 + 2 if x2 + 2 <= res.shape[1] - 1 else x2
-        y2 = y2 + 2 if y2 + 2 <= res.shape[0] - 1 else y2
-        crop = objs[y1:y2, x1:x2]
+    if device == "cuda" and not _has_cp:
+        raise RuntimeError(
+            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
+            "Please install them with:\n"
+            "  pip install cupy-cuda12x cucim-cu12\n"
+            "or set device='cpu'."
+        )
 
-        obj = crop == i
-        size = np.sum(obj)
-        if size > min_size:
-            res[y1:y2, x1:x2][obj] = 1
-
-    return res
-
-
-def fill_holes_mask(mask: np.ndarray, min_size: int = 1000) -> np.ndarray:
-    """Fills holes in a binary mask.
-
-    Parameters:
-        mask (np.ndarray):
-            Semantic mask. Shape (H, W).
-        min_size (int):
-            Minimum size of the hole to fill.
-
-    Returns:
-        np.ndarray:
-            Mask with holes filled. Shape (H, W).
-    """
-    res = np.zeros_like(mask)
-    objs = label(mask)
-    labs, c = np.unique(objs, return_counts=True)
-    labs = labs[c > 0]
-    if len(labs) <= 1:
-        return res
-
-    for i in labs[1:]:
-        obj = objs == i
-        if not np.any(obj):
-            continue
-        y1, y2, x1, x2 = bounding_box(obj)
-        y1 = y1 - 2 if y1 - 2 >= 0 else y1
-        x1 = x1 - 2 if x1 - 2 >= 0 else x1
-        x2 = x2 + 2 if x2 + 2 <= res.shape[1] - 1 else x2
-        y2 = y2 + 2 if y2 + 2 <= res.shape[0] - 1 else y2
-        crop = objs[y1:y2, x1:x2]
-        bg_objs = label(crop == 0)
-
-        h = crop.shape[0]
-        w = crop.shape[1]
-        corner_indices = [0, w - 1, (h - 1) * w, h * w - 1]
-        corner_mask = np.zeros(crop.size, dtype=bool)
-        corner_mask[corner_indices] = True
-
-        lab, cnts = np.unique(bg_objs, return_counts=True)
-        lab = lab[cnts < min_size]
-        for j in lab:
-            bg_obj = bg_objs == j
-            if np.any(corner_mask & bg_obj.flatten()):
-                continue
-            crop[bg_obj] = i
-
-        res[y1:y2, x1:x2][crop == i] = 1
-
-    return res
+    if device == "cuda":
+        return _rm_objects_mask_cp(mask, min_size=min_size)
+    elif device == "cpu":
+        return _rm_objects_mask_np(mask, min_size=min_size)
+    else:
+        raise ValueError(f"Invalid device '{device}'. Use 'cpu' or 'cuda'.")

@@ -13,7 +13,7 @@ from shapely.geometry import (
 __all__ = ["gaussian_smooth"]
 
 
-def _uniform_filter_2d(x: np.ndarray, y: np.ndarray, size: int = 3):
+def _uniform_filter_2d(x: np.ndarray, y: np.ndarray, size: int = 5):
     """Fastest smoothing option - uniform (box) filter."""
     x_smooth = uniform_filter1d(x, size=size, mode="nearest")
     y_smooth = uniform_filter1d(y, size=size, mode="nearest")
