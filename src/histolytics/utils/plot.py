@@ -8,10 +8,11 @@ from matplotlib import colormaps
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from histolytics.utils.mask_utils import bounding_box
+from histolytics.utils.mask import bounding_box
 
 __all__ = [
     "draw_thing_contours",
+    "legendgram",
 ]
 
 
