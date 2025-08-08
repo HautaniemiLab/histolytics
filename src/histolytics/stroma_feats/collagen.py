@@ -133,8 +133,8 @@ def extract_collagen_fibers(
 
 def fiber_feats(
     img: np.ndarray,
-    label: np.ndarray,
     metrics: Tuple[str],
+    label: np.ndarray = None,
     mask: np.ndarray = None,
     normalize: bool = False,
     rm_bg: bool = True,
@@ -142,7 +142,7 @@ def fiber_feats(
     device: str = "cuda",
     num_processes: int = 1,
 ) -> gpd.GeoDataFrame:
-    """Extract collagen fiber features from an image and label mask.
+    """Extract collagen fiber features from an H&E image.
 
     Note:
         This function extracts collagen fibers from the image and computes various metrics
@@ -159,9 +159,6 @@ def fiber_feats(
     Parameters:
         img (np.ndarray):
             The input H&E image. Shape (H, W, 3).
-        label (np.ndarray):
-            The nuclei binary or label mask. Shape (H, W). This is used to mask out the
-            nuclei when extracting collagen fibers. If None, the entire image is used.
         metrics (Tuple[str]):
             The metrics to compute. Options are:
                 - "tortuosity"
@@ -171,6 +168,9 @@ def fiber_feats(
                 - "minor_axis_len"
                 - "major_axis_angle"
                 - "minor_axis_angle"
+        label (np.ndarray):
+            The nuclei binary or label mask. Shape (H, W). This is used to mask out the
+            nuclei when extracting collagen fibers. If None, the entire image is used.
         mask (np.ndarray):
             Binary mask to restrict the region of interest. Shape (H, W). For example,
             it can be used to mask out tissues that are not of interest.
@@ -182,7 +182,8 @@ def fiber_feats(
             Whether to remove the foreground component from the edges.
         device (str):
             Device to use for collagen extraction. Options are 'cpu' or 'cuda'. If set to
-            'cuda', CuPy and cucim will be used for GPU acceleration.
+            'cuda', CuPy and cucim will be used for GPU acceleration. This affects only
+            the collagen extraction step, not the metric computation.
         num_processes (int):
             The number of processes to use to extract the fiber features. If -1, all
             available processes will be used. Default is 1.
