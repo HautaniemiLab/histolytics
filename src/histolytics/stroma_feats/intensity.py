@@ -25,7 +25,7 @@ def stromal_intensity_feats(
     hist_range: Tuple[float, float] = None,
     device: str = "cpu",
 ) -> pd.Series:
-    """Computes intensity features of stromal components (hematoxylin and eosin).
+    """Computes intensity features of stromal components of an input H&E image.
 
     Parameters:
         img (np.ndarray):
