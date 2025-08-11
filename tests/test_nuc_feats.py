@@ -1,9 +1,13 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
 from histolytics.nuc_feats.chromatin import chromatin_feats
-from histolytics.nuc_feats.intensity import grayscale_intensity, rgb_intensity
+from histolytics.nuc_feats.intensity import (
+    grayscale_intensity_feats,
+    rgb_intensity_feats,
+)
 from histolytics.utils.raster import gdf2inst
 
 
@@ -44,18 +48,29 @@ def sample_data():
 
 
 @pytest.mark.parametrize(
-    "mean,std,expected_properties",
+    "metrics,device,erode,expected_columns",
     [
-        # Default parameters
-        (0.0, 1.0, {"has_chromatin": True, "areas_positive": True}),
-        # With custom normalization
-        (0.2, 0.8, {"has_chromatin": True, "areas_positive": True}),
-        # With extreme normalization that should still work
-        (0.5, 0.5, {"has_chromatin": True, "areas_positive": True}),
+        # Basic metrics
+        (("chrom_area", "chrom_nuc_prop"), "cpu", False, 2),
+        (("chrom_area", "chrom_nuc_prop"), "cuda", False, 2),
+        # All metrics
+        (
+            ("chrom_area", "chrom_nuc_prop", "n_chrom_clumps", "chrom_boundary_prop"),
+            "cpu",
+            True,
+            4,
+        ),
+        # Single metric
+        (("chrom_area",), "cpu", False, 1),
+        (("n_chrom_clumps",), "cpu", True, 1),
+        # Boundary coverage only
+        (("chrom_boundary_prop",), "cpu", False, 1),
     ],
 )
-def test_chromatin_feats(sample_data, mean, std, expected_properties):
-    """Test chromatin_feats with different parameters"""
+def test_chromatin_feats_metrics_and_devices(
+    sample_data, metrics, device, erode, expected_columns
+):
+    """Test chromatin_feats with different metrics, devices, and erosion settings"""
     img, label_mask, _ = sample_data
 
     # Skip test if no valid data
@@ -63,88 +78,291 @@ def test_chromatin_feats(sample_data, mean, std, expected_properties):
         pytest.skip("No valid nuclei in mask")
 
     # Run the function
-    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_feats(
-        img, label=label_mask, mean=mean, std=std
+    result_df = chromatin_feats(
+        img, label_mask, metrics=metrics, device=device, erode=erode
     )
 
     # Basic validation
-    assert isinstance(chrom_mask, np.ndarray)
-    assert chrom_mask.shape == label_mask.shape
-    assert isinstance(chrom_areas, np.ndarray)
-    assert isinstance(chrom_nuc_props, np.ndarray)
+    assert isinstance(result_df, pd.DataFrame)
+    assert len(result_df.columns) == expected_columns
+
+    # Check that we have expected metrics as columns
+    for metric in metrics:
+        assert metric in result_df.columns
+
+    # Count unique nuclei in the label mask
+    unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
+    assert len(result_df) == unique_nuclei
+
+    # Validate specific metric properties
+    if "chrom_area" in metrics:
+        assert (result_df["chrom_area"] >= 0).all()
+        assert result_df["chrom_area"].dtype in [np.int32, np.int64, int]
+
+    if "chrom_nuc_prop" in metrics:
+        assert (result_df["chrom_nuc_prop"] >= 0).all()
+        assert (
+            result_df["chrom_nuc_prop"] <= 1.01
+        ).all()  # Allow slight floating point error
+        assert result_df["chrom_nuc_prop"].dtype in [np.float32, np.float64, float]
+
+    if "n_chrom_clumps" in metrics:
+        assert (result_df["n_chrom_clumps"] >= 0).all()
+        assert result_df["n_chrom_clumps"].dtype in [np.float32, np.float64, float]
+
+    if "chrom_boundary_prop" in metrics:
+        assert (result_df["chrom_boundary_prop"] >= 0).all()
+        assert (
+            result_df["chrom_boundary_prop"] <= 1.01
+        ).all()  # Allow slight floating point error
+        assert result_df["chrom_boundary_prop"].dtype in [np.float32, np.float64, float]
+
+    # Check that index contains the correct label IDs
+    expected_labels = np.unique(label_mask)[1:]  # Exclude background (0)
+    assert set(result_df.index) == set(expected_labels)
+
+    # Check that all values are numeric and not all NaN
+    assert not result_df.isna().all().all()
+
+
+@pytest.mark.parametrize(
+    "mean,std,mask_type,expected_behavior",
+    [
+        # Default normalization parameters
+        (0.0, 1.0, "none", "success"),
+        # Custom normalization
+        (0.5, 0.8, "none", "success"),
+        # With tissue mask
+        (0.0, 1.0, "partial", "success"),
+        # Empty mask
+        (0.0, 1.0, "empty", "empty_result"),
+        # Shape mismatch
+        (0.0, 1.0, "mismatch", "error"),
+    ],
+)
+def test_chromatin_feats_normalization_and_masking(
+    sample_data, mean, std, mask_type, expected_behavior
+):
+    """Test chromatin_feats with different normalization parameters and masking scenarios"""
+    img, label_mask, _ = sample_data
+
+    # Prepare masks based on mask_type
+    if mask_type == "none":
+        mask = None
+    elif mask_type == "partial":
+        mask = np.ones_like(label_mask)
+        mask[: mask.shape[0] // 2, :] = 0  # Mask out upper half
+    elif mask_type == "empty":
+        label_mask = np.zeros_like(label_mask)
+        mask = None
+    elif mask_type == "mismatch":
+        mask = np.ones((50, 50), dtype=np.uint8)  # Wrong shape
+    else:
+        mask = None
+
+    if expected_behavior == "error":
+        with pytest.raises(ValueError, match="Shape mismatch"):
+            chromatin_feats(img, label_mask, mask=mask, mean=mean, std=std)
+        return
+
+    # Run the function
+    result_df = chromatin_feats(
+        img,
+        label_mask,
+        metrics=("chrom_area", "chrom_nuc_prop"),
+        mask=mask,
+        mean=mean,
+        std=std,
+        device="cpu",
+    )
+
+    # Validate based on expected behavior
+    if expected_behavior == "empty_result":
+        assert isinstance(result_df, pd.DataFrame)
+        assert len(result_df) == 0
+        assert "chrom_area" in result_df.columns
+        assert "chrom_nuc_prop" in result_df.columns
+    elif expected_behavior == "success":
+        assert isinstance(result_df, pd.DataFrame)
+        assert len(result_df) > 0
+
+        # Validate that normalization parameters don't break the function
+        assert (result_df["chrom_area"] >= 0).all()
+        assert (result_df["chrom_nuc_prop"] >= 0).all()
+        assert (result_df["chrom_nuc_prop"] <= 1.01).all()
+
+        # If partial mask was used, should have fewer nuclei
+        if mask_type == "partial":
+            unique_nuclei_original = len(np.unique(sample_data[1])) - 1
+            assert len(result_df) <= unique_nuclei_original
+
+
+@pytest.mark.parametrize(
+    "img_modification,label_modification,expected_error",
+    [
+        # Wrong image shape (2D instead of 3D)
+        ("make_2d", "none", ValueError),
+        # Wrong image shape (4D)
+        ("make_4d", "none", ValueError),
+        # Image-label shape mismatch
+        ("crop_half", "none", ValueError),
+        # Label with wrong dtype
+        ("none", "float_dtype", None),
+        # Image with wrong dtype
+        ("uint16_dtype", "none", None),
+        # Empty image (all zeros)
+        ("all_zeros", "none", None),
+        # Label with only background
+        ("none", "only_background", None),
+    ],
+)
+def test_chromatin_feats_input_validation(
+    sample_data, img_modification, label_modification, expected_error
+):
+    """Test chromatin_feats input validation with various invalid inputs"""
+    img, label_mask, _ = sample_data
+
+    # Modify image based on img_modification
+    if img_modification == "make_2d":
+        img = img[:, :, 0]  # Remove color dimension
+    elif img_modification == "make_4d":
+        img = img[np.newaxis, ...]  # Add batch dimension
+    elif img_modification == "crop_half":
+        img = img[: img.shape[0] // 2, : img.shape[1] // 2]  # Crop to half size
+    elif img_modification == "uint16_dtype":
+        img = (img * 65535).astype(np.uint16)
+    elif img_modification == "all_zeros":
+        img = np.zeros_like(img)
+
+    # Modify label based on label_modification
+    if label_modification == "float_dtype":
+        label_mask = label_mask.astype(np.float32)
+    elif label_modification == "only_background":
+        label_mask = np.zeros_like(label_mask)
+
+    # Test the function
+    if expected_error:
+        with pytest.raises(expected_error):
+            chromatin_feats(img, label_mask, device="cpu")
+    else:
+        # Should not raise an error, but might return empty results
+        result_df = chromatin_feats(img, label_mask, device="cpu")
+        assert isinstance(result_df, pd.DataFrame)
+
+        # For cases that should work but return empty results
+        if label_modification == "only_background" or img_modification == "all_zeros":
+            assert len(result_df) == 0
+        # For dtype changes that should still work
+        elif img_modification == "uint16_dtype" or label_modification == "float_dtype":
+            # Should work normally if there are valid nuclei
+            if np.max(label_mask) > 0:
+                assert len(result_df) > 0
+                assert (result_df["chrom_area"] >= 0).all()
+                assert (result_df["chrom_nuc_prop"] >= 0).all()
+
+
+@pytest.mark.parametrize(
+    "metrics,device,expected_properties",
+    [
+        # Default metrics with CPU
+        (
+            ("mean", "std", "quantiles"),
+            "cpu",
+            {"has_features": True, "feature_count": 5},
+        ),
+        # Extended metrics with CPU
+        (
+            ("mean", "median", "std", "iqr", "mad"),
+            "cpu",
+            {"has_features": True, "feature_count": 5},
+        ),
+        # Histogram-based metrics
+        (
+            ("histenergy", "histentropy"),
+            "cpu",
+            {"has_features": True, "feature_count": 2},
+        ),
+    ],
+)
+def test_grayscale_intensity_feats(sample_data, metrics, device, expected_properties):
+    """Test grayscale_intensity_feats with different metrics and devices"""
+    img, label_mask, _ = sample_data
+
+    # Skip test if no valid data
+    if np.max(label_mask) == 0:
+        pytest.skip("No valid nuclei in mask")
+
+    # Run the function
+    result_df = grayscale_intensity_feats(
+        img, label_mask, metrics=metrics, device=device
+    )
+
+    # Basic validation
+    assert isinstance(result_df, pd.DataFrame)
 
     # Count unique nuclei in the label mask
     unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
 
-    # Check that we have the expected number of measurements
-    assert len(chrom_areas) == unique_nuclei
-    assert len(chrom_nuc_props) == unique_nuclei
+    # Check that we have the expected number of rows
+    assert len(result_df) == unique_nuclei
 
-    # Check for expected properties
-    if expected_properties.get("has_chromatin", False):
-        # Should have detected at least some chromatin
-        assert np.any(chrom_mask > 0)
+    # Check expected number of features
+    if expected_properties.get("has_features", False):
+        expected_cols = expected_properties.get("feature_count", 0)
+        assert len(result_df.columns) == expected_cols
 
-    if expected_properties.get("areas_positive", False):
-        # Areas should be positive
-        assert all(area >= 0 for area in chrom_areas)
+    # Check that all values are numeric and not all NaN
+    assert result_df.select_dtypes(include=[np.number]).shape[1] == len(
+        result_df.columns
+    )
+    assert not result_df.isna().all().all()
 
-    # Check that proportions are between 0 and 1
-    assert all(
-        0 <= prop <= 1.01 for prop in chrom_nuc_props
-    )  # Allow slight floating point error
-
-    # Check that the chromatin mask is within the nuclear mask
-    assert np.all(np.logical_or(chrom_mask == 0, label_mask > 0))
+    # Check that index contains the correct label IDs
+    expected_labels = np.unique(label_mask)[1:]  # Exclude background (0)
+    assert set(result_df.index) == set(expected_labels)
 
 
-def test_chromatin_feats_empty_mask(sample_data):
-    """Test chromatin_feats with an empty mask"""
+def test_grayscale_intensity_feats_empty_mask(sample_data):
+    """Test grayscale_intensity_feats with an empty mask"""
     img, _, _ = sample_data
 
     # Create empty label mask
     empty_mask = np.zeros(img.shape[:2], dtype=np.int32)
 
     # Run the function
-    chrom_mask, chrom_areas, chrom_nuc_props = chromatin_feats(img, label=empty_mask)
+    result_df = grayscale_intensity_feats(img, empty_mask)
 
     # Check that results are as expected for empty input
-    assert isinstance(chrom_mask, np.ndarray)
-    assert np.all(chrom_mask == 0)
-    assert isinstance(chrom_areas, np.ndarray)
-    assert chrom_areas.shape == (0,)
-    assert chrom_areas.size == 0
-    assert isinstance(chrom_nuc_props, np.ndarray)
-    assert chrom_nuc_props.shape == (0,)
-    assert chrom_nuc_props.size == 0
-
-
-def test_chromatin_feats_invalid_input():
-    """Test chromatin_feats with invalid input"""
-    # Create small random RGB image
-    img = np.random.rand(50, 50, 3)
-
-    # Create incompatible label mask (wrong shape)
-    invalid_mask = np.zeros((30, 30), dtype=np.int32)
-
-    # Function should raise ValueError for shape mismatch
-    with pytest.raises(ValueError):
-        chromatin_feats(img, label=invalid_mask)
+    assert isinstance(result_df, pd.DataFrame)
+    assert len(result_df) == 0
+    assert len(result_df.columns) > 0  # Should still have column names
 
 
 @pytest.mark.parametrize(
-    "quantiles,expected_shape",
+    "metrics,device,expected_properties",
     [
-        # Default quantiles
-        ((0.25, 0.5, 0.75), 3),
-        # Single quantile
-        ((0.5,), 1),
-        # More quantiles
-        ((0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), 9),
+        # Default metrics with CPU
+        (
+            ("mean", "std", "quantiles"),
+            "cpu",
+            {"has_features": True, "feature_count": 15},
+        ),  # 5 features * 3 channels
+        # Basic metrics with CPU
+        (
+            ("mean", "median"),
+            "cpu",
+            {"has_features": True, "feature_count": 6},
+        ),  # 2 features * 3 channels
+        # Single metric
+        (
+            ("mean",),
+            "cpu",
+            {"has_features": True, "feature_count": 3},
+        ),  # 1 feature * 3 channels
     ],
 )
-def test_grayscale_intensity(sample_data, quantiles, expected_shape):
-    """Test grayscale_intensity with different quantiles"""
+def test_rgb_intensity_feats(sample_data, metrics, device, expected_properties):
+    """Test rgb_intensity_feats with different metrics and devices"""
     img, label_mask, _ = sample_data
 
     # Skip test if no valid data
@@ -152,136 +370,44 @@ def test_grayscale_intensity(sample_data, quantiles, expected_shape):
         pytest.skip("No valid nuclei in mask")
 
     # Run the function
-    means, stds, quantile_vals = grayscale_intensity(
-        img, label=label_mask, quantiles=quantiles
-    )
-
-    # Count unique nuclei in the label mask
-    unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
+    result_df = rgb_intensity_feats(img, label_mask, metrics=metrics, device=device)
 
     # Basic validation
-    assert isinstance(means, np.ndarray)
-    assert isinstance(stds, np.ndarray)
-    assert isinstance(quantile_vals, np.ndarray)
-
-    # Check shapes
-    assert means.shape == (unique_nuclei,)
-    assert stds.shape == (unique_nuclei,)
-    assert quantile_vals.shape == (unique_nuclei, expected_shape)
-
-    # Check range for means (should be between 0 and 1 after rescaling)
-    assert np.all(means >= 0)
-    assert np.all(means <= 1)
-
-    # Check that stds are non-negative
-    assert np.all(stds >= 0)
-
-    # Check quantile values are between 0 and 1
-    assert np.all(quantile_vals >= 0)
-    assert np.all(quantile_vals <= 1)
-
-    # Check quantile ordering (values should increase along the quantile axis)
-    for i in range(unique_nuclei):
-        assert np.all(
-            np.diff(quantile_vals[i]) >= -1e-10
-        )  # Allow small numerical errors
-
-
-@pytest.mark.parametrize(
-    "quantiles,expected_shape",
-    [
-        # Default quantiles
-        ((0.25, 0.5, 0.75), 3),
-        # Single quantile
-        ((0.5,), 1),
-        # More quantiles
-        ((0.1, 0.3, 0.5, 0.7, 0.9), 5),
-    ],
-)
-def test_rgb_intensity(sample_data, quantiles, expected_shape):
-    """Test rgb_intensity with different quantiles"""
-    img, label_mask, _ = sample_data
-
-    # Skip test if no valid data
-    if np.max(label_mask) == 0:
-        pytest.skip("No valid nuclei in mask")
-
-    # Run the function
-    means, stds, quantile_vals = rgb_intensity(
-        img, label=label_mask, quantiles=quantiles, device="cpu"
-    )
+    assert isinstance(result_df, pd.DataFrame)
 
     # Count unique nuclei in the label mask
     unique_nuclei = len(np.unique(label_mask)) - 1  # Subtract 1 for background
 
-    # Basic validation - should be a tuple of 3 arrays (R,G,B)
-    assert isinstance(means, np.ndarray)
-    assert isinstance(stds, np.ndarray)
-    assert isinstance(quantile_vals, np.ndarray)
-    assert means.shape[-1] == 3
-    assert stds.shape[-1] == 3
-    assert quantile_vals.shape[-1] == 3
+    # Check that we have the expected number of rows
+    assert len(result_df) == unique_nuclei
 
-    # Check shapes for all channels
-    for channel in range(3):
-        assert means[..., channel].shape == (unique_nuclei,)
-        assert stds[..., channel].shape == (unique_nuclei,)
-        assert quantile_vals[..., channel].shape == (unique_nuclei, expected_shape)
+    # Check expected number of features (should be metrics * 3 channels)
+    if expected_properties.get("has_features", False):
+        expected_cols = expected_properties.get("feature_count", 0)
+        assert len(result_df.columns) == expected_cols
 
-        # Check range for means (should be between 0 and 1 after rescaling)
-        assert np.all(means[..., channel] >= 0)
-        assert np.all(means[..., channel] <= 1)
+    # Check that column names have RGB prefixes
+    channel_prefixes = ["R_", "G_", "B_"]
+    for col in result_df.columns:
+        assert any(col.startswith(prefix) for prefix in channel_prefixes)
 
-        # Check that stds are non-negative
-        assert np.all(stds[..., channel] >= 0)
-
-        # Check quantile values are between 0 and 1
-        assert np.all(quantile_vals[..., channel] >= 0)
-        assert np.all(quantile_vals[..., channel] <= 1)
-
-        # Check quantile ordering (values should increase along the quantile axis)
-        for i in range(unique_nuclei):
-            assert np.all(
-                np.diff(quantile_vals[..., channel][i]) >= -1e-10
-            )  # Allow small numerical errors
-
-
-def test_intensity_empty_mask(sample_data):
-    """Test intensity functions with an empty mask"""
-    img, _, _ = sample_data
-
-    # Create empty label mask
-    empty_mask = np.zeros(img.shape[:2], dtype=np.int32)
-
-    # Test grayscale_intensity
-    g_means, g_stds, g_quantiles = grayscale_intensity(
-        img, label=empty_mask, device="cpu"
+    # Check that all values are numeric and not all NaN
+    assert result_df.select_dtypes(include=[np.number]).shape[1] == len(
+        result_df.columns
     )
-    assert isinstance(g_means, np.ndarray)
-    assert g_means.size == 0
-    assert g_stds.size == 0
-    assert g_quantiles.size == 0
+    assert not result_df.isna().all().all()
 
-    # Test rgb_intensity
-    r_means, r_stds, r_quantiles = rgb_intensity(img, label=empty_mask, device="cpu")
-    for channel in range(3):
-        assert isinstance(r_means[..., channel], np.ndarray)
-        assert r_means[..., channel].size == 0
-        assert r_stds[..., channel].size == 0
-        assert r_quantiles[..., channel].size == 0
+    # Check that index contains the correct label IDs
+    expected_labels = np.unique(label_mask)[1:]  # Exclude background (0)
+    assert set(result_df.index) == set(expected_labels)
 
 
-def test_intensity_invalid_input():
-    """Test intensity functions with invalid input"""
-    # Create small random RGB image
+def test_rgb_intensity_feats_shape_mismatch():
+    """Test rgb_intensity_feats with mismatched image and label shapes"""
+    # Create test data with mismatched shapes
     img = np.random.rand(50, 50, 3)
+    label_mask = np.zeros((30, 30), dtype=np.int32)
 
-    # Create incompatible label mask (wrong shape)
-    invalid_mask = np.zeros((30, 30), dtype=np.int32)
-
-    # Functions should raise ValueError for shape mismatch
-    with pytest.raises(ValueError):
-        grayscale_intensity(img, label=invalid_mask)
-
-    with pytest.raises(ValueError):
-        rgb_intensity(img, label=invalid_mask)
+    # Function should raise ValueError for shape mismatch
+    with pytest.raises(ValueError, match="Shape mismatch"):
+        rgb_intensity_feats(img, label_mask)

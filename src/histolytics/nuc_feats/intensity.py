@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Tuple
 
 import numpy as np
@@ -32,7 +33,7 @@ def grayscale_intensity_feats(
     n_bins: int = 32,
     hist_range: Tuple[float, float] = None,
     mask: np.ndarray = None,
-    device: str = "cuda",
+    device: str = "cpu",
 ) -> pd.DataFrame:
     """Computes grayscale intensity features of labeled objects in `img`.
 
@@ -44,6 +45,8 @@ def grayscale_intensity_feats(
         metrics (Tuple[str, ...]):
             Metrics to compute for each object. Options are:
 
+                - "min"
+                - "max"
                 - "mean"
                 - "median"
                 - "std"
@@ -142,7 +145,7 @@ def rgb_intensity_feats(
     n_bins: int = 32,
     hist_range: Tuple[float, float] = None,
     mask: np.ndarray = None,
-    device: str = "cuda",
+    device: str = "cpu",
 ) -> pd.DataFrame:
     """Computes rgb-intensity features of labeled objects in `img`.
 
@@ -151,6 +154,22 @@ def rgb_intensity_feats(
             Image to compute properties from. Shape (H, W, 3).
         label (np.ndarray):
             Label image. Shape (H, W).
+        metrics (Tuple[str, ...]):
+            Metrics to compute for each object. Options are:
+
+                - "max"
+                - "min"
+                - "mean"
+                - "median"
+                - "std"
+                - "quantiles"
+                - "meanmediandiff"
+                - "mad"
+                - "iqr"
+                - "skewness"
+                - "kurtosis"
+                - "histenergy"
+                - "histentropy"
         quantiles (Tuple[float, ...]):
             Quantiles to compute for each object. Ignored if `metrics` does not include
             "quantiles".
@@ -172,8 +191,8 @@ def rgb_intensity_feats(
         ValueError: If the shape of `img` and `label` do not match.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the computed features for each RGB-channel
-        for each object.
+        pd.DataFrame:
+            A DataFrame containing the computed features for each RGB-channel for each object.
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
@@ -253,6 +272,8 @@ def _intensity_features_cp(
     hist_range: Tuple[float, float] = None,
 ):
     gpu_metrics = [
+        "min",
+        "max",
         "mean",
         "median",
         "std",
@@ -265,16 +286,6 @@ def _intensity_features_cp(
 
     unique_labels = cp.unique(labels)
     unique_labels = unique_labels[unique_labels > 0]
-
-    if len(unique_labels) == 0:
-        # Build columns list for empty DataFrame
-        columns = []
-        for m in metrics:
-            if m == "quantiles":
-                columns.extend([f"quantile_{q}" for q in quantiles])
-            else:
-                columns.append(m)
-        return pd.DataFrame(np.empty((0, len(columns))), columns=columns, index=[])
 
     # Compute GPU-advantageous metrics
     results = []
@@ -295,6 +306,12 @@ def _intensity_features_cp(
             if median is None:
                 median = ndimage_cp.median(img, labels=labels, index=unique_labels)
             results.append(median)
+        elif metric == "min":
+            min_val = ndimage_cp.minimum(img, labels=labels, index=unique_labels)
+            results.append(min_val)
+        elif metric == "max":
+            max_val = ndimage_cp.maximum(img, labels=labels, index=unique_labels)
+            results.append(max_val)
         elif metric == "std":
             std = ndimage_cp.standard_deviation(img, labels=labels, index=unique_labels)
             results.append(std)
@@ -314,6 +331,12 @@ def _intensity_features_cp(
             else:
                 results.append(entropy)
 
+    results = pd.DataFrame(
+        cp.column_stack(results).get(),
+        columns=[m for m in metrics if m in gpu_metrics],
+        index=unique_labels.get(),
+    )
+
     # For other metrics (quantiles, iqr, mad, skewness, kurtosis),
     # compute on CPU side and convert back to GPU
     cpu_metrics = [m for m in metrics if m not in gpu_metrics]
@@ -326,33 +349,18 @@ def _intensity_features_cp(
         hist_range=hist_range,
     )
 
-    # Stack results to create the final matrix
-    if results:
-        gpu_result = cp.column_stack(results)
-        if cpu_result.size > 0:
-            cpu_result_gpu = cp.asarray(cpu_result)
-            final_result = cp.concatenate([gpu_result, cpu_result_gpu], axis=1)
-        else:
-            final_result = gpu_result
-    else:
-        if cpu_result.size > 0:
-            final_result = cp.asarray(cpu_result)
-        else:
-            final_result = cp.empty((len(unique_labels), 0))
+    final_result = pd.concat([results, cpu_result], axis=1)
+    # Re-order columns to match the order of metrics
+    final_result = final_result[
+        [
+            col
+            for met in metrics
+            for col in final_result.columns
+            if (col == met or (col.split("_")[0] if "_" in col else "_") in met)
+        ]
+    ]
 
-    # Convert to numpy for DataFrame
-    final_result_np = final_result.get()
-    unique_labels_np = unique_labels.get()
-
-    # Build columns list
-    columns = []
-    for m in metrics:
-        if m == "quantiles":
-            columns.extend([f"quantile_{q}" for q in quantiles])
-        else:
-            columns.append(m)
-
-    return pd.DataFrame(final_result_np, columns=columns, index=unique_labels_np)
+    return final_result
 
 
 def _intensity_features_np(
@@ -367,6 +375,7 @@ def _intensity_features_np(
     unique_labels = np.unique(label)
     unique_labels = unique_labels[unique_labels > 0]
 
+    # return empty DataFrame if no unique labels
     if len(unique_labels) == 0:
         # Build columns list for empty DataFrame
         columns = []
@@ -377,35 +386,7 @@ def _intensity_features_np(
                 columns.append(m)
         return pd.DataFrame(np.empty((0, len(columns))), columns=columns, index=[])
 
-    feats = _compute_intensity_features_np(
-        img,
-        label=label,
-        index=unique_labels,
-        metrics=metrics,
-        quantiles=quantiles,
-        n_bins=n_bins,
-        hist_range=hist_range,
-    )
-    # Build columns list
-    columns = []
-    for m in metrics:
-        if m == "quantiles":
-            columns.extend([f"quantile_{q}" for q in quantiles])
-        else:
-            columns.append(m)
-    return pd.DataFrame(feats, columns=columns, index=unique_labels)
-
-
-def _compute_intensity_features_np(
-    img: np.ndarray,
-    label: np.ndarray,
-    index: np.ndarray,
-    metrics: Tuple[str, ...] = ("mean", "std", "quantiles"),
-    quantiles: Tuple[float, ...] = (0.25, 0.5, 0.75),
-    n_bins: int = 32,
-    hist_range: Tuple[float, float] = None,
-) -> pd.DataFrame:
-    """Compute intensity features for labeled regions in an image."""
+    # get histogram range
     if "histenergy" in metrics or "histentropy" in metrics:
         if hist_range is None:
             # Use labeled_comprehension to compute min and max together for each region
@@ -413,82 +394,103 @@ def _compute_intensity_features_np(
                 return np.nanmin(values), np.nanmax(values)
 
             min_max = ndimage.labeled_comprehension(
-                img, label, index, min_max_func, np.ndarray, None
+                img, label, unique_labels, min_max_func, np.ndarray, None
             )
             mins = np.array([mm[0] for mm in min_max])
             maxs = np.array([mm[1] for mm in min_max])
             hist_range = (np.nanmin(mins), np.nanmax(maxs))
 
-    def compute_feats(values, quantiles=quantiles, hist_range=hist_range):
-        feats = []
-        if len(values) > 0:
-            mean_val = None
-            median_val = None
-            if "mean" in metrics:
-                mean_val = np.mean(values)
-                feats.append(mean_val)
-            if "median" in metrics:
-                median_val = np.median(values)
-                feats.append(median_val)
-
-            for metric in metrics:
-                if metric == "std":
-                    feats.append(np.std(values))
-                elif metric == "meanmediandiff":
-                    if mean_val is None:
-                        mean_val = np.mean(values)
-                    if median_val is None:
-                        median_val = np.median(values)
-                    feats.append(np.abs(mean_val - median_val))
-                elif metric == "iqr":
-                    feats.append(iqr(values))
-                elif metric == "mad":
-                    if median_val is None:
-                        median_val = np.median(values)
-                    feats.append(np.median(np.abs(values - median_val)))
-                elif metric == "skewness":
-                    feats.append(skew(values) if len(values) > 2 else np.nan)
-                elif metric == "kurtosis":
-                    feats.append(kurtosis(values) if len(values) > 3 else np.nan)
-                elif metric == "quantiles":
-                    feats.extend(np.quantile(values, quantiles))
-                if metric in ("histenergy", "histentropy"):
-                    hist, _ = np.histogram(values, bins=n_bins, range=hist_range)
-                    prob = hist / np.sum(hist, dtype=np.float32)
-                    if metric == "histenergy":
-                        feats.append(np.sum(prob**2))
-                    elif metric == "histentropy":
-                        feats.append(entropy(prob))
-        else:
-            # If no values, return NaNs for all metrics
-            n_feats = 0
-            for metric in metrics:
-                if metric == "quantiles":
-                    n_feats += len(quantiles) - 1
-                else:
-                    n_feats += 1
-
-            feats.extend([np.nan] * n_feats)
-
-        return np.array(feats)
-
+    # run labeled_comprehension to compute features
+    _feats_func = partial(
+        _compute_intensity_feats,
+        metrics=metrics,
+        quantiles=quantiles,
+        n_bins=n_bins,
+        hist_range=hist_range,
+    )
     result = ndimage.labeled_comprehension(
         img,
         label,
-        index,
-        compute_feats,
+        unique_labels,
+        _feats_func,
         np.ndarray,  # output type
         None,  # default value
         pass_positions=False,
     )
 
     # Reshape result to (n_objects, n_feats)
-    if len(index) == 1:
+    if len(unique_labels) == 1:
         result = result.reshape(1, -1)
     else:
         result = np.vstack(result)
 
-    return result
+    # Build columns list (add quantile columns)
+    columns = []
+    for m in metrics:
+        if m == "quantiles":
+            columns.extend([f"quantile_{q}" for q in quantiles])
+        else:
+            columns.append(m)
+
+    return pd.DataFrame(result, columns=columns, index=unique_labels)
+
+
+def _compute_intensity_feats(values, metrics, quantiles, n_bins, hist_range):
+    feats = []
+    if len(values) > 0:
+        mean_val = None
+        median_val = None
+
+        for metric in metrics:
+            if metric == "mean":
+                mean_val = np.mean(values)
+                feats.append(mean_val)
+            elif metric == "median":
+                median_val = np.median(values)
+                feats.append(median_val)
+            elif metric == "min":
+                feats.append(np.min(values))
+            elif metric == "max":
+                feats.append(np.max(values))
+            elif metric == "std":
+                feats.append(np.std(values))
+            elif metric == "meanmediandiff":
+                if mean_val is None:
+                    mean_val = np.mean(values)
+                if median_val is None:
+                    median_val = np.median(values)
+                feats.append(np.abs(mean_val - median_val))
+            elif metric == "iqr":
+                feats.append(iqr(values))
+            elif metric == "mad":
+                if median_val is None:
+                    median_val = np.median(values)
+                feats.append(np.median(np.abs(values - median_val)))
+            elif metric == "skewness":
+                feats.append(skew(values) if len(values) > 2 else np.nan)
+            elif metric == "kurtosis":
+                feats.append(kurtosis(values) if len(values) > 3 else np.nan)
+            elif metric == "quantiles":
+                feats.extend(np.quantile(values, quantiles))
+            elif metric in ("histenergy", "histentropy"):
+                hist, _ = np.histogram(values, bins=n_bins, range=hist_range)
+                prob = hist / np.sum(hist, dtype=np.float32)
+                if metric == "histenergy":
+                    feats.append(np.sum(prob**2))
+                elif metric == "histentropy":
+                    feats.append(entropy(prob))
+    else:
+        # If no values, return NaNs for all metrics
+        n_feats = 0
+        for metric in metrics:
+            if metric == "quantiles":
+                n_feats += len(quantiles) - 1
+            else:
+                n_feats += 1
+
+        feats.extend([np.nan] * n_feats)
+
+    return np.array(feats)
 
 
 def _compute_hist_stats_cp(
