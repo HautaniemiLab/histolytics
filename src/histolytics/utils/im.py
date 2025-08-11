@@ -19,7 +19,168 @@ except ImportError:
 __all__ = [
     "kmeans_img",
     "tissue_components",
+    "get_eosin_mask",
+    "get_hematoxylin_mask",
+    "hed_decompose",
 ]
+
+
+from typing import Union
+
+from skimage.color import hed2rgb, rgb2gray, rgb2hed
+from skimage.filters.thresholding import threshold_otsu
+
+try:
+    import cupy as cp
+    from cucim.skimage.color import hed2rgb as hed2rgb_cp
+    from cucim.skimage.color import rgb2gray as rgb2gray_cp
+    from cucim.skimage.color import rgb2hed as rgb2hed_cp
+    from cucim.skimage.filters.thresholding import (
+        threshold_otsu as threshold_otsu_cp,
+    )
+
+    _has_cp = True
+except ImportError:
+    _has_cp = False
+
+Number = Union[int, float]
+
+
+def hed_decompose(
+    img: np.ndarray, device: str = "cpu"
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Transform an image to HED space and return the 3 channels.
+
+    Parameters:
+        img (np.ndarray):
+            The input image. Shape (H, W, 3).
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: The H, E, D channels.
+    """
+    if device == "cuda" and _has_cp:
+        return _hed_decompose_cp(img)
+    else:
+        return _hed_decompose_np(img)
+
+
+def get_eosin_mask(img_eosin: np.ndarray, device: str = "cpu") -> np.ndarray:
+    """Get the binary eosin mask from the eosin channel.
+
+    Parameters:
+        img_eosin (np.ndarray):
+            The eosin channel. Shape (H, W, 3).
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'.
+
+    Returns:
+        np.ndarray:
+            The binary eosin mask. Shape (H, W).
+    """
+    if device == "cuda" and _has_cp:
+        return _get_eosin_mask_cp(img_eosin)
+    else:
+        return _get_eosin_mask_np(img_eosin)
+
+
+def get_hematoxylin_mask(
+    img_hematoxylin: np.ndarray, eosin_mask: np.ndarray, device: str = "cpu"
+) -> np.ndarray:
+    """Get the binary hematoxylin mask from the hematoxylin channel.
+
+    Parameters:
+        img_hematoxylin (np.ndarray):
+            The hematoxylin channel. Shape (H, W, 3).
+        eosin_mask (np.ndarray):
+            The eosin mask. Shape (H, W).
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'.
+
+    Returns:
+        np.ndarray:
+            The binary hematoxylin mask. Shape (H, W).
+    """
+    if device == "cuda" and _has_cp:
+        return _get_hematoxylin_mask_cp(img_hematoxylin, eosin_mask)
+    else:
+        return _get_hematoxylin_mask_np(img_hematoxylin, eosin_mask)
+
+
+def kmeans_img(
+    img: np.ndarray, n_clust: int = 3, seed: int = 42, device: str = "cuda"
+) -> np.ndarray:
+    """Performs KMeans clustering on the input image.
+
+    Parameters:
+        img (np.ndarray):
+            Image to cluster. Shape (H, W, 3).
+        n_clust (int):
+            Number of clusters.
+        seed (int):
+            Random seed.
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
+            Cuml will be used for GPU acceleration.
+
+    Returns:
+        np.ndarray:
+            Label image. Shape (H, W).
+    """
+    if device == "cuda" and not _has_cp:
+        raise RuntimeError(
+            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
+            "Please install them with:\n"
+            "  pip install cupy-cuda12x cucim-cu12\n"
+            "or set device='cpu'."
+        )
+
+    if device == "cuda":
+        return _kmeans_cp(img, n_clust=n_clust, seed=seed)
+    elif device == "cpu":
+        return _kmeans_np(img, n_clust=n_clust, seed=seed)
+    else:
+        raise ValueError(f"Invalid device '{device}'. Use 'cpu' or 'cuda'.")
+
+
+def tissue_components(
+    img: np.ndarray, label: np.ndarray = None, device: str = "cuda"
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Segment background and foreground masks from H&E image. Uses k-means clustering.
+
+    Parameters:
+        img (np.ndarray):
+            The input H&E image. Shape (H, W, 3).
+        label (np.ndarray):
+            The nuclei label mask. Shape (H, W). This is used to mask out the nuclei when
+            extracting tissue components. If None, the entire image is used.
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
+            Cupy will be used for GPU acceleration.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]:
+            The background and foreground masks. Shapes (H, W).
+    """
+    # mask out dark pixels
+    kmasks = kmeans_img(img, n_clust=3, device=device)
+
+    if _has_cp and device == "cuda":
+        bg_mask, dark_mask = _get_tissue_bg_fg_cp(img, kmasks, label)
+    else:
+        bg_mask, dark_mask = _get_tissue_bg_fg_np(img, kmasks, label)
+
+    bg_mask = rm_objects_mask(erosion(bg_mask, square(3)), min_size=1000, device=device)
+    dark_mask = rm_objects_mask(
+        dilation(dark_mask, square(3)), min_size=200, device=device
+    )
+
+    # couldn't get this work with cupyx.ndimage..
+    bg_mask = ndimage.binary_fill_holes(bg_mask)
+    dark_mask = ndimage.binary_fill_holes(dark_mask)
+
+    return bg_mask, dark_mask
 
 
 def _get_tissue_bg_fg_np(
@@ -112,76 +273,66 @@ def _kmeans_cp(img: np.ndarray, n_clust: int = 3, seed: int = 42) -> np.ndarray:
     return labs.reshape(img.shape[:2]).get()
 
 
-def kmeans_img(
-    img: np.ndarray, n_clust: int = 3, seed: int = 42, device: str = "cuda"
+def _hed_decompose_np(img: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """CPU implementation of HED decomposition."""
+    ihc_hed = rgb2hed(img)
+    null = np.zeros_like(ihc_hed[:, :, 0])
+    ihc_h = hed2rgb(np.stack((ihc_hed[:, :, 0], null, null), axis=-1))
+    ihc_e = hed2rgb(np.stack((null, ihc_hed[:, :, 1], null), axis=-1))
+    ihc_d = hed2rgb(np.stack((null, null, ihc_hed[:, :, 2]), axis=-1))
+
+    return ihc_h, ihc_e, ihc_d
+
+
+def _hed_decompose_cp(img: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """GPU implementation of HED decomposition using CuCIM."""
+    img_cp = cp.asarray(img)
+    ihc_hed = rgb2hed_cp(img_cp)
+    null = cp.zeros_like(ihc_hed[:, :, 0])
+    ihc_h = hed2rgb_cp(cp.stack((ihc_hed[:, :, 0], null, null), axis=-1))
+    ihc_e = hed2rgb_cp(cp.stack((null, ihc_hed[:, :, 1], null), axis=-1))
+    ihc_d = hed2rgb_cp(cp.stack((null, null, ihc_hed[:, :, 2]), axis=-1))
+
+    # Convert back to numpy arrays
+    return cp.asnumpy(ihc_h), cp.asnumpy(ihc_e), cp.asnumpy(ihc_d)
+
+
+def _get_eosin_mask_np(img_eosin: np.ndarray) -> np.ndarray:
+    """CPU implementation of eosin mask generation."""
+    gray = rgb2gray(img_eosin)
+    thresh = threshold_otsu(gray)
+    eosin_mask = 1 - (gray > thresh)
+
+    return eosin_mask.astype(bool)
+
+
+def _get_eosin_mask_cp(img_eosin: np.ndarray) -> np.ndarray:
+    """GPU implementation of eosin mask generation using CuCIM."""
+    img_eosin_cp = cp.asarray(img_eosin)
+    gray = rgb2gray_cp(img_eosin_cp)
+    thresh = threshold_otsu_cp(gray)
+    eosin_mask = 1 - (gray > thresh)
+
+    return cp.asnumpy(eosin_mask.astype(bool))
+
+
+def _get_hematoxylin_mask_np(
+    img_hematoxylin: np.ndarray, eosin_mask: np.ndarray
 ) -> np.ndarray:
-    """Performs KMeans clustering on the input image.
-
-    Parameters:
-        img (np.ndarray):
-            Image to cluster. Shape (H, W, 3).
-        n_clust (int):
-            Number of clusters.
-        seed (int):
-            Random seed.
-        device (str):
-            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
-            Cuml will be used for GPU acceleration.
-
-    Returns:
-        np.ndarray:
-            Label image. Shape (H, W).
-    """
-    if device == "cuda" and not _has_cp:
-        raise RuntimeError(
-            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
-            "Please install them with:\n"
-            "  pip install cupy-cuda12x cucim-cu12\n"
-            "or set device='cpu'."
-        )
-
-    if device == "cuda":
-        return _kmeans_cp(img, n_clust=n_clust, seed=seed)
-    elif device == "cpu":
-        return _kmeans_np(img, n_clust=n_clust, seed=seed)
-    else:
-        raise ValueError(f"Invalid device '{device}'. Use 'cpu' or 'cuda'.")
+    """CPU implementation of hematoxylin mask generation."""
+    bg_mask = np.all(img_hematoxylin >= 0.9, axis=-1)
+    hematoxylin_mask = (1 - bg_mask - eosin_mask) > 0
+    return hematoxylin_mask.astype(bool)
 
 
-def tissue_components(
-    img: np.ndarray, label: np.ndarray = None, device: str = "cuda"
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Segment background and foreground masks from H&E image. Uses k-means clustering.
+def _get_hematoxylin_mask_cp(
+    img_hematoxylin: np.ndarray, eosin_mask: np.ndarray
+) -> np.ndarray:
+    """GPU implementation of hematoxylin mask generation using CuPy."""
+    img_hematoxylin_cp = cp.asarray(img_hematoxylin)
+    eosin_mask_cp = cp.asarray(eosin_mask)
 
-    Parameters:
-        img (np.ndarray):
-            The input H&E image. Shape (H, W, 3).
-        label (np.ndarray):
-            The nuclei label mask. Shape (H, W). This is used to mask out the nuclei when
-            extracting tissue components. If None, the entire image is used.
-        device (str):
-            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
-            Cupy will be used for GPU acceleration.
+    bg_mask = cp.all(img_hematoxylin_cp >= 0.9, axis=-1)
+    hematoxylin_mask = (1 - bg_mask - eosin_mask_cp) > 0
 
-    Returns:
-        Tuple[np.ndarray, np.ndarray]:
-            The background and foreground masks. Shapes (H, W).
-    """
-    # mask out dark pixels
-    kmasks = kmeans_img(img, n_clust=3, device=device)
-
-    if _has_cp and device == "cuda":
-        bg_mask, dark_mask = _get_tissue_bg_fg_cp(img, kmasks, label)
-    else:
-        bg_mask, dark_mask = _get_tissue_bg_fg_np(img, kmasks, label)
-
-    bg_mask = rm_objects_mask(erosion(bg_mask, square(3)), min_size=1000, device=device)
-    dark_mask = rm_objects_mask(
-        dilation(dark_mask, square(3)), min_size=200, device=device
-    )
-
-    # couldn't get this work with cupyx.ndimage..
-    bg_mask = ndimage.binary_fill_holes(bg_mask)
-    dark_mask = ndimage.binary_fill_holes(dark_mask)
-
-    return bg_mask, dark_mask
+    return cp.asnumpy(hematoxylin_mask.astype(bool))

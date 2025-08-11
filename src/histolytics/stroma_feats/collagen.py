@@ -37,7 +37,7 @@ def extract_collagen_fibers(
     min_size: int = 25,
     rm_bg: bool = False,
     rm_fg: bool = False,
-    device: str = "cuda",
+    device: str = "cpu",
 ) -> np.ndarray:
     """Extract collagen fibers from a H&E image.
 
@@ -139,7 +139,7 @@ def fiber_feats(
     normalize: bool = False,
     rm_bg: bool = True,
     rm_fg: bool = True,
-    device: str = "cuda",
+    device: str = "cpu",
     num_processes: int = 1,
 ) -> gpd.GeoDataFrame:
     """Extract collagen fiber features from an H&E image.
@@ -189,8 +189,9 @@ def fiber_feats(
             available processes will be used. Default is 1.
 
     Returns:
-        gpd.GeoDataFrame: A GeoDataFrame containing the extracted collagen fibers as
-        LineString geometries and the computed metrics as columns.
+        gpd.GeoDataFrame:
+            A GeoDataFrame containing the extracted collagen fibers as LineString
+            geometries and the computed metrics as columns.
 
     Examples:
         >>> from histolytics.data import hgsc_stroma_he, hgsc_stroma_nuclei
@@ -214,7 +215,6 @@ def fiber_feats(
         0   43           1  LINESTRING (1376.319 1.245, 1376.392 1.336, 13...
         1   33           1  LINESTRING (911.201 1.68, 911.167 1.77, 911.12...
         2   41           1  LINESTRING (1238.654 14.556, 1238.556 14.439, ...
-
             length  tortuosity  average_turning_angle
         0  0.172616    0.702666               0.385901
         1  0.140985    0.884320               0.706733
