@@ -130,8 +130,6 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [stromal_intensity_features](stroma_feats/stroma_feats.md): Compute intensity features from a H&E image representing stroma.
 - [get_hematoxylin_mask](stroma_feats/get_hematoxylin_mask.md): Get hematoxylin mask from a H&E image.
 - [get_eosin_mask](stroma_feats/get_eosin_mask.md): Get eosin mask from a H&E image.
-- [tissue_components](stroma_feats/tissue_components.md): Extract background, foreground, and nuclear components from a H&E image.
-- [kmeans_img](stroma_feats/kmeans_img.md): Perform KMeans clustering on an image.
 - [hed_decompose](stroma_feats/hed_decompose.md): Transform an image to HED space.
 
 ### Transforms
@@ -172,6 +170,13 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 #### plot
 - [draw_thing_contours](utils/draw_thing_contours.md): Draw contours of segmented nuclei and overlay them on an image.
 - [legendgram](utils/legendgram.md): Create a histogram legend for a specified column in a GeoDataFrame.
+
+#### im
+- [get_eosin_mask](utils/get_eosin_mask.md): Get eosin mask from a H&E image.
+- [get_hematoxylin_mask](utils/get_hematoxylin_mask.md): Get hematoxylin mask from a H&E image.
+- [hed_decompose](utils/hed_decompose.md): Transform an image to HED space.
+- [kmeans_img](stroma_feats/kmeans_img.md): Perform KMeans clustering on an image.
+- [tissue_components](stroma_feats/tissue_components.md): Extract background, foreground, and nuclear components from a H&E image.
 
 ### WSI (Whole Slide Images)
 

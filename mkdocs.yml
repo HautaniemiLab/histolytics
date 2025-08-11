@@ -150,8 +150,8 @@ nav:
     - nuc_feats:
       - extract_chromatin_clumps: api/nuc_feats/extract_chromatin_clumps.md
       - chromatin_feats: api/nuc_feats/chromatin_feats.md
-      - grayscale_intensity: api/nuc_feats/grayscale_intensity.md
-      - rgb_intensity: api/nuc_feats/rgb_intensity.md
+      - grayscale_intensity_feats: api/nuc_feats/grayscale_intensity.md
+      - rgb_intensity_feats: api/nuc_feats/rgb_intensity.md
     - spatial_agg:
       - local_character: api/spatial_agg/local_character.md
       - local_distances: api/spatial_agg/local_distances.md
@@ -220,13 +220,8 @@ nav:
       - rect_grid: api/spatial_ops/rect_grid.md
     - stroma_feats:
       - extract_collagen_fibers: api/stroma_feats/collagen.md
-      - stromal_intensity_features: api/stroma_feats/stroma_feats.md
-      - utils:
-        - get_hematoxylin_mask: api/stroma_feats/get_hematoxylin_mask.md
-        - get_eosin_mask: api/stroma_feats/get_eosin_mask.md
-        - tissue_components: api/stroma_feats/tissue_components.md
-        - kmeans_img: api/stroma_feats/kmeans_img.md
-        - hed_decompose: api/stroma_feats/hed_decompose.md
+      - fiber_feats: api/stroma_feats/fiber_feats.md
+      - stromal_intensity_feats: api/stroma_feats/stroma_feats.md
     - transforms:
       - AlbuStrongAugment: api/transforms/strong_augment.md
       - ApplyEach: api/transforms/apply_each.md
@@ -256,6 +251,12 @@ nav:
       - plot:
         - draw_thing_contours: api/utils/draw_thing_contours.md
         - legendgram: api/utils/legendgram.md
+      - im:
+        - get_hematoxylin_mask: api/utils/get_hematoxylin_mask.md
+        - get_eosin_mask: api/utils/get_eosin_mask.md
+        - hed_decompose: api/utils/hed_decompose.md
+        - kmeans_img: api/utils/kmeans_img.md
+        - tissue_components: api/utils/tissue_components.md
     - wsi:
       - SlideReader: api/wsi/slide_reader.md
       - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
