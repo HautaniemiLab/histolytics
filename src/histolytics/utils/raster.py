@@ -67,11 +67,14 @@ def inst2gdf(
         >>> # convert to GeoDataFrame
         >>> gdf = inst2gdf(inst_mask, type_mask)
         >>> print(gdf.head(3))
-                id  class_name                                           geometry
+                uid  class_name                                           geometry
             0  135           1  POLYGON ((405.019 0.45, 405.43 1.58, 406.589 2...
             1  200           1  POLYGON ((817.01 0.225, 817.215 0.804, 817.795...
             2    0           1  POLYGON ((1394.01 0.45, 1394.215 1.58, 1394.79...
     """
+    # handle empty masks
+    if inst_map.size == 0 or np.max(inst_map) == 0:
+        return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry"])
 
     if type_map is None:
         type_map = inst_map > 0
@@ -162,11 +165,15 @@ def sem2gdf(
         >>> # convert to GeoDataFrame
         >>> gdf = sem2gdf(type_mask)
         >>> print(gdf.head(3))
-                id  class_name                                           geometry
+                uid  class_name                                           geometry
             0   2           2  POLYGON ((850.019 0.45, 850.431 1.58, 851.657 ...
             1   2           2  POLYGON ((1194.01 0.225, 1194.215 0.795, 1194....
             2   1           1  POLYGON ((405.019 0.45, 405.43 1.58, 406.589 2...
     """
+    # Handle empty semantic mask
+    if sem_map.size == 0 or np.max(sem_map) == 0:
+        return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry"])
+
     if class_dict is None:
         class_dict = {int(i): int(i) for i in np.unique(sem_map)[1:]}
 
@@ -254,6 +261,15 @@ def gdf2inst(
         >>> fig.tight_layout()
     ![out](../../img/gdf2inst.png)
     """
+    if gdf.empty:
+        try:
+            return np.zeros((int(height), int(width)), dtype=np.int32)
+        except TypeError:
+            raise TypeError(
+                "Input gdf is empty, trying to return an empty mask but height and width"
+                " are not provided. Cannot infer the output shape."
+            )
+
     xmin, ymin, xmax, ymax = gdf.total_bounds
     xoff = xoff - xmin
     yoff = yoff - ymin
@@ -338,6 +354,15 @@ def gdf2sem(
         >>> fig.tight_layout()
     ![out](../../img/gdf2sem.png)
     """
+    if gdf.empty:
+        try:
+            return np.zeros((int(height), int(width)), dtype=np.int32)
+        except TypeError:
+            raise TypeError(
+                "Input gdf is empty, trying to return an empty mask but height and width"
+                " are not provided. Cannot infer the output shape."
+            )
+
     xmin, ymin, xmax, ymax = gdf.total_bounds
     xoff = xoff - xmin
     yoff = yoff - ymin
