@@ -191,6 +191,10 @@ def chromatin_feats(
         316         421        0.990588             1.0             0.625641
         340         334        0.582897             2.0             0.527027
     """
+    allowed = ("chrom_area", "chrom_nuc_prop", "n_chrom_clumps", "chrom_boundary_prop")
+    if not all(m in allowed for m in metrics):
+        raise ValueError(f"Invalid metrics: {metrics}. Allowed: {allowed}")
+
     if device == "cuda" and not _has_cp:
         raise RuntimeError(
             "CuPy and cucim are required for GPU acceleration (device='cuda'). "
