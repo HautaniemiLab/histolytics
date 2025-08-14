@@ -20,7 +20,7 @@ def reduce(
             The areas of the spatial objects. This is for weighting. Optional.
         how (str):
             The reduction method for the neighborhood. One of:
-            "sum", "mean", "median", "min", "max", "std".
+            "sum", "mean", "median", "min", "max", "std", "var".
 
     Raises:
         ValueError:

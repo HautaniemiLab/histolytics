@@ -49,7 +49,7 @@ def local_character(
             Defaults to None.
         reductions (Tuple[str, ...]):
             A list of reduction methods for the neighborhood feature values. Allowed are
-            "sum", "mean", "median", "min", "max", "std".
+            "sum", "mean", "median", "min", "max", "std", "var".
         weight_by_area (bool):
             Flag whether to weight the neighborhood values by the area of the object.
             Defaults to False.

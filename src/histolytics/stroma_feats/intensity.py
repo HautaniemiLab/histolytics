@@ -87,6 +87,24 @@ def stromal_intensity_feats(
         hematoxylin_R_median         0.8070
         dtype: float64
     """
+    allowed = (
+        "max",
+        "min",
+        "mean",
+        "median",
+        "std",
+        "quantiles",
+        "meanmediandiff",
+        "mad",
+        "iqr",
+        "skewness",
+        "kurtosis",
+        "histenergy",
+        "histentropy",
+    )
+    if not all(m in allowed for m in metrics):
+        raise ValueError(f"Invalid metrics: {metrics}. Allowed metrics are: {allowed}")
+
     img_hematoxylin, img_eosin, _ = hed_decompose(img, device=device)
     eosin_mask = get_eosin_mask(img_eosin, device=device)
     hematoxylin_mask = get_hematoxylin_mask(img_hematoxylin, eosin_mask, device=device)
@@ -122,4 +140,4 @@ def stromal_intensity_feats(
             for i, met in enumerate(metrics):
                 features[f"{stain}_{color}_{met}"] = channel_features[i]
 
-    return pd.Series(features)
+    return pd.Series(features, dtype=np.float32)
