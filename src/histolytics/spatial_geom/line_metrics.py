@@ -2,7 +2,6 @@ from typing import Optional, Tuple, Union
 
 import geopandas as gpd
 import numpy as np
-from scipy.stats import rankdata
 from shapely.geometry import LineString, MultiLineString
 
 from histolytics.spatial_geom.shape_metrics import (
@@ -11,7 +10,7 @@ from histolytics.spatial_geom.shape_metrics import (
     minor_axis_angle,
     minor_axis_len,
 )
-from histolytics.utils.gdf import gdf_apply
+from histolytics.utils.gdf import col_norm, gdf_apply
 
 __all__ = [
     "tortuosity",
@@ -239,7 +238,7 @@ def line_metric(
     if "length" in metrics:
         gdf[f"{col_prefix}length"] = gdf.length
         if normalize:
-            gdf[f"{col_prefix}length"] = _col_norm(gdf[f"{col_prefix}length"])
+            gdf[f"{col_prefix}length"] = col_norm(gdf[f"{col_prefix}length"])
         met.remove("length")
 
     for metric in met:
@@ -251,12 +250,6 @@ def line_metric(
             num_processes=num_processes,
         )
         if normalize:
-            gdf[f"{col_prefix}{metric}"] = _col_norm(gdf[f"{col_prefix}{metric}"])
+            gdf[f"{col_prefix}{metric}"] = col_norm(gdf[f"{col_prefix}{metric}"])
 
     return gdf
-
-
-def _col_norm(column: np.ndarray) -> np.ndarray:
-    ranks = rankdata(column, method="average")
-    quantiles = (ranks - 1) / (len(ranks) - 1)
-    return quantiles

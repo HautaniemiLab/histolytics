@@ -19,7 +19,7 @@ from histolytics.spatial_geom.morphometrics import (
     solidity,
     squareness,
 )
-from histolytics.utils.gdf import gdf_apply
+from histolytics.utils.gdf import col_norm, gdf_apply
 
 __all__ = [
     "shape_metric",
@@ -51,6 +51,7 @@ SHAPE_LOOKUP = {
 def shape_metric(
     gdf: gpd.GeoDataFrame,
     metrics: Tuple[str, ...],
+    normalize: bool = False,
     parallel: bool = True,
     num_processes: int = 1,
     col_prefix: str = None,
@@ -63,6 +64,8 @@ def shape_metric(
             The input GeoDataFrame.
         metrics (Tuple[str, ...]):
             A Tuple/List of shape metrics.
+        normalize (bool):
+            Flag whether to column (quantile) normalize the computed metrics or not.
         parallel (bool):
             Flag whether to use parallel apply operations when computing the diversities.
         num_processes (int):
@@ -89,7 +92,6 @@ def shape_metric(
         - `elongation`
         - `eccentricity`
         - `fractal_dimension`
-        - `sphericity`
         - `shape_index`
         - `rectangularity`
         - `squareness`
@@ -146,19 +148,25 @@ def shape_metric(
     met = list(metrics)
     if "area" in metrics:
         gdf[f"{col_prefix}area"] = gdf.area
+        if normalize:
+            gdf[f"{col_prefix}length"] = col_norm(gdf[f"{col_prefix}length"])
         met.remove("area")
 
     if "perimeter" in metrics:
         gdf[f"{col_prefix}perimeter"] = gdf.length
+        if normalize:
+            gdf[f"{col_prefix}perimeter"] = col_norm(gdf[f"{col_prefix}perimeter"])
         met.remove("perimeter")
 
     for metric in met:
-        gdf[metric] = gdf_apply(
+        gdf[f"{col_prefix}{metric}"] = gdf_apply(
             gdf,
             SHAPE_LOOKUP[metric],
             columns=["geometry"],
             parallel=parallel,
             num_processes=num_processes,
         )
+        if normalize:
+            gdf[f"{col_prefix}{metric}"] = col_norm(gdf[f"{col_prefix}{metric}"])
 
     return gdf

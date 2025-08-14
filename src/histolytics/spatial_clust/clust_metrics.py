@@ -168,7 +168,6 @@ def cluster_feats(
         >>> import pandas as pd
         >>> from histolytics.spatial_clust.density_clustering import density_clustering
         >>> from histolytics.data import hgsc_cancer_nuclei
-        >>> from histolytics.spatial_clust.centrography import cluster_tendency
         >>> from histolytics.spatial_clust.clust_metrics import cluster_feats
         >>>
         >>> nuc = hgsc_cancer_nuclei()
@@ -177,25 +176,25 @@ def cluster_feats(
         >>> nuc_imm = nuc_imm.assign(labels=labels)
         >>> # Calculate cluster features for each cluster label
         >>> clust_features = (
-        ...    nuc_imm.groupby("labels")
-        ...    .apply(
-        ...        lambda x: pd.Series(
-        ...            cluster_feats(x, hull_type="convex_hull", normalize_orientation=True)
-        ...        ),
-        ...        include_groups=False,
-        ...    )
-        ...    .reset_index(drop=False)
+        ...     nuc_imm.groupby("labels")
+        ...     .apply(
+        ...         lambda x: cluster_feats(x, hull_type="convex_hull", normalize_orientation=True),
+        ...         include_groups=False,
+        ...     )
+        ...     .reset_index(drop=False)
         ... )
         >>> print(clust_features)
             labels           area  dispersion   size  orientation
         0      -1  732641.332024  483.830111   83.0    34.979649
         1       0  368383.654562  249.680419  205.0    81.664728
     """
-    return {
-        "area": cluster_area(gdf, hull_type=hull_type, **kwargs),
-        "dispersion": cluster_dispersion(gdf),
-        "size": cluster_size(gdf),
-        "orientation": cluster_orientation(
-            gdf, hull_type=hull_type, normalize=normalize_orientation, **kwargs
-        ),
-    }
+    return pd.Series(
+        {
+            "area": cluster_area(gdf, hull_type=hull_type, **kwargs),
+            "dispersion": cluster_dispersion(gdf),
+            "size": cluster_size(gdf),
+            "orientation": cluster_orientation(
+                gdf, hull_type=hull_type, normalize=normalize_orientation, **kwargs
+            ),
+        }
+    )

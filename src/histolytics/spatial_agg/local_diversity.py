@@ -7,7 +7,7 @@ from libpysal.weights import W
 
 from histolytics.spatial_agg.diversity import DIVERSITY_LOOKUP
 from histolytics.spatial_graph.nhood import nhood, nhood_counts, nhood_vals
-from histolytics.utils.gdf import gdf_apply, is_categorical, set_uid
+from histolytics.utils.gdf import col_norm, gdf_apply, is_categorical, set_uid
 
 __all__ = ["local_diversity"]
 
@@ -16,6 +16,7 @@ def local_diversity(
     gdf: gpd.GeoDataFrame,
     spatial_weights: W,
     val_cols: Tuple[str, ...],
+    normalize: bool = False,
     id_col: str = None,
     metrics: Tuple[str, ...] = ("simpson_index",),
     scheme: str = "fisherjenks",
@@ -55,6 +56,8 @@ def local_diversity(
             The name of the column in the gdf for which the diversity is computed.
             You can also pass in a list of columns, in which case the diversity is
             computed for each column.
+        normalize (bool):
+            Flag whether to column (quantile) normalize the computed metrics or not.
         id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
@@ -217,6 +220,11 @@ def local_diversity(
                 parallel=parallel,
                 num_processes=num_processes,
             )
+            # normalize the character values
+            if normalize:
+                gdf[f"{col_prefix}{col}_{metric}"] = col_norm(
+                    gdf[f"{col_prefix}{col}_{metric}"]
+                )
 
         if rm_nhood_cols:
             gdf = gdf.drop(labels=[colname], axis=1)

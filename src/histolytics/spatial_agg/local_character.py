@@ -6,7 +6,7 @@ from libpysal.weights import W
 
 from histolytics.spatial_agg.reduce import reduce
 from histolytics.spatial_graph.nhood import nhood, nhood_vals
-from histolytics.utils.gdf import gdf_apply, set_uid
+from histolytics.utils.gdf import col_norm, gdf_apply, set_uid
 
 __all__ = ["local_character"]
 
@@ -15,6 +15,7 @@ def local_character(
     gdf: gpd.GeoDataFrame,
     spatial_weights: W,
     val_cols: Tuple[str, ...],
+    normalize: bool = False,
     id_col: str = None,
     reductions: Tuple[str, ...] = ("mean",),
     weight_by_area: bool = False,
@@ -41,6 +42,8 @@ def local_character(
             Libpysal spatial weights object.
         val_cols (Tuple[str, ...]):
             The name of the columns in the gdf for which the reduction is computed.
+        normalize (bool):
+            Flag whether to column (quantile) normalize the computed metrics or not.
         id_col (str):
             The unique id column in the gdf. If None, this uses `set_uid` to set it.
             Defaults to None.
@@ -179,6 +182,9 @@ def local_character(
                 parallel=parallel,
                 num_processes=num_processes,
             )
+        # normalize the character values
+        if normalize:
+            gdf[new_col] = col_norm(gdf[new_col])
 
         if rm_nhood_cols:
             gdf = gdf.drop(labels=[char_col], axis=1)
