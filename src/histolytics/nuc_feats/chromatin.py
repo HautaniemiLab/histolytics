@@ -149,6 +149,7 @@ def chromatin_feats(
                 - "chrom_nuc_prop"
                 - "n_chrom_clumps"
                 - "chrom_boundary_prop"
+                - "manders_coloc_coeff"
         mask (np.ndarray):
             Optional binary mask to apply to the image to restrict the region of interest.
             Shape (H, W).
@@ -191,7 +192,13 @@ def chromatin_feats(
         316         421        0.990588             1.0             0.625641
         340         334        0.582897             2.0             0.527027
     """
-    allowed = ("chrom_area", "chrom_nuc_prop", "n_chrom_clumps", "chrom_boundary_prop")
+    allowed = (
+        "chrom_area",
+        "chrom_nuc_prop",
+        "n_chrom_clumps",
+        "chrom_boundary_prop",
+        "manders_coloc_coeff",
+    )
     if not all(m in allowed for m in metrics):
         raise ValueError(f"Invalid metrics: {metrics}. Allowed: {allowed}")
 
@@ -213,12 +220,13 @@ def chromatin_feats(
         chrom_clumps = erosion(chrom_clumps, disk(2))
 
     if _has_cp and device == "cuda":
-        return _chrom_feats_cp(chrom_clumps, label, metrics)
+        return _chrom_feats_cp(img, chrom_clumps, label, metrics)
     else:
-        return _chrom_feats_np(chrom_clumps, label, metrics)
+        return _chrom_feats_np(img, chrom_clumps, label, metrics)
 
 
 def _chrom_feats_np(
+    img: np.ndarray,
     chrom_clumps: np.ndarray,
     label: np.ndarray,
     metrics: Tuple[str, ...] = ("chrom_area", "chrom_nuc_prop"),
@@ -233,7 +241,7 @@ def _chrom_feats_np(
             chrom_areas = ndimage.sum(chrom_clumps, labels=label, index=labels).astype(
                 int
             )
-            results["chrom_area"] = chrom_areas
+            results[metric] = chrom_areas
         elif metric == "chrom_nuc_prop":
             nuclei_areas = ndimage.sum(
                 np.ones_like(label), labels=label, index=labels
@@ -242,7 +250,7 @@ def _chrom_feats_np(
                 chrom_areas = ndimage.sum(
                     chrom_clumps, labels=label, index=labels
                 ).astype(int)
-            results["chrom_nuc_prop"] = chrom_areas / nuclei_areas
+            results[metric] = chrom_areas / nuclei_areas
         elif metric == "n_chrom_clumps":
             n_clumps = ndimage.labeled_comprehension(
                 label_sk(chrom_clumps),
@@ -252,10 +260,14 @@ def _chrom_feats_np(
                 float,
                 0.0,
             )
-            results["n_chrom_clumps"] = n_clumps
+            results[metric] = n_clumps
         elif metric == "chrom_boundary_prop":
             chrom_boundary_props = _boundary_coverage(chrom_clumps, label, labels)
-            results["chrom_boundary_prop"] = chrom_boundary_props
+            results[metric] = chrom_boundary_props
+        elif "manders_coloc_coeff" in metrics:
+            results[metric] = _compute_manders_coloc_coeff_np(
+                rgb2gray(img), label, chrom_clumps * label
+            )
 
     return pd.DataFrame(
         results,
@@ -264,10 +276,12 @@ def _chrom_feats_np(
 
 
 def _chrom_feats_cp(
-    chrom_clumps: np.ndarray,
-    label: np.ndarray,
+    img: cp.ndarray,
+    chrom_clumps: cp.ndarray,
+    label: cp.ndarray,
     metrics: Tuple[str, ...] = ("chrom_area", "chrom_nuc_prop"),
 ) -> pd.DataFrame:
+    img = cp.array(img)
     label = cp.array(label).astype(cp.int32)  # convert to int32 for fast sum
     chrom_clumps = cp.array(chrom_clumps).astype(cp.int32)
 
@@ -281,7 +295,7 @@ def _chrom_feats_cp(
             chrom_areas = ndimage_cp.sum(
                 chrom_clumps, labels=label, index=labels
             ).astype(int)
-            results["chrom_area"] = chrom_areas.get()
+            results[metric] = chrom_areas.get()
         elif metric == "chrom_nuc_prop":
             nuclei_areas = ndimage_cp.sum(
                 cp.ones_like(label), labels=label, index=labels
@@ -290,7 +304,7 @@ def _chrom_feats_cp(
                 chrom_areas = ndimage_cp.sum(
                     chrom_clumps, labels=label, index=labels
                 ).astype(int)
-            results["chrom_nuc_prop"] = (chrom_areas / nuclei_areas).get()
+            results[metric] = (chrom_areas / nuclei_areas).get()
         elif metric == "n_chrom_clumps":
             n_clumps = ndimage_cp.labeled_comprehension(
                 label_cp(chrom_clumps),
@@ -300,18 +314,100 @@ def _chrom_feats_cp(
                 float,
                 0.0,
             )
-            results["n_chrom_clumps"] = n_clumps.get()
+            results[metric] = n_clumps.get()
         elif metric == "chrom_boundary_prop":
             # this is cpu side
             chrom_boundary_props = _boundary_coverage(
                 chrom_clumps.get(), label.get(), labels.get()
             )
-            results["chrom_boundary_prop"] = chrom_boundary_props
+            results[metric] = chrom_boundary_props
+        elif "manders_coloc_coeff" in metrics:
+            results[metric] = _compute_manders_coloc_coeff_cp(
+                rgb2gray_cp(img), label, chrom_clumps * label
+            )
 
     return pd.DataFrame(
         results,
         index=labels.get(),
     )
+
+
+def _intersection_coeff(chrom_clump):
+    """Helper function to compute intersection coefficient for a single nucleus."""
+    if len(chrom_clump) == 0:
+        return 0.0
+
+    area_boundary = len(chrom_clump)
+    area_intersect = np.sum(chrom_clump > 0)
+
+    if area_boundary == 0:
+        return 0.0
+
+    return area_intersect / area_boundary
+
+
+def _boundary_coverage(
+    chrom_clumps: np.ndarray, label: np.ndarray, index: np.ndarray
+) -> np.ndarray:
+    """Compute the proportion of nucleus boundary covered by chromatin.
+
+    This function calculates how many percentages of the chromatin clumps are covered by
+    the nucleus boundary. If the value is high, the chromatin distribution is dispersed
+    along the nucleus boundary.
+
+    Parameters:
+        chrom_clumps (np.ndarray):
+            The segmented chromatin clumps. Shape (H, W).
+        label (np.ndarray):
+            Segmented nuclei label map. Shape (H, W).
+        index (np.ndarray):
+            Array of unique labels to compute the boundary coverage for.
+
+    Returns:
+        np.ndarray: The proportion of nucleus boundary covered by chromatin clumps.
+    """
+    boundaries = find_boundaries(label, mode="thick") * label
+    boundaries = expand_labels(boundaries)
+    chrom_clump_labs = chrom_clumps * label
+
+    coeffs = ndimage.labeled_comprehension(
+        chrom_clump_labs, boundaries, index, _intersection_coeff, float, 0.0
+    )
+
+    return np.array(coeffs)
+
+
+def _compute_manders_coloc_coeff_np(
+    img: np.ndarray, label1: np.ndarray, label2: np.ndarray
+) -> np.ndarray:
+    """Compute the Manders' colocalization coefficient for two label masks."""
+    index = np.unique(label1)[1:]
+    intensity_sum_lab1 = ndimage.sum(img, label1, index=index)
+    intensity_sum_lab2 = ndimage.sum(img, label2, index=index)
+
+    coeffs = np.divide(
+        intensity_sum_lab2,
+        intensity_sum_lab1,
+        out=np.zeros_like(intensity_sum_lab2, dtype=np.float32),
+        where=(intensity_sum_lab2 != 0),
+    )
+    return coeffs
+
+
+def _compute_manders_coloc_coeff_cp(
+    img: cp.ndarray, label1: cp.ndarray, label2: cp.ndarray
+) -> cp.ndarray:
+    """Compute the Manders' colocalization coefficient for two label masks."""
+    index = cp.unique(label1)[1:]
+    intensity_sum_lab1 = ndimage_cp.sum(img, label1, index=index)
+    intensity_sum_lab2 = ndimage_cp.sum(img, label2, index=index)
+
+    coeffs = cp.divide(
+        intensity_sum_lab2,
+        intensity_sum_lab1,
+        out=cp.zeros_like(intensity_sum_lab2, dtype=cp.float32),
+    )
+    return coeffs.get()
 
 
 def _extract_chrom_cp(
@@ -404,48 +500,3 @@ def _extract_chrom_np(
     chrom_clumps = np.bitwise_xor(label > 0, high_mask)
 
     return chrom_clumps
-
-
-def _intersection_coeff(chrom_clump):
-    """Helper function to compute intersection coefficient for a single nucleus."""
-    if len(chrom_clump) == 0:
-        return 0.0
-
-    area_boundary = len(chrom_clump)
-    area_intersect = np.sum(chrom_clump > 0)
-
-    if area_boundary == 0:
-        return 0.0
-
-    return area_intersect / area_boundary
-
-
-def _boundary_coverage(
-    chrom_clumps: np.ndarray, label: np.ndarray, index: np.ndarray
-) -> np.ndarray:
-    """Compute the proportion of nucleus boundary covered by chromatin.
-
-    This function calculates how many percentages of the chromatin clumps are covered by
-    the nucleus boundary. If the value is high, the chromatin distribution is dispersed
-    along the nucleus boundary.
-
-    Parameters:
-        chrom_clumps (np.ndarray):
-            The segmented chromatin clumps. Shape (H, W).
-        label (np.ndarray):
-            Segmented nuclei label map. Shape (H, W).
-        index (np.ndarray):
-            Array of unique labels to compute the boundary coverage for.
-
-    Returns:
-        np.ndarray: The proportion of nucleus boundary covered by chromatin clumps.
-    """
-    boundaries = find_boundaries(label, mode="thick") * label
-    boundaries = expand_labels(boundaries)
-    chrom_clump_labs = chrom_clumps * label
-
-    coeffs = ndimage.labeled_comprehension(
-        chrom_clump_labs, boundaries, index, _intersection_coeff, float, 0.0
-    )
-
-    return np.array(coeffs)

@@ -55,10 +55,16 @@ def sample_data():
         (("chrom_area", "chrom_nuc_prop"), "cuda", False, 2),
         # All metrics
         (
-            ("chrom_area", "chrom_nuc_prop", "n_chrom_clumps", "chrom_boundary_prop"),
+            (
+                "chrom_area",
+                "chrom_nuc_prop",
+                "n_chrom_clumps",
+                "chrom_boundary_prop",
+                "manders_coloc_coeff",
+            ),
             "cpu",
             True,
-            4,
+            5,
         ),
         # Single metric
         (("chrom_area",), "cpu", False, 1),
