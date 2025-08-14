@@ -98,8 +98,26 @@ def weights2gdf(
     if not w.neighbors:
         return
 
+    if "class_name" not in gdf.columns:
+        raise ValueError("GeoDataFrame must contain a 'class_name' column.")
+
+    # Check for non-string values in class_name column (excluding NaN)
+    non_null_classes = gdf["class_name"].dropna()
+    if len(non_null_classes) > 0:
+        non_string_classes = non_null_classes[
+            ~non_null_classes.apply(lambda x: isinstance(x, str))
+        ]
+        if len(non_string_classes) > 0:
+            non_string_values = non_string_classes.unique()
+            raise ValueError(
+                f"All values in 'class_name' column must be strings. "
+                f"Found non-string values: {list(non_string_values)} "
+                f"with types: {[type(v).__name__ for v in non_string_values]}"
+            )
+
     # get all possible link class combinations
     classes = sorted(gdf.class_name.unique().tolist())
+
     link_combos = _get_link_combinations(classes)
 
     # init link gdf

@@ -11,7 +11,6 @@ from histolytics.utils._filters import uniform_smooth
 __all__ = ["gdf2inst", "gdf2sem", "inst2gdf", "sem2gdf"]
 
 
-# adapted form https://github.com/corteva/geocube/blob/master/geocube/vector.py
 def inst2gdf(
     inst_map: np.ndarray,
     type_map: np.ndarray = None,

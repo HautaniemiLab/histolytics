@@ -78,7 +78,8 @@ def nhood_vals(nhood: Sequence[int], values: pd.Series, **kwargs) -> np.ndarray:
     if isinstance(nhood, pd.Series):
         nhood = nhood.iloc[0]  # assume that the series is a row
 
-    nhood_vals = np.array([0])
+    # nhood_vals = np.array([0])
+    nhood_vals = np.nan
     if nhood not in (None, np.nan) and isinstance(nhood, (Sequence, np.ndarray)):
         nhood_vals = values.loc[nhood].to_numpy()
 

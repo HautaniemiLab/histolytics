@@ -15,7 +15,7 @@ from skimage.morphology import (
 from histolytics.spatial_geom.line_metrics import line_metric
 from histolytics.spatial_geom.medial_lines import medial_lines
 from histolytics.utils._filters import uniform_smooth
-from histolytics.utils.gdf import gdf_apply
+from histolytics.utils.gdf import gdf_apply, set_uid
 from histolytics.utils.im import tissue_components
 from histolytics.utils.raster import inst2gdf
 
@@ -106,6 +106,7 @@ def extract_collagen_fibers(
     if rm_bg or rm_fg:
         if label is not None:
             label = dilation(label, square(5))
+            edges[label > 0] = 0
 
         bg_mask, dark_mask = tissue_components(img, label, device=device)
         if rm_bg and rm_fg:
@@ -141,6 +142,7 @@ def fiber_feats(
     rm_fg: bool = True,
     device: str = "cpu",
     num_processes: int = 1,
+    reset_uid: bool = True,
 ) -> gpd.GeoDataFrame:
     """Extract collagen fiber features from an H&E image.
 
@@ -149,12 +151,12 @@ def fiber_feats(
         on the extracted fibers. Allowed metrics are:
 
             - tortuosity
-            - average turning angle
+            - average_turning_angle
             - length
-            - major axis length
-            - minor axis length
-            - major axis angle
-            - minor axis angle
+            - major_axis_len
+            - minor_axis_len
+            - major_axis_angle
+            - minor_axis_angle
 
     Parameters:
         img (np.ndarray):
@@ -187,6 +189,9 @@ def fiber_feats(
         num_processes (int):
             The number of processes to use to extract the fiber features. If -1, all
             available processes will be used. Default is 1.
+        reset_uid (bool):
+            Whether to reset the UID of the extracted fibers. Default is True. If False,
+            the original UIDs will be preserved.
 
     Returns:
         gpd.GeoDataFrame:
@@ -226,7 +231,9 @@ def fiber_feats(
     labeled_edges = sklabel(edges)
 
     # Convert labeled edges to GeoDataFrame
-    edge_gdf = _edges2gdf(labeled_edges, num_processes=num_processes)
+    edge_gdf = _edges2gdf(
+        labeled_edges, num_processes=num_processes, reset_uid=reset_uid
+    )
 
     edge_gdf = line_metric(
         edge_gdf,
@@ -250,6 +257,7 @@ def _edges2gdf(
     edges: np.ndarray,
     num_processes: int = 1,
     min_size: int = 20,
+    reset_uid: bool = True,
 ) -> gpd.GeoDataFrame:
     """Convert (collagen) edge label mask to a GeoDataFrame with LineString geometries."""
     edge_gdf = inst2gdf(dilation(edges))
@@ -262,6 +270,11 @@ def _edges2gdf(
         num_processes=num_processes,
     )
 
-    edge_gdf = edge_gdf.explode(index_parts=False).reset_index(drop=True)
-    edge_gdf = edge_gdf[edge_gdf["geometry"].length >= min_size]
+    edge_gdf = edge_gdf.explode(index_parts=False)
+    edge_gdf = edge_gdf[edge_gdf["geometry"].length >= min_size].reset_index(drop=True)
+
+    if reset_uid:
+        edge_gdf = set_uid(edge_gdf)
+
+    edge_gdf["class_name"] = "collagen"
     return edge_gdf

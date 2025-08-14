@@ -11,6 +11,7 @@ from pandas.api.types import (
     is_object_dtype,
     is_string_dtype,
 )
+from scipy.stats import rankdata
 from shapely import wkt
 from shapely.geometry.base import BaseGeometry
 from shapely.wkt import dumps
@@ -23,6 +24,7 @@ __all__ = [
     "set_uid",
     "get_centroid_numpy",
     "set_geom_precision",
+    "col_norm",
 ]
 
 
@@ -291,3 +293,9 @@ def gdf_to_polars(gdf: gpd.GeoDataFrame):
     for col in geometry_cols:
         pl_df = pl_df.with_columns(pl.Series(col, pdf[col].tolist(), dtype=pl.Object))
     return pl_df
+
+
+def col_norm(column: np.ndarray) -> np.ndarray:
+    ranks = rankdata(column, method="average")
+    quantiles = (ranks - 1) / (len(ranks) - 1)
+    return quantiles
