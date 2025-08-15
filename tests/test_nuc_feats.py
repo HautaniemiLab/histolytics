@@ -8,6 +8,7 @@ from histolytics.nuc_feats.intensity import (
     grayscale_intensity_feats,
     rgb_intensity_feats,
 )
+from histolytics.nuc_feats.texture import textural_feats
 from histolytics.utils.raster import gdf2inst
 
 
@@ -417,3 +418,63 @@ def test_rgb_intensity_feats_shape_mismatch():
     # Function should raise ValueError for shape mismatch
     with pytest.raises(ValueError, match="Shape mismatch"):
         rgb_intensity_feats(img, label_mask)
+
+
+def test_textural_feats_basic_functionality(sample_data):
+    """Test basic functionality of textural_feats with default parameters."""
+    img, label, _ = sample_data
+
+    result = textural_feats(img, label)
+
+    # Check output type and structure
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) > 0
+
+    # Check default metrics (contrast, dissimilarity) with default distance/angle
+    expected_cols = 2
+    assert result.shape[1] == expected_cols
+
+    # Check data types and no NaN values
+    assert result.dtypes.apply(lambda x: np.issubdtype(x, np.number)).all()
+    assert not result.isnull().any().any()
+
+    # Check that indices correspond to nucleus labels
+    unique_labels = np.unique(label)[1:]  # Skip background (0)
+    assert set(result.index) == set(unique_labels)
+
+
+def test_textural_feats_empty_label_mask():
+    """Test textural_feats with empty label mask (no nuclei)."""
+    img = np.random.randint(0, 255, (64, 64, 3), dtype=np.uint8)
+    label = np.zeros((64, 64), dtype=int)  # No nuclei, all background
+
+    result = textural_feats(img, label)
+
+    # Should return empty DataFrame
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 0
+    assert result.shape[0] == 0
+
+
+@pytest.mark.parametrize(
+    "metrics,distances,angles",
+    [
+        (["contrast"], [1], [0]),
+        (["contrast", "dissimilarity"], [1, 2], [0, np.pi / 4]),
+        (["homogeneity", "ASM", "energy"], [1], [0, np.pi / 2]),
+    ],
+)
+def test_textural_feats_parameter_combinations(sample_data, metrics, distances, angles):
+    """Test textural_feats with various parameter combinations."""
+    img, label, _ = sample_data
+
+    result = textural_feats(
+        img, label, metrics=metrics, distances=distances, angles=angles
+    )
+
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) > 0
+
+    # Check that all values are numeric and finite
+    assert result.dtypes.apply(lambda x: np.issubdtype(x, np.number)).all()
+    assert np.isfinite(result.values).all()
