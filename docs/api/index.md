@@ -70,6 +70,7 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 - [chromatin_feats](nuc_feats/chromatin_feats.md): Extract chromatin clumps and measurements from a nuclei segmentation.
 - [grayscale_intensity](nuc_feats/grayscale_intensity.md): Extract grayscale intensity features from a nuclei segmentation.
 - [rgb_intensity](nuc_feats/rgb_intensity.md): Extract RGB intensity features from a nuclei segmentation.
+- [textural_feats](nuc_feats/textural_feats.md): Extract textural features from a nuclei segmentation.
 
 
 ### Spatial Aggregation
@@ -128,9 +129,7 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 
 - [extract_collagen_fibers](stroma_feats/collagen.md): Extract collagen fibers from a H&E images.
 - [stromal_intensity_features](stroma_feats/stroma_feats.md): Compute intensity features from a H&E image representing stroma.
-- [get_hematoxylin_mask](stroma_feats/get_hematoxylin_mask.md): Get hematoxylin mask from a H&E image.
-- [get_eosin_mask](stroma_feats/get_eosin_mask.md): Get eosin mask from a H&E image.
-- [hed_decompose](stroma_feats/hed_decompose.md): Transform an image to HED space.
+- [fiber_feats](stroma_feats/fiber_feats.md): Extract fiber features from a H&E image representing stroma.
 
 ### Transforms
 

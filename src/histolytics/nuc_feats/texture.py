@@ -24,7 +24,7 @@ def textural_feats(
     distances: Sequence[int] = (1,),
     angles: Sequence[float] = (0,),
     device: str = "cpu",
-) -> np.ndarray:
+) -> pd.DataFrame:
     """Compute GLCM texture features from a grayscale image.
 
     Note:
