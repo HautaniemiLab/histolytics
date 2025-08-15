@@ -13,7 +13,7 @@ from skimage.morphology import (
 )
 
 from histolytics.spatial_geom.line_metrics import line_metric
-from histolytics.spatial_geom.medial_lines import medial_lines
+from histolytics.spatial_geom.medial_lines import _compute_medial_line
 from histolytics.utils._filters import uniform_smooth
 from histolytics.utils.gdf import gdf_apply, set_uid
 from histolytics.utils.im import tissue_components
@@ -249,7 +249,7 @@ def fiber_feats(
 
 def _get_medial_smooth(poly: Polygon) -> Polygon:
     """Get medial lines and smooth them."""
-    medial = medial_lines(poly)
+    medial = _compute_medial_line(poly)
     return uniform_smooth(medial)
 
 

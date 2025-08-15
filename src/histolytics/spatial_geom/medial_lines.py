@@ -19,6 +19,75 @@ __all__ = [
 ]
 
 
+def medial_lines(
+    gdf: gpd.GeoDataFrame,
+    num_points: int = 500,
+    delta: float = 0.3,
+    simplify_level: float = 30.0,
+    parallel: bool = False,
+    num_processes: int = 1,
+) -> gpd.GeoDataFrame:
+    """Compute medial lines for the input GeoDataFrame polygon geometries.
+
+    Parameters:
+        gdf (gpd.GeoDataFrame):
+            GeoDataFrame containing polygons to compute medial lines for.
+        num_points (int):
+            Number of resampled points in the input polygons.
+        delta (float):
+            Distance between resampled polygon points. Ignored
+            if `num_points` is not None.
+        simplify_level (float):
+            Level of simplification to apply to the input geometries before computing
+            medial lines. This helps to reduce noise from the voronoi triangulation.
+        parallel (bool):
+            Whether to run the computation in parallel.
+        num_processes (int):
+            Number of processes to use for parallel computation.
+
+    Returns:
+        gpd.GeoDataFrame:
+            GeoDataFrame containing the computed medial lines.
+
+    Note:
+        Returns an empty GeoDataFrame if the input is empty.
+
+    Examples:
+    >>> from histolytics.spatial_geom.medial_lines import medial_lines
+    >>> from histolytics.data import cervix_tissue
+    >>> import geopandas as gpd
+    >>>
+    >>> # Create a simple polygon
+    >>> cervix_tis = cervix_tissue()
+    >>> lesion = cervix_tis[cervix_tis["class_name"] == "cin"]
+    >>>
+    >>> # Compute medial lines for the largest lesion segmentation
+    >>> medials = medial_lines(lesion, num_points=500, simplify_level=50)
+    >>> ax = cervix_tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+    >>> medials.plot(ax=ax, color="red", lw=1, alpha=0.5)
+    >>> ax.set_axis_off()
+    ![out](../../img/medial_lines.png)
+    """
+    if gdf.empty:
+        return gpd.GeoDataFrame(columns=["geometry", "class_name"])
+
+    gdf = gdf.assign(geometry=gdf["geometry"].simplify(simplify_level))
+
+    medials = gdf_apply(
+        gdf,
+        partial(_compute_medial_line, num_points=num_points, delta=delta),
+        columns=["geometry"],
+        parallel=parallel,
+        num_processes=num_processes,
+    )
+
+    ret = gpd.GeoDataFrame(geometry=medials)
+    ret.set_crs(gdf.crs, inplace=True)
+    ret["class_name"] = "medial"
+
+    return ret
+
+
 def _equal_interval_points(obj: LineString, n: int = None, delta: float = None):
     """Resample the points of a shapely object at equal intervals.
 
@@ -256,7 +325,7 @@ def _perpendicular_line(
     return shapely.LineString([left, right])
 
 
-def medial_lines(
+def _compute_medial_line(
     poly: Polygon, num_points: int = 100, delta: float = 0.3
 ) -> Union[MultiLineString, LineString]:
     """Compute the medial lines of a polygon using voronoi diagram.
@@ -322,7 +391,7 @@ def perpendicular_lines(
     """
     # create perpendicular lines to the medial lines
     if poly is None:
-        poly = lines.unary_union.convex_hull
+        poly = lines.union_all().convex_hull
 
     seg_len = major_axis_len(poly)
     func = partial(_perpendicular_line, seg_length=seg_len)
