@@ -34,7 +34,7 @@ def bounding_box(mask: np.ndarray) -> List[int]:
 
     Returns:
         List[int]:
-            List of the origin- and end-point coordinates of the bbox.
+            List of the origin- and end-point coordinates of the bbox (xmin, xmax, ymin, ymax).
     """
     rows = np.any(mask, axis=1)
     cols = np.any(mask, axis=0)
