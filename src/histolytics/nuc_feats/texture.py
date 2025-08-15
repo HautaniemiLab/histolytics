@@ -48,11 +48,16 @@ def textural_feats(
             - "variance"
             - "std"
             - "entropy"
-
         distances (Sequence[int]):
-            Distances for GLCM computation.
+            Specifies the pixel distances at which the relationships are computed.
+            A distance of 1 compares adjacent pixels, while larger distances allow for
+            the analysis of texture at different scales, capturing relationships between
+            pixels that are further apart.
         angles (Sequence[float]):
-            Angles for GLCM computation. E.g. (0, np.pi / 4, np.pi / 2, 3 * np.pi / 4)
+            Defines the direction of the pixel relationships for GLCM computation. Angles
+            of 0, π/4, π/2, and 3π/4 radians correspond to horizontal, diagonal,
+            vertical, and anti-diagonal directions, respectively. This parameter allows
+            you to analyze textures that may be directionally dependent or anisotropic.
         device (str):
             Device to use for computation. "cpu" or "cuda". If cuda, the pre-processing
             is done on the GPU. The CLCM computation is performed on the CPU.
