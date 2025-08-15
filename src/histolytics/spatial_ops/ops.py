@@ -65,23 +65,29 @@ def get_objs(
 
 
 def get_interfaces(
-    buffer_area: gpd.GeoDataFrame, areas: gpd.GeoDataFrame, buffer_dist: int = 200
+    area1: gpd.GeoDataFrame,
+    area2: gpd.GeoDataFrame,
+    buffer_dist: int = 200,
+    symmetric_buffer: bool = False,
 ) -> gpd.GeoDataFrame:
     """Get the interfaces b/w the polygons defined in a `areas` and `buffer_area`.
 
     Note:
-        Identifies the interface regions between polygons in `areas` and in `buffer_area`
-        by buffering the `buffer_area` polygons and finding their intersections with `areas`.
+        Identifies the interface regions between polygons in `area1` and in `area2`
+        by buffering the `area2` polygons and finding their intersections with `area1`.
         The width of the interface is controlled by the `buffer_dist` parameter.
 
     Parameters:
-        buffer_area (gpd.GeoDataFrame):
-            The area or region of interest that is buffered on top of polygons in gdf.
-        areas (gpd.GeoDataFrame):
-            A geodataframe containing polygons (tissue areas) that might intersect
+        area1 (gpd.GeoDataFrame):
+            The area or region of interest that is buffered on top of polygons in area2.
+        area2 (gpd.GeoDataFrame):
+            A geodataframe containing polygons (tissue areas) that might intersect.
             with the `buffer_area`.
         buffer_dist (int):
             The radius (in pixels) of the buffer.
+        symmetric_buffer (bool):
+            Whether to use a symmetric buffering to both directions. This doubles the
+            buffer size.
 
     Returns:
         gpd.GeoDataFrame:
@@ -110,20 +116,27 @@ def get_interfaces(
         >>> ax.set_axis_off()
     ![out](../../img/interfaces.png)
     """
-    buffer_area = set_crs(buffer_area)
-    areas = set_crs(areas)
+    area1 = set_crs(area1)
+    area2 = set_crs(area2)
 
     buffer_zone = gpd.GeoDataFrame(
-        {"geometry": list(buffer_area.buffer(buffer_dist))},
-        crs=buffer_area.crs,
+        {"geometry": list(area1.buffer(buffer_dist))},
+        crs=area1.crs,
     )
-    inter = areas.overlay(buffer_zone, how="intersection")
+    inter = area2.overlay(buffer_zone, how="intersection")
+
+    if symmetric_buffer:
+        buffer_zone2 = gpd.GeoDataFrame(
+            {"geometry": list(area2.buffer(buffer_dist))},
+            crs=area2.crs,
+        )
+        inter = buffer_zone.overlay(buffer_zone2, how="intersection")
 
     # if the intersecting area is covered totally by any polygon in the `areas` gdf
     # take the difference of the intresecting area and the orig roi to discard
     # the roi from the interface 'sheet'
     if not inter.empty:
-        if areas.covers(inter.geometry.loc[0]).any():  # len(inter) == 1
-            inter = inter.overlay(buffer_area, how="difference", keep_geom_type=True)
+        if area2.covers(inter.geometry.loc[0]).any():  # len(inter) == 1
+            inter = inter.overlay(area1, how="difference", keep_geom_type=True)
 
     return inter.dissolve().explode().reset_index(drop=True)
