@@ -32,11 +32,11 @@ except ImportError:
 def extract_collagen_fibers(
     img: np.ndarray,
     label: np.ndarray = None,
-    mask: np.ndarray = None,
     sigma: float = 2.5,
     min_size: int = 25,
     rm_bg: bool = False,
     rm_fg: bool = False,
+    mask: np.ndarray = None,
     device: str = "cpu",
 ) -> np.ndarray:
     """Extract collagen fibers from a H&E image.
@@ -47,9 +47,6 @@ def extract_collagen_fibers(
         label (np.ndarray):
             Nuclei binary or label mask. Shape (H, W). This is used to mask out the
             nuclei when extracting collagen fibers. If None, the entire image is used.
-        mask (np.ndarray):
-            Binary mask to restrict the region of interest. Shape (H, W). For example,
-            it can be used to mask out tissues that are not of interest.
         sigma (float):
             The sigma parameter for the Canny edge detector.
         min_size (float):
@@ -58,6 +55,9 @@ def extract_collagen_fibers(
             Whether to remove the background component from the edges.
         rm_fg (bool):
             Whether to remove the foreground component from the edges.
+        mask (np.ndarray):
+            Binary mask to restrict the region of interest. Shape (H, W). For example,
+            it can be used to mask out tissues that are not of interest.
         device (str):
             Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
             CuPy and cucim will be used for GPU acceleration.

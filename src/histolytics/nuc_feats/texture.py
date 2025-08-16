@@ -23,6 +23,7 @@ def textural_feats(
     metrics: Sequence[str] = ("contrast", "dissimilarity"),
     distances: Sequence[int] = (1,),
     angles: Sequence[float] = (0,),
+    mask: np.ndarray = None,
     device: str = "cpu",
 ) -> pd.DataFrame:
     """Compute GLCM texture features from a grayscale image.
@@ -58,6 +59,10 @@ def textural_feats(
             of 0, π/4, π/2, and 3π/4 radians correspond to horizontal, diagonal,
             vertical, and anti-diagonal directions, respectively. This parameter allows
             you to analyze textures that may be directionally dependent or anisotropic.
+        mask (np.ndarray):
+            Optional binary mask to apply to the image to restrict the region of interest.
+            Shape (H, W). For example, it can be used to mask out tissues that are not
+            of interest.
         device (str):
             Device to use for computation. "cpu" or "cuda". If cuda, the pre-processing
             is done on the GPU. The CLCM computation is performed on the CPU.
@@ -96,6 +101,11 @@ def textural_feats(
     else:
         im_gray = img_as_ubyte(rgb2gray(img))
         nuc_lab = np.unique(label)[1:]
+
+    if mask is not None:
+        if mask.dtype != bool:
+            mask = mask > 0
+        label = label * mask
 
     nuc_pos = ndimage.find_objects(label)
 

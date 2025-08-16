@@ -23,6 +23,7 @@ def stromal_intensity_feats(
     quantiles: Union[tuple, list] = (0.25, 0.5, 0.75),
     n_bins: int = 32,
     hist_range: Tuple[float, float] = None,
+    mask: np.ndarray = None,
     device: str = "cpu",
 ) -> pd.Series:
     """Computes intensity features of stromal components of an input H&E image.
@@ -55,6 +56,9 @@ def stromal_intensity_feats(
             Number of bins for histogram-based features.
         hist_range (Tuple[float, float]):
             Range for histogram computation. If None, uses data range.
+        mask (np.ndarray):
+            Binary mask to restrict the region of interest. Shape (H, W). For example,
+            it can be used to mask out tissues that are not of interest.
         device (str):
             Device to use ("cpu" or "cuda"). Gpu-acceleration can be enabled for hed-
             decomposition.
@@ -111,6 +115,8 @@ def stromal_intensity_feats(
 
     # Mask out the cell objects
     if label is not None:
+        if mask is not None:
+            label = label * (mask > 0)
         eosin_mask[label > 0] = 0
         hematoxylin_mask[label > 0] = 0
 

@@ -122,10 +122,10 @@ def chromatin_feats(
     img: np.ndarray,
     label: np.ndarray,
     metrics: Tuple[str, ...] = ("chrom_area", "chrom_nuc_prop"),
-    mask: np.ndarray = None,
     mean: float = 0,
     std: float = 1,
     erode: bool = False,
+    mask: np.ndarray = None,
     device: str = "cuda",
 ) -> pd.DataFrame:
     """Extracts chromatin features from the HE image and instance segmentation mask.
@@ -150,15 +150,17 @@ def chromatin_feats(
                 - "n_chrom_clumps"
                 - "chrom_boundary_prop"
                 - "manders_coloc_coeff"
-        mask (np.ndarray):
-            Optional binary mask to apply to the image to restrict the region of interest.
-            Shape (H, W).
         mean (float):
             Mean intensity of the image.
         std (float):
             Standard deviation of the image.
         erode (bool):
             Whether to apply erosion to the chromatin clumps.
+        mask (np.ndarray):
+            Optional binary mask to apply to the image to restrict the region of interest.
+            Shape (H, W).
+        device (str):
+            Device to use for computation. "cpu" or "cuda".
 
     Raises:
         ValueError: If the shape of `img` and `label` do not match.
