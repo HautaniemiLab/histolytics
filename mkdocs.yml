@@ -273,5 +273,6 @@ nav:
     - wsi:
       - SlideReader: api/wsi/slide_reader.md
       - WSIPanopticSegmenter: api/wsi/wsi_segmenter.md
+      - WSIGridProcessor: api/wsi/wsi_processor.md
       - utils:
         - get_sub_grids: api/wsi/get_sub_grids.md
