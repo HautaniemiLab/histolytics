@@ -1,3 +1,4 @@
+from functools import partial
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -14,7 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from histolytics.models._base_model import BaseModelPanoptic
-from histolytics.utils.gdf import set_crs, set_uid
+from histolytics.utils.gdf import gdf_apply, set_crs, set_geom_precision, set_uid
 from histolytics.wsi.slide_reader import SlideReader
 
 try:
@@ -47,7 +48,7 @@ class TissueMerger:
         self.gdf = gdf
 
     def merge(
-        self, dst: str = None, simplify_level: int = 1
+        self, dst: str = None, simplify_level: int = 1, precision: int = None
     ) -> Union[gpd.GeoDataFrame, None]:
         if dst is not None:
             dst = Path(dst)
@@ -126,6 +127,10 @@ class TissueMerger:
         merged = merged[~merged.isnull()]
         merged.geometry = merged.geometry.buffer(1)
         merged = set_uid(set_crs(merged), drop=True)
+
+        if precision is not None:
+            set_prec = partial(set_geom_precision, precision=precision)
+            merged = gdf_apply(merged, set_prec, columns=["geometry"], num_processes=8)
 
         if dst is not None:
             if suff == ".parquet":
@@ -312,6 +317,7 @@ class WsiPanopticSegmenter:
         dst: str,
         clear_in_dir: bool = False,
         simplify_level: float = 0.3,
+        precision: int = None,
     ) -> None:
         """Merge the instances at the image boundaries.
 
@@ -325,6 +331,9 @@ class WsiPanopticSegmenter:
                 Whether to clear the source directory after merging.
             simplify_level (float):
                 The level of simplification to apply to the merged instances.
+            precision (int):
+                The precision level to apply to the merged instances. If None, no rounding
+                will be made.
         """
         if not self._has_processed:
             raise ValueError("You must segment the instances first.")
@@ -332,7 +341,7 @@ class WsiPanopticSegmenter:
         in_dir = Path(src)
         gdf = gpd.read_parquet(in_dir)
         merger = InstMerger(gdf, self.coordinates)
-        merger.merge(dst, simplify_level=simplify_level)
+        merger.merge(dst, simplify_level=simplify_level, precision=precision)
 
         if clear_in_dir:
             for f in in_dir.glob("*"):
@@ -345,6 +354,7 @@ class WsiPanopticSegmenter:
         dst: str,
         clear_in_dir: bool = False,
         simplify_level: float = 1,
+        precision: int = None,
     ) -> None:
         """Merge the tissue segmentations.
 
@@ -358,6 +368,9 @@ class WsiPanopticSegmenter:
                 Whether to clear the source directory after merging.
             simplify_level (float):
                 The level of simplification to apply to the merged tissues.
+            precision (int):
+                The precision level to apply to the merged tissues. If None, no rounding
+                will be made.
         """
         if not self._has_processed:
             raise ValueError("You must segment the instances first.")
@@ -365,7 +378,7 @@ class WsiPanopticSegmenter:
         in_dir = Path(src)
         gdf = gpd.read_parquet(in_dir)
         merger = TissueMerger(gdf, self.coordinates)
-        merger.merge(dst, simplify_level=simplify_level)
+        merger.merge(dst, simplify_level=simplify_level, precision=precision)
 
         if clear_in_dir:
             for f in in_dir.glob("*"):
