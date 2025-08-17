@@ -183,4 +183,5 @@ Welcome to the Histolytics API Reference. Here you'll find an overview of all pu
 
 - [SlideReader](wsi/slide_reader.md): Functions for reading whole slide images
 - [WsiPanopticSegmenter](wsi/wsi_segmenter.md): Class handling the panoptic segmentation of whole slide images
+- [WSIGridProcessor](wsi/wsi_processor.md): Class for processing WSI grid cells.
 - [get_sub_grids](wsi/get_sub_grids.md): Get sub-grids from a whole slide image.
