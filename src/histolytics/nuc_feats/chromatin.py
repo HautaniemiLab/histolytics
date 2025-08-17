@@ -126,7 +126,7 @@ def chromatin_feats(
     std: float = 1,
     erode: bool = False,
     mask: np.ndarray = None,
-    device: str = "cuda",
+    device: str = "cpu",
 ) -> pd.DataFrame:
     """Extracts chromatin features from the HE image and instance segmentation mask.
 

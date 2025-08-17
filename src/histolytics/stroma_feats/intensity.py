@@ -28,6 +28,11 @@ def stromal_intensity_feats(
 ) -> pd.Series:
     """Computes intensity features of stromal components of an input H&E image.
 
+    Note:
+        This functions decomposes the input image into its H&E components and computes
+        various intensity features for the corresponding hematoxylin and eosin components
+        along with the area occupied by both stain components.
+
     Parameters:
         img (np.ndarray):
             The input image. Shape (H, W, 3).

@@ -230,6 +230,9 @@ def fiber_feats(
     )
     labeled_edges = sklabel(edges)
 
+    if len(np.unique(labeled_edges)) <= 1:
+        return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry", *metrics])
+
     # Convert labeled edges to GeoDataFrame
     edge_gdf = _edges2gdf(
         labeled_edges, num_processes=num_processes, reset_uid=reset_uid

@@ -109,7 +109,7 @@ def get_hematoxylin_mask(
 
 
 def kmeans_img(
-    img: np.ndarray, n_clust: int = 3, seed: int = 42, device: str = "cuda"
+    img: np.ndarray, n_clust: int = 3, seed: int = 42, device: str = "cpu"
 ) -> np.ndarray:
     """Performs KMeans clustering on the input image.
 
@@ -136,6 +136,15 @@ def kmeans_img(
             "or set device='cpu'."
         )
 
+    # Check for sufficient color variation
+    pixels = img.reshape(-1, 3)
+    unique_colors = np.unique(pixels, axis=0)
+
+    # If we have fewer unique colors than requested clusters, reduce n_clust
+    if len(unique_colors) < n_clust:
+        n_clust = max(1, len(unique_colors))
+        return np.zeros((img.shape[0], img.shape[1]), dtype=np.int32)
+
     if device == "cuda":
         return _kmeans_cp(img, n_clust=n_clust, seed=seed)
     elif device == "cpu":
@@ -145,7 +154,7 @@ def kmeans_img(
 
 
 def tissue_components(
-    img: np.ndarray, label: np.ndarray = None, device: str = "cuda"
+    img: np.ndarray, label: np.ndarray = None, device: str = "cpu"
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Segment background and foreground masks from H&E image. Uses k-means clustering.
 
@@ -165,6 +174,11 @@ def tissue_components(
     """
     # mask out dark pixels
     kmasks = kmeans_img(img, n_clust=3, device=device)
+
+    if not np.any(kmasks):
+        bg_mask = np.zeros(kmasks.shape[:2], dtype=bool)
+        dark_mask = np.zeros(kmasks.shape[:2], dtype=bool)
+        return bg_mask, dark_mask
 
     if _has_cp and device == "cuda":
         bg_mask, dark_mask = _get_tissue_bg_fg_cp(img, kmasks, label)
@@ -299,6 +313,14 @@ def _hed_decompose_cp(img: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarr
 
 def _get_eosin_mask_np(img_eosin: np.ndarray) -> np.ndarray:
     """CPU implementation of eosin mask generation."""
+    if np.all(
+        [
+            np.allclose(img_eosin[..., c], img_eosin[..., c].flat[0], atol=1e-6)
+            for c in range(3)
+        ]
+    ):
+        return np.zeros(img_eosin.shape[:2], dtype=bool)
+
     gray = rgb2gray(img_eosin)
     thresh = threshold_otsu(gray)
     eosin_mask = 1 - (gray > thresh)
@@ -309,6 +331,15 @@ def _get_eosin_mask_np(img_eosin: np.ndarray) -> np.ndarray:
 def _get_eosin_mask_cp(img_eosin: np.ndarray) -> np.ndarray:
     """GPU implementation of eosin mask generation using CuCIM."""
     img_eosin_cp = cp.asarray(img_eosin)
+
+    if cp.all(
+        [
+            cp.allclose(img_eosin_cp[..., c], img_eosin_cp[..., c].flat[0], atol=1e-6)
+            for c in range(3)
+        ]
+    ):
+        return cp.zeros(img_eosin_cp.shape[:2], dtype=bool)
+
     gray = rgb2gray_cp(img_eosin_cp)
     thresh = threshold_otsu_cp(gray)
     eosin_mask = 1 - (gray > thresh)
@@ -320,6 +351,16 @@ def _get_hematoxylin_mask_np(
     img_hematoxylin: np.ndarray, eosin_mask: np.ndarray
 ) -> np.ndarray:
     """CPU implementation of hematoxylin mask generation."""
+    if np.all(
+        [
+            np.allclose(
+                img_hematoxylin[..., c], img_hematoxylin[..., c].flat[0], atol=1e-6
+            )
+            for c in range(3)
+        ]
+    ):
+        return np.zeros(img_hematoxylin.shape[:2], dtype=bool)
+
     bg_mask = np.all(img_hematoxylin >= 0.9, axis=-1)
     hematoxylin_mask = (1 - bg_mask - eosin_mask) > 0
     return hematoxylin_mask.astype(bool)
@@ -331,6 +372,18 @@ def _get_hematoxylin_mask_cp(
     """GPU implementation of hematoxylin mask generation using CuPy."""
     img_hematoxylin_cp = cp.asarray(img_hematoxylin)
     eosin_mask_cp = cp.asarray(eosin_mask)
+
+    if cp.all(
+        [
+            cp.allclose(
+                img_hematoxylin_cp[..., c],
+                img_hematoxylin_cp[..., c].flat[0],
+                atol=1e-6,
+            )
+            for c in range(3)
+        ]
+    ):
+        return np.zeros(img_hematoxylin_cp.shape[:2], dtype=bool)
 
     bg_mask = cp.all(img_hematoxylin_cp >= 0.9, axis=-1)
     hematoxylin_mask = (1 - bg_mask - eosin_mask_cp) > 0
