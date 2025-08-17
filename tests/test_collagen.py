@@ -158,6 +158,7 @@ def test_fiber_feats_metrics_computation(stroma_data, metrics, expected_columns)
         normalize=False,
         device="cpu",
         num_processes=1,
+        return_edges=True,
     )
 
     # Check that result is a GeoDataFrame
@@ -223,6 +224,7 @@ def test_fiber_feats_parameter_combinations(
         rm_fg=rm_fg,
         device=device,
         num_processes=1,
+        return_edges=True,
     )
 
     # Basic checks
