@@ -21,7 +21,7 @@
     <img src="https://img.shields.io/pypi/pyversions/histolytics" alt="Python - Version">
 </a>
 <a href="https://pypi.org/project/histolytics/">
-    <img src="https://img.shields.io/pypi/pyversions/histolytics" alt="Pypi - Version">
+    <img src="https://img.shields.io/pypi/v/histolytics" alt="Pypi - Version">
 </a>
 <a href="https://huggingface.co/histolytics-hub">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97%20HF-Model%20Hub-yellow" alt="HF - Model Hub">
