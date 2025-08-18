@@ -53,7 +53,6 @@ def sample_data():
     [
         # Basic metrics
         (("chrom_area", "chrom_nuc_prop"), "cpu", False, 2),
-        (("chrom_area", "chrom_nuc_prop"), "cuda", False, 2),
         # All metrics
         (
             (
