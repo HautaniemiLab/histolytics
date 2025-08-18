@@ -133,6 +133,7 @@ def fit_distband(
         threshold=threshold,
         alpha=-1.0,
         ids=id_col,
+        use_index=False,
         silence_warnings=silence_warnings,
         **kwargs,
     )
