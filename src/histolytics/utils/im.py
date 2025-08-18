@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 import scipy.ndimage as ndimage
-from skimage.morphology import dilation, erosion, square
+from skimage.morphology import dilation, erosion, footprint_rectangle
 from sklearn.cluster import KMeans
 
 from histolytics.utils.mask import rm_objects_mask
@@ -185,9 +185,11 @@ def tissue_components(
     else:
         bg_mask, dark_mask = _get_tissue_bg_fg_np(img, kmasks, label)
 
-    bg_mask = rm_objects_mask(erosion(bg_mask, square(3)), min_size=1000, device=device)
+    bg_mask = rm_objects_mask(
+        erosion(bg_mask, footprint_rectangle((3, 3))), min_size=1000, device=device
+    )
     dark_mask = rm_objects_mask(
-        dilation(dark_mask, square(3)), min_size=200, device=device
+        dilation(dark_mask, footprint_rectangle((3, 3))), min_size=200, device=device
     )
 
     # couldn't get this work with cupyx.ndimage..
@@ -333,10 +335,14 @@ def _get_eosin_mask_cp(img_eosin: np.ndarray) -> np.ndarray:
     img_eosin_cp = cp.asarray(img_eosin)
 
     if cp.all(
-        [
-            cp.allclose(img_eosin_cp[..., c], img_eosin_cp[..., c].flat[0], atol=1e-6)
-            for c in range(3)
-        ]
+        cp.array(
+            [
+                cp.allclose(
+                    img_eosin_cp[..., c], img_eosin_cp[..., c].flat[0], atol=1e-6
+                )
+                for c in range(3)
+            ]
+        )
     ):
         return cp.zeros(img_eosin_cp.shape[:2], dtype=bool)
 
@@ -374,14 +380,16 @@ def _get_hematoxylin_mask_cp(
     eosin_mask_cp = cp.asarray(eosin_mask)
 
     if cp.all(
-        [
-            cp.allclose(
-                img_hematoxylin_cp[..., c],
-                img_hematoxylin_cp[..., c].flat[0],
-                atol=1e-6,
-            )
-            for c in range(3)
-        ]
+        cp.array(
+            [
+                cp.allclose(
+                    img_hematoxylin_cp[..., c],
+                    img_hematoxylin_cp[..., c].flat[0],
+                    atol=1e-6,
+                )
+                for c in range(3)
+            ]
+        )
     ):
         return np.zeros(img_hematoxylin_cp.shape[:2], dtype=bool)
 
