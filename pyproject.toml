@@ -67,5 +67,9 @@ only-include = [
     "src/histolytics",
     "README.md",
     "LICENSE",
-    "pyproject.toml"
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    ".python-version",
+    "pyproject.toml",
+    "uv.lock",
 ]
