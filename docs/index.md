@@ -40,39 +40,39 @@
 
 
 ## Panoptic Segmentation Features 🌟
-- Fast WSI-level panoptic segmentation. See [example](https://hautaniemilab.github.io/histolytics/user_guide/seg/panoptic_segmentation/).
+- Fast WSI-level panoptic segmentation. See [example](./user_guide/seg/panoptic_segmentation/).
 - Low memory-footprint segmentation results with [`__geo_interface__`](https://gist.github.com/sgillies/2217756)-specification.
 - Multiple vectorized segmentation output formats (geojson/feather/parquet).
-- Several panoptic segmentation model architectures for histological WSIs with flexible backbone support: See [example](https://hautaniemilab.github.io/histolytics/user_guide/seg/backbones/)
+- Several panoptic segmentation model architectures for histological WSIs with flexible backbone support: See [example](./user_guide/seg/backbones/)
 - Pre-trained models in model-hub. See: [histolytics-hub](https://huggingface.co/histolytics-hub)
 
 ## Spatial Analysis Features 📊
-- Fast Spatial Querying of WSI-scale panoptic segmentation maps. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/querying/)
-- Spatial indexing/partitioning for localized spatial statistics and analysis. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/partitioning/)
-- Graph-based neighborhood analysis for local cell neighborhoods. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/nhoods/)
-- Plotting utilities for spatial data visualization. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/legendgram/)
-- Spatial clustering and cluster centrography metrics. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/clustering/)
-- Large set of morphological, intensity, chromatin distribution, and textural features at nuclear level. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/nuclear_features/)
-- Large set of collagen fiber and intensity based features to characterize stroma and ECM. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/stromal_features/)
+- Fast Spatial Querying of WSI-scale panoptic segmentation maps. See [example](./user_guide/spatial/querying/)
+- Spatial indexing/partitioning for localized spatial statistics and analysis. See [example](./user_guide/spatial/partitioning/)
+- Graph-based neighborhood analysis for local cell neighborhoods. See [example](./user_guide/spatial/nhoods/)
+- Plotting utilities for spatial data visualization. See [example](./user_guide/spatial/legendgram/)
+- Spatial clustering and cluster centrography metrics. See [example](./user_guide/spatial/clustering/)
+- Large set of morphological, intensity, chromatin distribution, and textural features at nuclear level. See [example](./user_guide/spatial/nuclear_features/)
+- Large set of collagen fiber and intensity based features to characterize stroma and ECM. See [example](./user_guide/spatial/stromal_features/)
 
 ## Example Workflows 🧪
 
 #### Immuno-oncology Profiling:
 
-- [Spatial Statistics of TILs](https://hautaniemilab.github.io/histolytics/user_guide/workflows/TIL_workflow/).
-- [Profiling TLS and Lymphoid Aggregates](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tls_lymphoid_aggregate/).
+- [Spatial Statistics of TILs](./user_guide/workflows/TIL_workflow/).
+- [Profiling TLS and Lymphoid Aggregates](./user_guide/workflows/tls_lymphoid_aggregate/).
 
 #### Nuclear Pleomorphism:
 
-- [Nuclear Morphology Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/nuclear_morphology/).
-- [Nuclear Chromatin Distribution Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/chromatin_patterns/).
+- [Nuclear Morphology Analysis](./user_guide/workflows/nuclear_morphology/).
+- [Nuclear Chromatin Distribution Analysis](./user_guide/workflows/chromatin_patterns/).
 
 #### TME Characterization:
-- [Collagen Fiber Disorder Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/collagen_orientation/).
-- [Characterization of Desmoplastic Stroma](https://hautaniemilab.github.io/histolytics/user_guide/workflows/clustering_desmoplasia/).
+- [Collagen Fiber Disorder Analysis](./user_guide/workflows/collagen_orientation/).
+- [Characterization of Desmoplastic Stroma](./user_guide/workflows/clustering_desmoplasia/).
 
 #### Nuclei Neighborhoods:
-- [Tumor Cell Accessibility](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tumor_cell_accessibility/).
+- [Tumor Cell Accessibility](./user_guide/workflows/tumor_cell_accessibility/).
 
 
 ## Installation 🛠️
