@@ -10,8 +10,8 @@ from skimage.feature import canny
 from skimage.measure import label as sklabel
 from skimage.morphology import (
     dilation,
+    footprint_rectangle,
     remove_small_objects,
-    square,
 )
 
 from histolytics.spatial_geom.medial_lines import _compute_medial_line
@@ -112,7 +112,7 @@ def extract_collagen_fibers(
 
     if rm_bg or rm_fg:
         if label is not None:
-            label = dilation(label, square(5))
+            label = dilation(label, footprint_rectangle((5, 5)))
             edges[label > 0] = 0
 
         bg_mask, dark_mask = tissue_components(img, label, device=device)
@@ -259,7 +259,12 @@ def fiber_feats(
             parallel=num_processes > 1,
             num_processes=num_processes,
         )
-        return edge_gdf.sort_values(by="uid").reset_index(drop=True)
+        edge_gdf = edge_gdf.assign(class_name="collagen")
+        return (
+            edge_gdf.sort_values(by="uid")
+            .set_index("uid", verify_integrity=True, drop=True)
+            .reset_index(drop=True)
+        )
 
     return feat_df
 
