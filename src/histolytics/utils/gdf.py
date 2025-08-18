@@ -188,7 +188,7 @@ def set_geom_precision(geom: BaseGeometry, precision: int = 6) -> BaseGeometry:
             2    POLYGON ((1382.99 156.01, 1380 156.01, 1376.01...
             dtype: geometry
     """
-    wkt_str = dumps(geom, rounding_precision=precision)
+    wkt_str = dumps(geom, rounding_precision=precision, trim=True)
     return wkt.loads(wkt_str)
 
 

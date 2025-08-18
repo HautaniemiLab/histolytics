@@ -214,7 +214,7 @@ def hgsc_cancer_he():
         >>> ax.set_axis_off()
     ![out](../../img/hgsc_cancer_he.png)
     """
-    return FileHandler.read_img(BASE_PATH / "hgsc_nest.png")
+    return FileHandler.read_img(BASE_PATH / "hgsc_nest.jpg")
 
 
 def hgsc_stroma_nuclei():
@@ -247,4 +247,4 @@ def hgsc_stroma_he():
         >>> ax.set_axis_off()
     ![out](../../img/hgsc_stroma_he.png)
     """
-    return FileHandler.read_img(BASE_PATH / "hgsc_stromal_he.png")
+    return FileHandler.read_img(BASE_PATH / "hgsc_stromal_he.jpg")
