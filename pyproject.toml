@@ -61,3 +61,11 @@ docs = [
     "mkdocstrings-python>=1.16.10",
     "pymdown-extensions>=10.15",
 ]
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "src/histolytics",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml"
+]
