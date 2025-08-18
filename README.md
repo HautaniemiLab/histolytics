@@ -4,31 +4,50 @@
 
 **A Python library for scalable panoptic spatial analysis of histological WSIs**
 
-[![Github Test](https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests)](https://github.com/HautaniemiLab/histolytics/blob/main/.github/workflows/tests.yml) [![License](https://img.shields.io/github/license/HautaniemiLab/histolytics)](https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE) [![Python - Version](https://img.shields.io/pypi/pyversions/histolytics)](https://www.python.org/) [![Package - Version](https://img.shields.io/pypi/v/histolytics)](https://pypi.org/project/histolytics/)
-
+[![Github Test](https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests)](https://github.com/HautaniemiLab/histolytics/blob/main/.github/workflows/tests.yml) [![License](https://img.shields.io/github/license/HautaniemiLab/histolytics)](https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE) [![Python - Version](https://img.shields.io/pypi/pyversions/histolytics)](https://www.python.org/)
+[![Package - Version](https://img.shields.io/pypi/v/histolytics)](https://pypi.org/project/histolytics/) [![Model Checkpoints](https://img.shields.io/badge/%F0%9F%A4%97%20HF-Model%20Hub-yellow)](https://huggingface.co/histolytics-hub)
 </div>
 
 ## Introduction
 
-**histolytics** is a spatial analysis library for histological whole slide images (WSI) library built upon [`torch`](https://pytorch.org/), [`geopandas`](https://geopandas.org/en/stable/index.html) and [`libpysal`](https://pysal.org/libpysal/). The library contains multi-task encoder-decoder architectures for **panoptic segmentation** of WSIs into [`__geo_interface__`](https://gist.github.com/sgillies/2217756)-format and a wide array of spatial analysis tools for the resulting segmentation masks.
+**histolytics** is a spatial analysis library for histological whole slide images (WSI). Built upon [`torch`](https://pytorch.org/), [`geopandas`](https://geopandas.org/en/stable/index.html) and [`libpysal`](https://pysal.org/libpysal/), the library provides a comprehensive and scalable framework for **panoptic segmentation** and **interpretable panoptic spatial analysis** of routine histopathology slides.
 
-## Features 🌟
-- WSI-level panoptic segmentation
-- Several panoptic segmentation models for histological WSIs
+
+## Panoptic Segmentation Features 🌟
+- Fast WSI-level panoptic segmentation. See [example](https://hautaniemilab.github.io/histolytics/user_guide/seg/panoptic_segmentation/).
+- Low memory-footprint segmentation results with [`__geo_interface__`](https://gist.github.com/sgillies/2217756)-specification.
+- Multiple vectorized segmentation output formats (geojson/feather/parquet).
+- Several panoptic segmentation model architectures for histological WSIs with flexible backbone support: See [example](https://hautaniemilab.github.io/histolytics/user_guide/seg/backbones/)
 - Pre-trained models in model-hub. See: [histolytics-hub](https://huggingface.co/histolytics-hub)
-- Versatile spatial analysis tools for segmented WSIs
+
+## Spatial Analysis Features 📊
+- Fast Spatial Querying of WSI-scale panoptic segmentation maps. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/querying/)
+- Spatial indexing/partitioning for localized spatial statistics and analysis. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/partitioning/)
+- Graph-based neighborhood analysis for local cell neighborhoods. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/nhoods/)
+- Plotting utilities for spatial data visualization. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/legendgram/)
+- Spatial clustering and cluster centrography metrics. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/clustering/)
+- Large set of morphological, intensity, chromatin distribution, and textural features at nuclear level. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/nuclear_features/)
+- Large set of collagen fiber and intensity based features to characterize stroma and ECM. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/stromal_features/)
+
+## Example Workflows 🧪
+- Immuno-oncology Profiling:
+  - [Spatial Statistics of TILs](https://hautaniemilab.github.io/histolytics/user_guide/workflows/TIL_workflow/).
+  - [Profiling TLS and Lymphoid Aggregates](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tls_lymphoid_aggregate/).
+- Nuclear Pleomorphism:
+  - [Nuclear Morphology Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/nuclear_morphology/).
+  - [Nuclear Chromatin Distribution Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/chromatin_patterns/).
+- TME Characterization:
+  - [Collagen Fiber Disorder Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/collagen_orientation/).
+  - [Characterization of Desmoplastic Stroma](https://hautaniemilab.github.io/histolytics/user_guide/workflows/clustering_desmoplasia/).
+- Nuclei Neighborhoods:
+  - [Tumor Cell Accessibility](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tumor_cell_accessibility/).
+
 
 ## Installation 🛠️
 
 ```shell
 pip install histolytics
 ```
-
-## Getting started with Histolytics
-
-- [Segmentation Quick Start](https://hautaniemilab.github.io/histolytics/user_guide/seg/getting_started_seg/)
-- [API Reference](https://hautaniemilab.github.io/histolytics/api/)
-
 
 ## Models 🤖
 

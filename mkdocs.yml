@@ -90,6 +90,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - User Guide:
+    - Overview: user_guide/index.md
     - Segmentation:
       - Getting Started: user_guide/seg/getting_started_seg.md
       - Model Backbones: user_guide/seg/backbones.ipynb
@@ -108,12 +109,13 @@ nav:
       - Stromal Features: user_guide/spatial/stromal_features.ipynb
       - Medial Lines: user_guide/spatial/medial_lines.ipynb
     - WSI Analysis Workflows:
-      - Quantifying tumor-infiltrating lymphocytes (TILs): user_guide/spatial/indexing_partitioning.ipynb
-      - Quantifying Nuclear Chromatin Patterns: user_guide/spatial/chromatin_patterns.ipynb
-      - Clustering Desmoplastic Stroma: user_guide/spatial/clustering_desmoplasia.ipynb
-      - Tumor Cell Accessibility: user_guide/spatial/tumor_cell_accessibility.ipynb
-      - Collagen Orientation Disorder Quantification: user_guide/spatial/collagen_orientation.ipynb
-      - TLS and Lymphoid Aggregate Analysis: user_guide/spatial/tls_lymphoid_aggregate.ipynb
+      - Quantifying tumor-infiltrating lymphocytes (TILs): user_guide/workflows/TIL_workflow.ipynb
+      - TLS and Lymphoid Aggregate Analysis: user_guide/workflows/tls_lymphoid_aggregate.ipynb
+      - Quantifying Neoplastic Nuclear Chromatin Patterns: user_guide/workflows/chromatin_patterns.ipynb
+      - Quantifying Neoplastic Nuclear Morphology: user_guide/workflows/nuclear_morphology.ipynb
+      - Quantifying Neoplastic Cell Accessibility: user_guide/workflows/tumor_cell_accessibility.ipynb
+      - Clustering Desmoplastic Stroma: user_guide/workflows/clustering_desmoplasia.ipynb
+      - Collagen Orientation Disorder Quantification: user_guide/workflows/collagen_orientation.ipynb
   - API Reference:
     - Overview: api/index.md
     - data:

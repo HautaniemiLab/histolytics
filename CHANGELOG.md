@@ -2,6 +2,15 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.0] - 2025-08-18
+### Added
+- Unify feature extraction API
+- Major performance improvements for functions in `stromal_feats` and `nuc_feats` modules
+- Add `textural_feats` for GLCM feature extraction. Uses skimage.
+- Add `manders_coloc_coeff`, `n_chrom_clumps` and `chrom_boundary_prop` feats to  `chromatin_feats`
+- Update documentation pages
+
+
 ## [0.1.1] - 2025-07-03
 
 ### Added
