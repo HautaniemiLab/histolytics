@@ -1,21 +1,14 @@
-from functools import partial
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 import geopandas as gpd
-import networkx as nx
-import numpy as np
-import pandas as pd
 import torch
 from cellseg_models_pytorch.torch_datasets import WSIDatasetInfer
-from cellseg_models_pytorch.wsi.inst_merger import InstMerger
-from libpysal.weights import W, fuzzy_contiguity
-from shapely.geometry import Polygon, box
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from histolytics.models._base_model import BaseModelPanoptic
-from histolytics.utils.gdf import gdf_apply, set_crs, set_geom_precision, set_uid
+from histolytics.wsi.mergers import InstMerger, TissueMerger
 from histolytics.wsi.slide_reader import SlideReader
 
 try:
@@ -27,163 +20,7 @@ except ModuleNotFoundError:
 
 import warnings
 
-__all__ = ["WsiPanopticSegmenter", "TissueMerger"]
-
-
-class TissueMerger:
-    def __init__(
-        self, gdf: gpd.GeoDataFrame, coordinates: List[Tuple[int, int, int, int]]
-    ) -> None:
-        """Tissue segmentations Merger.
-
-        Parameters:
-            gdf (gpd.GeoDataFrame):
-                The GeoDataFrame containing the non-merged tissue segmentations.
-            coordinates (List[Tuple[int, int, int, int]]):
-                The bounding box coordinates from `reader.get_tile_coordinates()`.
-        """
-        # Convert xywh coordinates to bounding box polygons
-        polygons = [box(x, y, x + w, y + h) for x, y, w, h in coordinates]
-        self.grid = gpd.GeoDataFrame({"geometry": polygons})
-        self.gdf = gdf
-
-    def merge(
-        self, dst: str = None, simplify_level: int = 1, precision: int = None
-    ) -> Union[gpd.GeoDataFrame, None]:
-        if dst is not None:
-            dst = Path(dst)
-            suff = dst.suffix
-            allowed_suff = [".parquet", ".geojson", ".feather"]
-            if suff not in allowed_suff:
-                raise ValueError(f"Invalid format. Got {suff}. Allowed: {allowed_suff}")
-
-            parent = dst.parent
-            if not parent.exists():
-                parent.mkdir(parents=True, exist_ok=True)
-
-        # start merging
-        start_coord_key = "minx"
-        self.grid["minx"] = self.grid.geometry.apply(lambda geom: geom.bounds[0])
-        grid_sorted = self.grid.sort_values(by=start_coord_key)
-
-        grouped = grid_sorted.groupby(start_coord_key)
-        grouped_list = list(grouped)
-
-        # first merge column-wise
-        col_gdfs = []
-        for _, col in tqdm(grouped_list, desc="Merging tissue columns"):
-            grid_union = col.union_all()
-            grid_union = self._union_to_gdf(grid_union)
-            objs = self._get_objs(self.gdf, grid_union, "contains")
-
-            col_tissues = []
-            col_cls = []
-            for c, col_tis_gdf in objs.groupby("class_name"):
-                union = col_tis_gdf.union_all()
-                union = self._union_to_gdf(union).explode()
-                col_tissues.append(union)
-                col_cls.extend([c] * len(union))
-
-            col_gdf = pd.concat(col_tissues).reset_index(drop=True)
-            col_gdf["class_name"] = col_cls
-
-            col_gdfs.append(col_gdf)
-
-        col_gdfs = pd.concat(col_gdfs).reset_index(drop=True)
-
-        # merge columns by class
-        region_gdfs = []
-        for cl in tqdm(
-            col_gdfs["class_name"].unique(), desc="Merging tissues by class"
-        ):
-            region_gdf = col_gdfs.loc[col_gdfs["class_name"] == cl]
-            region_gdf = self._set_uid(region_gdf)
-
-            w = fuzzy_contiguity(
-                region_gdf,
-                buffering=True,
-                buffer=2,
-                predicate="intersects",
-                silence_warnings=True,
-            )
-
-            G = w.to_networkx()
-            sub_graphs = [
-                W(nx.to_dict_of_lists(G.subgraph(c).copy()))
-                for c in nx.connected_components(G)
-            ]
-
-            sub_regions = []
-            for sub_g in sub_graphs:
-                sub_gdf = region_gdf.loc[list(sub_g.neighbors.keys())]
-                sub_region = sub_gdf.union_all().simplify(simplify_level)
-                sub_regions.append(sub_region)
-
-            out = gpd.GeoDataFrame({"geometry": sub_regions, "class_name": cl})
-            region_gdfs.append(out)
-
-        merged = pd.concat(region_gdfs)
-        merged = merged.explode().reset_index(drop=True)
-        merged = merged[~merged.isnull()]
-        merged.geometry = merged.geometry.buffer(1)
-        merged = set_uid(set_crs(merged), drop=True)
-
-        if precision is not None:
-            set_prec = partial(set_geom_precision, precision=precision)
-            merged = gdf_apply(merged, set_prec, columns=["geometry"], num_processes=8)
-
-        if dst is not None:
-            if suff == ".parquet":
-                merged.to_parquet(dst)
-            elif suff == ".geojson":
-                merged.to_file(dst, driver="GeoJSON")
-            elif suff == ".feather":
-                merged.to_feather(dst)
-        else:
-            return merged
-
-    def _set_uid(
-        self,
-        gdf: gpd.GeoDataFrame,
-        start_ix: int = 0,
-        id_col: str = "uid",
-        drop: bool = False,
-    ) -> gpd.GeoDataFrame:
-        """Set the uid column in the GeoDataFrame."""
-        if id_col not in gdf.columns:
-            gdf = gdf.assign(**{id_col: range(start_ix, len(gdf) + start_ix)})
-
-        gdf = gdf.set_index(id_col, drop=drop)
-
-        return gdf
-
-    def _get_objs(
-        self,
-        objects: gpd.GeoDataFrame,
-        area: gpd.GeoDataFrame,
-        predicate: str,
-        **kwargs,
-    ) -> gpd.GeoDataFrame:
-        """Get the objects that intersect with the midline."""
-        inds = objects.geometry.sindex.query(
-            area.geometry, predicate=predicate, **kwargs
-        )
-        objs: gpd.GeoDataFrame = objects.iloc[np.unique(inds)[2:]]
-
-        return objs.drop_duplicates("geometry")
-
-    def _union_to_gdf(self, union: Polygon, buffer_dist: int = 0) -> gpd.GeoDataFrame:
-        """Convert a unionized GeoDataFrame back to a GeoDataFrame.
-
-        Note: Fills in the holes in the polygons.
-        """
-        if isinstance(union, Polygon):
-            union = gpd.GeoSeries([union.buffer(buffer_dist)])
-        else:
-            union = gpd.GeoSeries(
-                [Polygon(poly.exterior).buffer(buffer_dist) for poly in union.geoms]
-            )
-        return gpd.GeoDataFrame(geometry=union)
+__all__ = ["WsiPanopticSegmenter"]
 
 
 class WsiPanopticSegmenter:
