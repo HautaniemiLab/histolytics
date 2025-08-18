@@ -2,6 +2,11 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.1] - 2025-08-18
+### Fixed
+- Reduced package size by compressing PNG data files
+- Fixed PyPI publishing issues
+
 ## [0.2.0] - 2025-08-18
 ### Added
 - Unify feature extraction API
