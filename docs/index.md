@@ -1,12 +1,38 @@
+
+# Histolytics
+
+![Logo](img/histolytics_logo.png)
+
 <div align="center">
 
-![Logo](imgs/histolytics_logo.png)
+<b>A Python library for scalable panoptic spatial analysis of histological WSIs</b>
 
-**A Python library for scalable panoptic spatial analysis of histological WSIs**
-
-[![Github Test](https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests)](https://github.com/HautaniemiLab/histolytics/blob/main/.github/workflows/tests.yml) [![License](https://img.shields.io/github/license/HautaniemiLab/histolytics)](https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE) [![Python - Version](https://img.shields.io/pypi/pyversions/histolytics)](https://www.python.org/)
-[![Package - Version](https://img.shields.io/pypi/v/histolytics)](https://pypi.org/project/histolytics/) [![Model Checkpoints](https://img.shields.io/badge/%F0%9F%A4%97%20HF-Model%20Hub-yellow)](https://huggingface.co/histolytics-hub)
 </div>
+
+<div align="center">
+
+<a href="https://github.com/HautaniemiLab/histolytics/actions/workflows/tests.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/HautaniemiLab/histolytics/tests.yml?label=tests" alt="Github Test">
+</a>
+<a href="https://github.com/HautaniemiLab/histolytics/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/HautaniemiLab/histolytics" alt="License">
+</a>
+<a href="https://www.python.org/">
+    <img src="https://img.shields.io/pypi/pyversions/histolytics" alt="Python - Version">
+</a>
+<a href="https://pypi.org/project/histolytics/">
+    <img src="https://img.shields.io/pypi/pyversions/histolytics" alt="Pypi - Version">
+</a>
+<a href="https://huggingface.co/histolytics-hub">
+    <img src="https://img.shields.io/badge/%F0%9F%A4%97%20HF-Model%20Hub-yellow" alt="HF - Model Hub">
+</a>
+
+</div>
+
+<div align="center">
+<h2><b>Welcome to Histolytics documentation</b></h2>
+</div>
+
 
 ## Introduction
 
@@ -30,17 +56,23 @@
 - Large set of collagen fiber and intensity based features to characterize stroma and ECM. See [example](https://hautaniemilab.github.io/histolytics/user_guide/spatial/stromal_features/)
 
 ## Example Workflows 🧪
-- Immuno-oncology Profiling:
-  - [Spatial Statistics of TILs](https://hautaniemilab.github.io/histolytics/user_guide/workflows/TIL_workflow/).
-  - [Profiling TLS and Lymphoid Aggregates](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tls_lymphoid_aggregate/).
-- Nuclear Pleomorphism:
-  - [Nuclear Morphology Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/nuclear_morphology/).
-  - [Nuclear Chromatin Distribution Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/chromatin_patterns/).
-- TME Characterization:
-  - [Collagen Fiber Disorder Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/collagen_orientation/).
-  - [Characterization of Desmoplastic Stroma](https://hautaniemilab.github.io/histolytics/user_guide/workflows/clustering_desmoplasia/).
-- Nuclei Neighborhoods:
-  - [Tumor Cell Accessibility](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tumor_cell_accessibility/).
+
+#### Immuno-oncology Profiling:
+
+- [Spatial Statistics of TILs](https://hautaniemilab.github.io/histolytics/user_guide/workflows/TIL_workflow/).
+- [Profiling TLS and Lymphoid Aggregates](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tls_lymphoid_aggregate/).
+
+#### Nuclear Pleomorphism:
+
+- [Nuclear Morphology Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/nuclear_morphology/).
+- [Nuclear Chromatin Distribution Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/chromatin_patterns/).
+
+#### TME Characterization:
+- [Collagen Fiber Disorder Analysis](https://hautaniemilab.github.io/histolytics/user_guide/workflows/collagen_orientation/).
+- [Characterization of Desmoplastic Stroma](https://hautaniemilab.github.io/histolytics/user_guide/workflows/clustering_desmoplasia/).
+
+#### Nuclei Neighborhoods:
+- [Tumor Cell Accessibility](https://hautaniemilab.github.io/histolytics/user_guide/workflows/tumor_cell_accessibility/).
 
 
 ## Installation 🛠️
