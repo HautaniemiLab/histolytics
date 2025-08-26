@@ -2,6 +2,13 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.2] - 2025-08-26
+### Fixed
+- Fix bug in collate_fn for WSIGridProcessor
+
+### Added
+- WSI workflow tutorials
+
 ## [0.2.1] - 2025-08-18
 ### Fixed
 - Reduced package size by compressing PNG data files
