@@ -139,7 +139,8 @@ def set_uid(
             1    POLYGON ((1391 2.01, 1387 2.01, 1384.01 3.01, ...  connective    1
             2    POLYGON ((1382.99 156.01, 1380 156.01, 1376.01...  connective    2
     """
-    # if id_col not in gdf.columns:
+    if id_col is None:
+        id_col = "uid"
     gdf = gdf.assign(**{id_col: range(start_ix, len(gdf) + start_ix)})
     gdf = gdf.set_index(id_col, drop=drop)
 
@@ -295,7 +296,48 @@ def gdf_to_polars(gdf: gpd.GeoDataFrame):
     return pl_df
 
 
-def col_norm(column: np.ndarray) -> np.ndarray:
-    ranks = rankdata(column, method="average")
-    quantiles = (ranks - 1) / (len(ranks) - 1)
-    return quantiles
+# ...existing code...
+
+
+def col_norm(column: np.ndarray, method: str = "quantile") -> np.ndarray:
+    """Normalize a column using quantile or min-max normalization.
+
+    Parameters:
+        column (np.ndarray):
+            Input column to normalize.
+        method (str):
+            Normalization method. Either "quantile" or "minmax".
+            Default is "quantile".
+
+    Returns:
+        np.ndarray:
+            Normalized column values.
+
+    Examples:
+        >>> import numpy as np
+        >>> from histolytics.utils.gdf import col_norm
+        >>> data = np.array([1, 2, 3, 4, 5])
+        >>> # Quantile normalization (default)
+        >>> normalized_quantile = col_norm(data)
+        >>> print(normalized_quantile)
+        [0.   0.25 0.5  0.75 1.  ]
+        >>> # Min-max normalization
+        >>> normalized_minmax = col_norm(data, method="minmax")
+        >>> print(normalized_minmax)
+        [0.   0.25 0.5  0.75 1.  ]
+    """
+    if method == "quantile":
+        ranks = rankdata(column, method="average")
+        quantiles = (ranks - 1) / (len(ranks) - 1)
+        return quantiles
+    elif method == "minmax":
+        min_val = np.min(column)
+        max_val = np.max(column)
+        if max_val == min_val:
+            # Handle case where all values are the same
+            return np.zeros_like(column)
+        return (column - min_val) / (max_val - min_val)
+    else:
+        raise ValueError(
+            f"Unknown normalization method: {method}. Use 'quantile' or 'minmax'."
+        )

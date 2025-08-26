@@ -12,6 +12,7 @@ def get_sub_grids(
     coordinates: List[Tuple[int, int, int, int]],
     inds: Tuple[int, ...] = None,
     min_size: int = 1,
+    return_gdf: bool = False,
 ) -> List[List[Tuple[int, int, int, int]]]:
     """Get sub-grids based on connected components of the grid.
 
@@ -25,11 +26,16 @@ def get_sub_grids(
             Indices of the connected components to extract.
         min_size (int):
             Minimum size of the sub grid.
+        return_gdf (bool):
+            Whether to return a GeoDataFrame instead of a list of sub-grids.
 
     Returns:
         List[List[Tuple[int, int, int, int]]]:
             Nested list of sub-grids in (x, y, w, h) format.
     """
+    if isinstance(coordinates, gpd.GeoDataFrame):
+        coordinates = coordinates.geometry.apply(_polygon_to_xywh).tolist()
+
     # convert to (xmin, ymin, xmax, ymax) format
     bbox_coords = [(x, y, x + w, y + h) for x, y, w, h in coordinates]
 
@@ -59,8 +65,18 @@ def get_sub_grids(
         sub_graphs = [sub_graphs[i] for i in inds]
 
     sub_grids = []
-    for g in sub_graphs:
-        indices = list(g.neighbors.keys())
-        sub_grids.append([coordinates[i] for i in indices])
+    if return_gdf:
+        for g in sub_graphs:
+            indices = list(g.neighbors.keys())
+            sub_grids.append(grid.loc[indices])
+    else:
+        for g in sub_graphs:
+            indices = list(g.neighbors.keys())
+            sub_grids.append([coordinates[i] for i in indices])
 
     return sub_grids
+
+
+def _polygon_to_xywh(polygon):
+    minx, miny, maxx, maxy = polygon.bounds
+    return (int(minx), int(miny), int(maxx - minx), int(maxy - miny))

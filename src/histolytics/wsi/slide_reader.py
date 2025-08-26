@@ -26,7 +26,7 @@ SOFTWARE.
 
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Sequence, Union
 
 import geopandas as gpd
 import numpy as np
@@ -46,6 +46,8 @@ from cellseg_models_pytorch.wsi.tiles import (
 from cellseg_models_pytorch.wsi.tissue import clean_tissue_mask, get_tissue_mask
 from PIL import Image
 from shapely.geometry import Polygon, box
+
+from histolytics.wsi.utils import _polygon_to_xywh
 
 AVAILABLE_BACKENDS = ("OPENSLIDE", "CUCIM", "BIOIO")
 
@@ -399,6 +401,9 @@ class SlideReader:
         image: np.ndarray,
         coordinates: Iterator[tuple[int, int, int, int]],
         linewidth: int = 1,
+        cmap: str = None,
+        values: np.ndarray = None,
+        breaks: Sequence[float] = None,
     ) -> Image.Image:
         """Generate annotated thumbnail from coordinates.
 
@@ -409,15 +414,27 @@ class SlideReader:
                 Coordinates to annotate.
             linewidth (int):
                 Width of rectangle lines.
+            cmap (str):
+                Colormap to use for the annotation.
+            values (np.ndarray):
+                Values to use for cmap. Needs to be the same length as `coordinates`.
+            breaks (Sequence[float]):
+                Breakpoints for the colormap.
 
         Returns:
             PIL.Image.Image:
                 Annotated thumbnail.
         """
+        if isinstance(coordinates, gpd.GeoDataFrame):
+            coordinates = coordinates.geometry.apply(_polygon_to_xywh).tolist()
+
         kwargs = {
             "image": image,
             "downsample": get_downsample(image, self.dimensions),
             "rectangle_width": linewidth,
+            "cmap": cmap,
+            "values": values,
+            "breaks": breaks,
         }
         if isinstance(coordinates, SpotCoordinates):
             text_items = [x.lstrip("spot_") for x in coordinates.spot_names]

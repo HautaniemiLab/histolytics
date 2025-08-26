@@ -53,19 +53,19 @@ def medial_lines(
         Returns an empty GeoDataFrame if the input is empty.
 
     Examples:
-    >>> from histolytics.spatial_geom.medial_lines import medial_lines
-    >>> from histolytics.data import cervix_tissue
-    >>> import geopandas as gpd
-    >>>
-    >>> # Create a simple polygon
-    >>> cervix_tis = cervix_tissue()
-    >>> lesion = cervix_tis[cervix_tis["class_name"] == "cin"]
-    >>>
-    >>> # Compute medial lines for the largest lesion segmentation
-    >>> medials = medial_lines(lesion, num_points=500, simplify_level=50)
-    >>> ax = cervix_tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
-    >>> medials.plot(ax=ax, color="red", lw=1, alpha=0.5)
-    >>> ax.set_axis_off()
+        >>> from histolytics.spatial_geom.medial_lines import medial_lines
+        >>> from histolytics.data import cervix_tissue
+        >>> import geopandas as gpd
+        >>>
+        >>> # Create a simple polygon
+        >>> cervix_tis = cervix_tissue()
+        >>> lesion = cervix_tis[cervix_tis["class_name"] == "cin"]
+        >>>
+        >>> # Compute medial lines for the largest lesion segmentation
+        >>> medials = medial_lines(lesion, num_points=500, simplify_level=50)
+        >>> ax = cervix_tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> medials.plot(ax=ax, color="red", lw=1, alpha=0.5)
+        >>> ax.set_axis_off()
     ![out](../../img/medial_lines.png)
     """
     if gdf.empty:

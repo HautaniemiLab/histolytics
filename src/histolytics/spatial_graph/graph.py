@@ -86,6 +86,8 @@ def fit_graph(
 
     # ensure gdf has a unique identifier
     if id_col not in gdf.columns:
+        if id_col is None:
+            id_col = "uid"
         gdf = set_uid(gdf, id_col=id_col)
         gdf = set_crs(gdf)  # ensure CRS is set to avoid warnings
 

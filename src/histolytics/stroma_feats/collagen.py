@@ -36,6 +36,9 @@ except ImportError:
     _has_cp = False
 
 
+__all__ = ["extract_collagen_fibers", "fiber_feats"]
+
+
 def extract_collagen_fibers(
     img: np.ndarray,
     label: np.ndarray = None,
@@ -365,6 +368,25 @@ def _get_medial_smooth(poly: Polygon) -> Polygon:
     """Get medial lines and smooth them."""
     medial = _compute_medial_line(poly)
     return uniform_smooth(medial)
+
+
+def _fiber_midpoints(
+    label_inds: Dict[int, Tuple[np.ndarray, np.ndarray]],
+) -> np.ndarray:
+    """Get the midpoints of labeled fibers."""
+    # Calculate median midpoints for each fiber
+    fiber_midpoints = []
+    for coords in label_inds.values():
+        y_coords = coords[0]
+        x_coords = coords[1]
+
+        center_idx = len(x_coords) // 2
+        center_y = y_coords[center_idx]
+        center_x = x_coords[center_idx]
+
+        fiber_midpoints.append((center_x, center_y))
+
+    return np.array(fiber_midpoints)
 
 
 def _edges2gdf(

@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 from histolytics.spatial_ops.ops import get_objs
 from histolytics.utils.raster import gdf2inst, gdf2sem
-from histolytics.wsi._collate import MapAndCollateDF, MapAndCollateSeries
+from histolytics.wsi._collate import MapAndCollate
 from histolytics.wsi._nodes_loader import NodesDataLoader
 from histolytics.wsi.slide_reader import SlideReader
 
@@ -77,14 +77,11 @@ class WSIGridDataset(Dataset):
                     f"got {type(result)}"
                 )
 
-            if isinstance(result, pd.DataFrame):
-                collate_fn = MapAndCollateDF
-            elif isinstance(result, pd.Series):
-                collate_fn = MapAndCollateSeries
+            collate_func = MapAndCollate
         except Exception as e:
             raise ValueError(f"Error testing pipeline_func: {e}")
 
-        return collate_fn
+        return collate_func
 
     def _rasterize(
         self, ymin: int, xmin: int, return_nuc_type: bool = False
@@ -94,7 +91,13 @@ class WSIGridDataset(Dataset):
         crop = Polygon([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
 
         # Get nuclei that intersect with the crop polygon
-        vector = get_objs(crop, self.nuclei, "intersects").clip(crop)
+        # print("crop", crop.is_valid)
+        vector = get_objs(crop, self.nuclei, "intersects")
+        try:
+            vector = vector[vector.is_valid].clip(crop)
+        except Exception as e:
+            print(f"Error clipping vector: {e}")
+            raise e
 
         # rasterize vector polugon to numpy array
         raster = gdf2inst(
