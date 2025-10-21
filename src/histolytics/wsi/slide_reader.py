@@ -30,6 +30,7 @@ from typing import Optional, Sequence, Union
 
 import geopandas as gpd
 import numpy as np
+import shapely
 from cellseg_models_pytorch.wsi.bioio_reader import BioIOReader
 from cellseg_models_pytorch.wsi.cucim_reader import CucimReader
 from cellseg_models_pytorch.wsi.data import SpotCoordinates, TileCoordinates
@@ -170,6 +171,10 @@ class SlideReader:
             np.ndarray:
                 Array containing image data from `xywh`-region.
         """
+        if isinstance(xywh, shapely.geometry.Polygon):
+            minx, miny, maxx, maxy = xywh.bounds
+            xywh = (int(minx), int(miny), int(maxx - minx), int(maxy - miny))
+
         return self._reader.read_region(xywh=xywh, level=level)
 
     def level_from_max_dimension(self, max_dimension: int = 4096) -> int:

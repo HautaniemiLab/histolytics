@@ -426,6 +426,10 @@ class TissueMerger:
             union = gpd.GeoSeries([union.buffer(buffer_dist)])
         else:
             union = gpd.GeoSeries(
-                [Polygon(poly.exterior).buffer(buffer_dist) for poly in union.geoms]
+                [
+                    Polygon(poly.exterior).buffer(buffer_dist)
+                    for poly in union.geoms
+                    if isinstance(poly, Polygon)
+                ]
             )
         return gpd.GeoDataFrame(geometry=union)
