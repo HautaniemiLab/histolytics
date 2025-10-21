@@ -4,18 +4,15 @@ from typing import Union
 
 import geopandas as gpd
 import numpy as np
-import shapely
 from scipy.spatial import Voronoi
 from shapely import contains_xy, get_coordinates
 from shapely.geometry import LineString, MultiLineString, Polygon
 
 from histolytics.utils.gdf import gdf_apply
 
-from .shape_metrics import major_axis_len
-
 __all__ = [
     "medial_lines",
-    "perpendicular_lines",
+    "sliding_perpendicular_lines",
 ]
 
 
@@ -70,6 +67,10 @@ def medial_lines(
     """
     if gdf.empty:
         return gpd.GeoDataFrame(columns=["geometry", "class_name"])
+
+    # Explode multipolygons if present
+    if "MultiPolygon" in gdf.geometry.geom_type.unique():
+        gdf = gdf.explode(index_parts=False, ignore_index=True)
 
     gdf = gdf.assign(geometry=gdf["geometry"].simplify(simplify_level))
 
@@ -298,33 +299,6 @@ def _merge_close_linestrings(
         return MultiLineString(merged_lines)
 
 
-def _perpendicular_line(
-    line: shapely.LineString, seg_length: float
-) -> shapely.LineString:
-    """Create a perpendicular line from a line segment.
-
-    Note:
-        Returns an empty line if perpendicular line is not possible from the input.
-
-    Parameters:
-        line (shapely.LineString):
-            Line segment to create a perpendicular line from.
-        seg_length (float):
-            Length of the perpendicular line.
-
-    Returns:
-        shapely.LineString:
-            Perpendicular line to the input line of length `seg_length`.
-    """
-    left = line.parallel_offset(seg_length / 2, "left").centroid
-    right = line.parallel_offset(seg_length / 2, "right").centroid
-
-    if left.is_empty or right.is_empty:
-        return shapely.LineString()
-
-    return shapely.LineString([left, right])
-
-
 def _compute_medial_line(
     poly: Polygon, num_points: int = 100, delta: float = 0.3
 ) -> Union[MultiLineString, LineString]:
@@ -374,39 +348,197 @@ def _compute_medial_line(
     return medial
 
 
-def perpendicular_lines(
-    lines: gpd.GeoDataFrame, poly: shapely.Polygon = None
+def sliding_perpendicular_lines(
+    medial_gdf: gpd.GeoDataFrame,
+    polygon: Polygon,
+    step_distance: int = 100,
+    perp_length: int = None,
 ) -> gpd.GeoDataFrame:
-    """Get perpendicular lines to the input lines starting from the line midpoints.
+    """Slide along the medial line and compute perpendicular lines at regular intervals.
 
     Parameters:
-        lines (gpd.GeoDataFrame):
-            GeoDataFrame of the input lines.
-        poly (shapely.Polygon):
-            Polygon to clip the perpendicular lines to.
+        medial_gdf (gpd.GeoDataFrame):
+            GeoDataFrame containing the medial line(s)
+        polygon (Polygon):
+            The original polygon or union of polygons where the medial lines were fitted
+        step_distance (int):
+            Distance between perpendicular lines along the medial axis
+        perp_length (int):
+            Maximum length of perpendicular lines (auto if None)
 
     Returns:
-        gpd.GeoDataFrame:
-            GeoDataFrame of the perpendicular lines.
+        GeoDataFrame with perpendicular lines.
     """
-    # create perpendicular lines to the medial lines
-    if poly is None:
-        poly = lines.union_all().convex_hull
+    all_perp_lines = []
 
-    seg_len = major_axis_len(poly)
-    func = partial(_perpendicular_line, seg_length=seg_len)
-    perp_lines = gdf_apply(lines, func, columns=["geometry"])
+    for idx, row in medial_gdf.iterrows():
+        medial_line = row.geometry
 
-    # clip the perpendicular lines to the polygon
-    perp_lines = gpd.GeoDataFrame(perp_lines, columns=["geometry"]).clip(poly)
+        # Handle different geometry types
+        if medial_line.geom_type == "LineString":
+            lines_to_process = [medial_line]
+        elif medial_line.geom_type == "MultiLineString":
+            lines_to_process = list(medial_line.geoms)
+        else:
+            continue
 
-    # explode perpendicular lines & take only the ones that intersect w/ medial lines
-    perp_lines = perp_lines.explode(index_parts=False).reset_index(drop=True)
+        # Process each line segment
+        for line in lines_to_process:
+            perp_lines = _process_single_medial_line(
+                line, polygon, step_distance, perp_length, idx
+            )
+            all_perp_lines.extend(perp_lines)
 
-    # drop the perpendicular lines that are too short or too long
-    # since these are likely artefacts
+    if not all_perp_lines:
+        return gpd.GeoDataFrame(
+            columns=["geometry", "medial_distance", "medial_line_idx"]
+        )
+
+    perp_lines = gpd.GeoDataFrame(all_perp_lines)
     perp_lines["len"] = perp_lines.geometry.length
     low, high = perp_lines.len.quantile([0.05, 0.85])
     perp_lines = perp_lines.query(f"{low}<len<{high}")
 
     return perp_lines
+
+
+def _interpolate_points_along_line(line, step_distance):
+    """Generate points along a line at regular intervals"""
+    if line.length == 0:
+        return []
+
+    distances = np.arange(0, line.length + step_distance, step_distance)
+    distances = distances[distances <= line.length]
+
+    points = []
+    for dist in distances:
+        try:
+            point = line.interpolate(dist)
+            points.append((point, dist))
+        except Exception:
+            continue
+    return points
+
+
+def _calculate_tangent_direction(line, distance_along_line):
+    """Calculate the tangent direction at a point on a line"""
+    epsilon = min(10, line.length * 0.01)  # Small distance for tangent estimation
+
+    # Get points slightly before and after
+    dist_before = max(0, distance_along_line - epsilon)
+    dist_after = min(line.length, distance_along_line + epsilon)
+
+    point_before = line.interpolate(dist_before)
+    point_after = line.interpolate(dist_after)
+
+    # Calculate tangent vector
+    dx = point_after.x - point_before.x
+    dy = point_after.y - point_before.y
+
+    # Normalize tangent vector
+    length = np.sqrt(dx**2 + dy**2)
+    if length == 0:
+        return None, None
+
+    dx_norm = dx / length
+    dy_norm = dy / length
+
+    return dx_norm, dy_norm
+
+
+def _create_perpendicular_line(point, tangent_dx, tangent_dy, max_length):
+    """Create a perpendicular line at a point given the tangent direction"""
+    # Perpendicular vector (rotate 90 degrees)
+    perp_dx = -tangent_dy
+    perp_dy = tangent_dx
+
+    # Create perpendicular line extending in both directions
+    half_length = max_length / 2
+
+    start_x = point.x - perp_dx * half_length
+    start_y = point.y - perp_dy * half_length
+    end_x = point.x + perp_dx * half_length
+    end_y = point.y + perp_dy * half_length
+
+    return LineString([(start_x, start_y), (end_x, end_y)])
+
+
+def _clip_line_to_polygon(line, polygon):
+    """Clip a line to intersect with a polygon and return the longest intersection"""
+    intersection = line.intersection(polygon)
+
+    if intersection.is_empty:
+        return None
+
+    # Handle different intersection types
+    if hasattr(intersection, "geoms"):
+        # Multiple intersections, take the longest
+        lines = [geom for geom in intersection.geoms if geom.geom_type == "LineString"]
+        if lines:
+            intersection = max(lines, key=lambda x: x.length)
+        else:
+            return None
+
+    if intersection.geom_type == "LineString" and intersection.length > 0:
+        return intersection
+
+    return None
+
+
+def _estimate_max_perpendicular_length(polygon):
+    """Estimate maximum perpendicular line length based on polygon size"""
+    bounds = polygon.bounds
+    return max(bounds[2] - bounds[0], bounds[3] - bounds[1]) * 0.5
+
+
+def _create_perpendicular_at_point(
+    line, point, distance_along_line, polygon, max_length=None
+) -> LineString | None:
+    """Create a perpendicular line at a specific point on the medial line"""
+    try:
+        # Calculate tangent direction
+        tangent_dx, tangent_dy = _calculate_tangent_direction(line, distance_along_line)
+        if tangent_dx is None:
+            return None
+
+        # Determine perpendicular line length
+        if max_length is None:
+            max_length = _estimate_max_perpendicular_length(polygon)
+
+        # Create perpendicular line
+        perp_line = _create_perpendicular_line(
+            point, tangent_dx, tangent_dy, max_length
+        )
+
+        # Clip to polygon intersection
+        clipped_line = _clip_line_to_polygon(perp_line, polygon)
+
+        return clipped_line
+
+    except Exception as e:
+        print(f"Error creating perpendicular at point: {e}")
+        return None
+
+
+def _process_single_medial_line(line, polygon, step_distance, perp_length, medial_idx):
+    """Process a single medial line to generate perpendicular lines"""
+    if line.length == 0:
+        return []
+
+    perpendicular_lines = []
+    points_and_distances = _interpolate_points_along_line(line, step_distance)
+
+    for point, distance in points_and_distances:
+        perp_line = _create_perpendicular_at_point(
+            line, point, distance, polygon, perp_length
+        )
+        if perp_line is not None:
+            perpendicular_lines.append(
+                {
+                    "geometry": perp_line,
+                    "medial_distance": distance,
+                    "medial_line_idx": medial_idx,
+                }
+            )
+
+    return perpendicular_lines
