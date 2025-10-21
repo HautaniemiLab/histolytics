@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -11,6 +11,7 @@ from huggingface_hub import hf_hub_download
 from PIL.Image import Image
 
 from histolytics.models import MODEL_CLASS_DICTS, PRETRAINED_MODELS
+from histolytics.utils._filters import gaussian_smooth
 
 
 class BaseModelPanoptic:
@@ -160,6 +161,9 @@ class BaseModelPanoptic:
         class_dict_nuc: Dict[int, str] = None,
         class_dict_cyto: Dict[int, str] = None,
         class_dict_tissue: Dict[int, str] = None,
+        nuc_smooth_func: Callable = gaussian_smooth,
+        cyto_smooth_func: Callable = gaussian_smooth,
+        tissue_smooth_func: Callable = None,
     ) -> Dict[str, List[np.ndarray]]:
         """Post-process the output of the model.
 
@@ -187,6 +191,21 @@ class BaseModelPanoptic:
                 The dictionary of cytoplasm classes. E.g. {0: "bg", 1: "macrophage_cyto"}
             class_dict_tissue (Dict[int, str]):
                 The dictionary of tissue classes. E.g. {0: "bg", 1: "stroma", 2: "tumor"}
+            nuc_smooth_func (Callable):
+                The smoothing function to apply to the nuclei instance maps before
+                post-processing. If None, no smoothing is applied. This is only used when
+                nuclei segmentation masks are saved into vectorized format (e.g. parquet).
+                Ignored save_paths_nuc is None.
+            cyto_smooth_func (Callable):
+                The smoothing function to apply to the cytoplasm instance maps before
+                post-processing. If None, no smoothing is applied. This is only used when
+                cytoplasm segmentation masks are saved into vectorized format (e.g. parquet).
+                Ignored save_paths_cyto is None.
+            tissue_smooth_func (Callable):
+                The smoothing function to apply to the tissue type maps before
+                post-processing. If None, no smoothing is applied. This is only used when
+                tissue segmentation masks are saved into vectorized format (e.g. parquet).
+                Ignored save_paths_tissue is None.
 
         Returns:
             Dict[str, List[np.ndarray]]:
@@ -236,6 +255,9 @@ class BaseModelPanoptic:
                 class_dict_nuc=class_dict_nuc,
                 class_dict_cyto=class_dict_cyto,
                 class_dict_tissue=class_dict_tissue,
+                nuc_smooth_func=gaussian_smooth,
+                cyto_smooth_func=gaussian_smooth,
+                tissue_smooth_func=None,
             )
         else:
             x = self.post_processor.postproc_parallel(
@@ -249,6 +271,9 @@ class BaseModelPanoptic:
                 class_dict_nuc=class_dict_nuc,
                 class_dict_cyto=class_dict_cyto,
                 class_dict_tissue=class_dict_tissue,
+                nuc_smooth_func=gaussian_smooth,
+                cyto_smooth_func=gaussian_smooth,
+                tissue_smooth_func=None,
             )
 
         return x

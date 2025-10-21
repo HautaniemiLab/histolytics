@@ -419,10 +419,7 @@ def _intensity_features_np(
     )
 
     # Reshape result to (n_objects, n_feats)
-    if len(unique_labels) == 1:
-        result = result.reshape(1, -1)
-    else:
-        result = np.vstack(result)
+    result = np.vstack(result)
 
     # Build columns list (add quantile columns)
     columns = []
