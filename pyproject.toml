@@ -1,6 +1,6 @@
 [project]
 name = "histolytics"
-version = "0.2.2"
+version = "0.2.3"
 description = "Panoptic Segmentation and WSI Spatial Analysis"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -18,7 +18,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "albumentations>=2.0.6",
-    "cellseg-models-pytorch>=0.1.28",
+    "cellseg-models-pytorch>=0.1.29",
     "cucim-cu12>=25.6.0",
     "cuml-cu12>=25.6.0",
     "datasets>=3.6.0",

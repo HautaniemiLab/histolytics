@@ -2,6 +2,11 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.3] - 2025-10-21
+### Fixed
+- Fix index error bug in `get_objs`
+- Other minor bug fixes
+
 ## [0.2.2] - 2025-08-26
 ### Fixed
 - Fix bug in collate_fn for WSIGridProcessor
