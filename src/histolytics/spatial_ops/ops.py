@@ -59,7 +59,11 @@ def get_objs(
 
     # NOTE, gdfs need to have same crs, otherwise warning flood.
     inds = objects.geometry.sindex.query(area.geometry, predicate=predicate, **kwargs)
-    objs: gpd.GeoDataFrame = objects.iloc[np.unique(inds)]
+
+    # filter indices that are out of bounds
+    obj_pos_index = np.arange(len(objects))
+    inds = np.intersect1d(np.unique(inds), obj_pos_index)
+    objs: gpd.GeoDataFrame = objects.iloc[inds]
 
     return objs.drop_duplicates("geometry")
 
