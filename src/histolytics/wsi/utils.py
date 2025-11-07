@@ -5,7 +5,7 @@ import networkx as nx
 from libpysal.weights import W, fuzzy_contiguity
 from shapely.geometry import box
 
-__all__ = ["get_sub_grids"]
+__all__ = ["get_sub_grids", "_polygon_to_xywh", "_xywh_to_gdf", "_gdf_to_xywh"]
 
 
 def get_sub_grids(
@@ -34,7 +34,7 @@ def get_sub_grids(
             Nested list of sub-grids in (x, y, w, h) format.
     """
     if isinstance(coordinates, gpd.GeoDataFrame):
-        coordinates = coordinates.geometry.apply(_polygon_to_xywh).tolist()
+        coordinates = _gdf_to_xywh(coordinates)
 
     # convert to (xmin, ymin, xmax, ymax) format
     bbox_coords = [(x, y, x + w, y + h) for x, y, w, h in coordinates]
@@ -80,3 +80,20 @@ def get_sub_grids(
 def _polygon_to_xywh(polygon):
     minx, miny, maxx, maxy = polygon.bounds
     return (int(minx), int(miny), int(maxx - minx), int(maxy - miny))
+
+
+def _xywh_to_gdf(coordinates):
+    """Convert list of (x, y, width, height) tuples to GeoDataFrame."""
+    import geopandas as gpd
+    from shapely import Polygon
+
+    polygons = []
+    for x, y, w, h in coordinates:
+        polygon = Polygon([(x, y), (x + w, y), (x + w, y + h), (x, y + h)])
+        polygons.append(polygon)
+
+    return gpd.GeoDataFrame({"geometry": polygons})
+
+
+def _gdf_to_xywh(gdf: gpd.GeoDataFrame) -> List[Tuple[int, int, int, int]]:
+    return gdf.geometry.apply(_polygon_to_xywh).tolist()

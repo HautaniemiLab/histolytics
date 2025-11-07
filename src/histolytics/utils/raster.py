@@ -281,7 +281,7 @@ def gdf2inst(
     geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
 
     if reset_index:
-        labels = range(len(gdf))
+        labels = range(1, len(gdf) + 1)
     else:
         if id_col is not None:
             labels = gdf[id_col].values
