@@ -25,6 +25,116 @@ __all__ = [
 ]
 
 
+def intensity_feats(
+    img: np.ndarray,
+    label: np.ndarray,
+    metrics: Tuple[str, ...] = ("mean", "std", "quantiles"),
+    quantiles: Tuple[float, ...] = (0.25, 0.5, 0.75),
+    n_bins: int = 32,
+    hist_range: Tuple[float, float] = None,
+    mask: np.ndarray = None,
+    device: str = "cpu",
+) -> pd.DataFrame:
+    """Computes intensity features of labeled objects in `img` over all channels.
+
+    Parameters:
+        img (np.ndarray):
+            H&E image to compute properties from. Shape (H, W, C).
+        label (np.ndarray):
+            Nuclei label map. Shape (H, W).
+        metrics (Tuple[str, ...]):
+            Metrics to compute for each object. Options are:
+
+                - "min"
+                - "max"
+                - "mean"
+                - "median"
+                - "std"
+                - "quantiles"
+                - "meanmediandiff"
+                - "mad"
+                - "iqr"
+                - "skewness"
+                - "kurtosis"
+                - "histenergy"
+                - "histentropy"
+        quantiles (Tuple[float, ...]):
+            Quantiles to compute for each object. Ignored if `metrics` does not include
+            "quantiles".
+        n_bins (int):
+            Number of bins to use for histogram-based features. Ignored if `metrics`
+            does not include "histenergy" or "histentropy".
+        hist_range (Tuple[float, float]):
+            Range of pixel values to use for histogram-based features. Ignored if `metrics`
+            does not include "histenergy" or "histentropy".
+        mask (np.ndarray):
+            Optional binary mask to apply to the image to restrict the region of interest.
+            Shape (H, W). For example, it can be used to mask out tissues that are not
+            of interest.
+        device (str):
+            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
+            CuPy and cucim will be used for GPU acceleration.
+
+    Raises:
+        ValueError: If the shape of `img` and `label` do not match.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the computed features for each label object.
+
+    Examples:
+        >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_nuclei
+        >>> from histolytics.utils.raster import gdf2inst
+        >>> from histolytics.nuc_feats.intensity import grayscale_intensity_feats
+        >>>
+        >>> he_image = hgsc_cancer_he()
+        >>> nuclei = hgsc_cancer_nuclei()
+        >>> neoplastic_nuclei = nuclei[nuclei["class_name"] == "neoplastic"]
+        >>> inst_mask = gdf2inst(
+        ...     neoplastic_nuclei, width=he_image.shape[1], height=he_image.shape[0]
+        ... )
+        >>> # Extract grayscale intensity features from the neoplastic nuclei
+        >>> feats = grayscale_intensity_feats(he_image, inst_mask)
+        >>> print(feats.iloc[..., 0:3].head(3))
+                    mean       std  quantile_0.25
+            292  0.236541  0.068776       0.194504
+            316  0.124629  0.025052       0.105769
+            340  0.168674  0.060852       0.120324
+    """
+    if label is not None and img.shape[:2] != label.shape:
+        raise ValueError(
+            f"Shape mismatch: img.shape[:2]={img.shape[:2]}, label.shape={label.shape}"
+        )
+
+    if device == "cuda" and not _has_cp:
+        raise RuntimeError(
+            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
+            "Please install them with:\n"
+            "  pip install cupy-cuda12x cucim-cu12\n"
+            "or set device='cpu'."
+        )
+
+    if _has_cp and device == "cuda":
+        feats_df = _intensity_features_cp(
+            img,
+            np.broadcast_to(label[..., np.newaxis], label.shape + (3,)),
+            metrics=metrics,
+            quantiles=quantiles,
+            n_bins=n_bins,
+            hist_range=hist_range,
+        )
+    else:
+        feats_df = _intensity_features_np(
+            img,
+            np.broadcast_to(label[..., np.newaxis], label.shape + (3,)),
+            metrics=metrics,
+            quantiles=quantiles,
+            n_bins=n_bins,
+            hist_range=hist_range,
+        )
+
+    return feats_df
+
+
 def grayscale_intensity_feats(
     img: np.ndarray,
     label: np.ndarray,
@@ -39,7 +149,7 @@ def grayscale_intensity_feats(
 
     Parameters:
         img (np.ndarray):
-            H&E image to compute properties from. Shape (H, W).
+            H&E image to compute properties from. Shape (H, W, C).
         label (np.ndarray):
             Nuclei label map. Shape (H, W).
         metrics (Tuple[str, ...]):
@@ -281,8 +391,8 @@ def _intensity_features_cp(
         "histenergy",
         "histentropy",
     ]
-    img = cp.asarray(img)
-    labels = cp.asarray(label)
+    img = cp.asarray(img, dtype=cp.int32)
+    labels = cp.asarray(label, dtype=cp.int32)
 
     unique_labels = cp.unique(labels)
     unique_labels = unique_labels[unique_labels > 0]
