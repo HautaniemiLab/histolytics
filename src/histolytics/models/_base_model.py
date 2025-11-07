@@ -99,6 +99,7 @@ class BaseModelPanoptic:
         use_sliding_win: bool = False,
         window_size: Tuple[int, int] = None,
         stride: int = None,
+        save_intermediate: bool = False,
     ) -> Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]:
         """Predict the input image or image batch.
 
@@ -113,6 +114,10 @@ class BaseModelPanoptic:
             stride (int):
                 The stride for the sliding window. If `use_sliding_win` is False this
                 argument is ignored.
+            save_intermediate (bool, default=False):
+                Whether to save intermediate results (logits). If True, the method
+                returns a tuple (final predictions, intermediate results), where the
+                intermediate results are the raw model outputs before argmax.
 
         Returns:
             Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]:
@@ -132,7 +137,9 @@ class BaseModelPanoptic:
             raise ValueError("Run `.set_inference_mode()` before running `predict`")
 
         if not use_sliding_win:
-            x = self.predictor.predict(x=x, apply_boundary_weight=False)
+            x = self.predictor.predict(
+                x=x, apply_boundary_weight=False, save_intermediate=save_intermediate
+            )
         else:
             if window_size is None:
                 raise ValueError(
@@ -142,7 +149,11 @@ class BaseModelPanoptic:
                 raise ValueError("`stride` must be provided when using sliding window.")
 
             x = self.predictor.predict_sliding_win(
-                x=x, window_size=window_size, stride=stride, apply_boundary_weight=True
+                x=x,
+                window_size=window_size,
+                stride=stride,
+                apply_boundary_weight=True,
+                save_intermediate=save_intermediate,
             )
 
         return x
