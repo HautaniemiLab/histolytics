@@ -2,6 +2,10 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.4] - 2025-11-14
+### Fixed
+- Add `WSIPatchIterator`
+
 ## [0.2.3] - 2025-10-21
 ### Fixed
 - Fix index error bug in `get_objs`
