@@ -346,7 +346,7 @@ wheels = [
 
 [[package]]
 name = "cellseg-models-pytorch"
-version = "0.1.29"
+version = "0.1.30"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "geopandas" },
@@ -368,9 +368,9 @@ dependencies = [
     { name = "torch", version = "2.9.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and platform_machine != 'aarch64') or (python_full_version >= '3.11' and sys_platform != 'linux') or (platform_machine == 'aarch64' and sys_platform == 'linux') or sys_platform == 'darwin'" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/5e/3c6b38216712afa336f2479e66842926aec44fa2f4f8e102b7ee96fd1b0c/cellseg_models_pytorch-0.1.29.tar.gz", hash = "sha256:13999f5bf1c7561193426014b634b31dea4d43db40b3ca6131c884ac3ff3c534", size = 3891527, upload-time = "2025-10-21T13:58:53.488Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/7d/96a110bfaac5af5a0a3e6d39ad1dd95a4388143f601f866383caa13f619c/cellseg_models_pytorch-0.1.30.tar.gz", hash = "sha256:83384dedb2fe6be4aac629f36f51e5e4e4d1c70a9f82062013be3294dbf64bcc", size = 3891645, upload-time = "2025-11-14T10:28:39.7Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/0d/477973d9319d7c84a46ab8acfd643b35a44c774148a23a5ebf5b4c6b39ae/cellseg_models_pytorch-0.1.29-py3-none-any.whl", hash = "sha256:17dbc437a2a413f488645543dc93acc6ec361a7106ba7540e08bf62b3c6ef276", size = 4005688, upload-time = "2025-10-21T13:58:51.659Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/8a/97a0b724be1c0614807f42b15b1373e7f175241d51bc6ef860a7e08097bf/cellseg_models_pytorch-0.1.30-py3-none-any.whl", hash = "sha256:e2e73d2b8248c45ea1309307bad0aba3e2bf29f9882bfe4465b9c7d3bcce25c0", size = 4005847, upload-time = "2025-11-14T10:28:37.97Z" },
 ]
 
 [[package]]
@@ -1883,7 +1883,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "albumentations", specifier = ">=2.0.6" },
-    { name = "cellseg-models-pytorch", specifier = ">=0.1.29" },
+    { name = "cellseg-models-pytorch", specifier = ">=0.1.30" },
     { name = "cucim-cu12", specifier = ">=25.6.0" },
     { name = "cuml-cu12", specifier = ">=25.6.0" },
     { name = "datasets", specifier = ">=3.6.0" },
