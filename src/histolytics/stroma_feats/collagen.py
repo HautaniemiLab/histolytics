@@ -254,7 +254,11 @@ def fiber_feats(
     # Convert labeled edges to GeoDataFrame
     if return_edges:
         edge_gdf = inst2gdf(dilation(labeled_edges))
+        if edge_gdf.empty or feat_df.empty:
+            return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry", *metrics])
         edge_gdf = edge_gdf.merge(feat_df, left_on="uid", right_index=True)
+        if edge_gdf.empty:
+            return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry", *metrics])
         edge_gdf["geometry"] = gdf_apply(
             edge_gdf,
             _get_medial_smooth,
@@ -262,6 +266,11 @@ def fiber_feats(
             parallel=num_processes > 1,
             num_processes=num_processes,
         )
+        edge_gdf = edge_gdf[
+            edge_gdf["geometry"].notna() & ~edge_gdf["geometry"].is_empty
+        ]
+        if edge_gdf.empty:
+            return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry", *metrics])
         edge_gdf = edge_gdf.assign(class_name="collagen")
         return (
             edge_gdf.sort_values(by="uid")
@@ -321,9 +330,13 @@ def _major_axis_angle(
 ) -> np.ndarray:
     angles = []
     for i in label_inds:
-        line = LineString(np.column_stack(label_inds[i][::-1]))
-        maa = major_axis_angle(line)
-        angles.append(maa)
+        coords = np.column_stack(label_inds[i][::-1])
+        coords = coords[np.all(np.isfinite(coords), axis=1)]
+        if coords.shape[0] < 2:
+            angles.append(np.nan)
+            continue
+        line = LineString(coords)
+        angles.append(major_axis_angle(line))
 
     return np.array(angles)
 
@@ -333,9 +346,13 @@ def _major_axis_length(
 ) -> np.ndarray:
     lengths = []
     for i in label_inds:
-        line = LineString(np.column_stack(label_inds[i][::-1]))
-        mal = major_axis_len(line)
-        lengths.append(mal)
+        coords = np.column_stack(label_inds[i][::-1])
+        coords = coords[np.all(np.isfinite(coords), axis=1)]
+        if coords.shape[0] < 2:
+            lengths.append(np.nan)
+            continue
+        line = LineString(coords)
+        lengths.append(major_axis_len(line))
 
     return np.array(lengths)
 
@@ -345,9 +362,13 @@ def _minor_axis_angle(
 ) -> np.ndarray:
     angles = []
     for i in label_inds:
-        line = LineString(np.column_stack(label_inds[i][::-1]))
-        maa = minor_axis_angle(line)
-        angles.append(maa)
+        coords = np.column_stack(label_inds[i][::-1])
+        coords = coords[np.all(np.isfinite(coords), axis=1)]
+        if coords.shape[0] < 2:
+            angles.append(np.nan)
+            continue
+        line = LineString(coords)
+        angles.append(minor_axis_angle(line))
 
     return np.array(angles)
 
@@ -357,9 +378,13 @@ def _minor_axis_length(
 ) -> np.ndarray:
     lengths = []
     for i in label_inds:
-        line = LineString(np.column_stack(label_inds[i][::-1]))
-        mal = minor_axis_len(line)
-        lengths.append(mal)
+        coords = np.column_stack(label_inds[i][::-1])
+        coords = coords[np.all(np.isfinite(coords), axis=1)]
+        if coords.shape[0] < 2:
+            lengths.append(np.nan)
+            continue
+        line = LineString(coords)
+        lengths.append(minor_axis_len(line))
 
     return np.array(lengths)
 
@@ -367,6 +392,8 @@ def _minor_axis_length(
 def _get_medial_smooth(poly: Polygon) -> Polygon:
     """Get medial lines and smooth them."""
     medial = _compute_medial_line(poly)
+    if medial is None or medial.is_empty:
+        return medial
     return uniform_smooth(medial)
 
 
@@ -397,6 +424,8 @@ def _edges2gdf(
 ) -> gpd.GeoDataFrame:
     """Convert (collagen) edge label mask to a GeoDataFrame with LineString geometries."""
     edge_gdf = inst2gdf(dilation(edges))
+    if edge_gdf.empty:
+        return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry"])
 
     edge_gdf["geometry"] = gdf_apply(
         edge_gdf,
@@ -405,6 +434,9 @@ def _edges2gdf(
         parallel=num_processes > 1,
         num_processes=num_processes,
     )
+    edge_gdf = edge_gdf[edge_gdf["geometry"].notna() & ~edge_gdf["geometry"].is_empty]
+    if edge_gdf.empty:
+        return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry"])
 
     edge_gdf = edge_gdf.explode(index_parts=False)
     edge_gdf = edge_gdf[edge_gdf["geometry"].length >= min_size].reset_index(drop=True)
@@ -447,40 +479,42 @@ def _interpolate(contours: np.ndarray, n: int = 30):
 
 def _compute_fiber_feats(edges: np.ndarray, metrics: Sequence[str]) -> pd.DataFrame:
     edge_labels = np.unique(edges)[1:]
+    if len(edge_labels) == 0:
+        return pd.DataFrame(columns=list(metrics))
 
     # TODO: optimize so that we dont loop the indices all over again for diff metrics
     feats = []
-    if len(edge_labels) > 1:
-        label_inds = ndimage.value_indices(edges, ignore_value=0)
-        path_lengths = None
-        for metric in metrics:
-            if metric == "length":
+    label_inds = ndimage.value_indices(edges, ignore_value=0)
+    path_lengths = None
+    for metric in metrics:
+        if metric == "length":
+            path_lengths = ndimage.sum(edges > 0, labels=edges, index=edge_labels)
+            feats.append(path_lengths)
+        elif metric == "tortuosity":
+            straight_line_dist = _start_end_dist(label_inds)
+            if path_lengths is None:
                 path_lengths = ndimage.sum(edges > 0, labels=edges, index=edge_labels)
-                feats.append(path_lengths)
-            elif metric == "tortuosity":
-                straight_line_dist = _start_end_dist(label_inds)
-                if path_lengths is None:
-                    path_lengths = ndimage.sum(
-                        edges > 0, labels=edges, index=edge_labels
-                    )
-                tortuosity = path_lengths / straight_line_dist
-                feats.append(tortuosity)
-            elif metric == "average_turning_angle":
-                avg_turning_angle = _average_turning_angle(label_inds)
-                feats.append(avg_turning_angle)
-            elif metric == "major_axis_len":
-                ma_al = _major_axis_length(label_inds)
-                feats.append(ma_al)
-            elif metric == "minor_axis_len":
-                mi_al = _minor_axis_length(label_inds)
-                feats.append(mi_al)
-            elif metric == "major_axis_angle":
-                ma_aa = _major_axis_angle(label_inds)
-                feats.append(ma_aa)
-            elif metric == "minor_axis_angle":
-                mi_aa = _minor_axis_angle(label_inds)
-                feats.append(mi_aa)
-    else:
-        feats.extend([np.nan] * len(metrics))
+            tortuosity = np.divide(
+                path_lengths,
+                straight_line_dist,
+                out=np.full_like(path_lengths, np.nan, dtype=float),
+                where=straight_line_dist > 0,
+            )
+            feats.append(tortuosity)
+        elif metric == "average_turning_angle":
+            avg_turning_angle = _average_turning_angle(label_inds)
+            feats.append(avg_turning_angle)
+        elif metric == "major_axis_len":
+            ma_al = _major_axis_length(label_inds)
+            feats.append(ma_al)
+        elif metric == "minor_axis_len":
+            mi_al = _minor_axis_length(label_inds)
+            feats.append(mi_al)
+        elif metric == "major_axis_angle":
+            ma_aa = _major_axis_angle(label_inds)
+            feats.append(ma_aa)
+        elif metric == "minor_axis_angle":
+            mi_aa = _minor_axis_angle(label_inds)
+            feats.append(mi_aa)
 
     return pd.DataFrame(np.column_stack(feats), index=edge_labels, columns=metrics)

@@ -75,6 +75,18 @@ def inst2gdf(
     if inst_map.size == 0 or np.max(inst_map) == 0:
         return gpd.GeoDataFrame(columns=["uid", "class_name", "geometry"])
 
+    allowed_dtypes = {
+        np.dtype("int16"),
+        np.dtype("int32"),
+        np.dtype("uint8"),
+        np.dtype("uint16"),
+        np.dtype("float32"),
+        np.dtype("float64"),
+        np.dtype("int8"),
+    }
+    if inst_map.dtype not in allowed_dtypes:
+        inst_map = inst_map.astype(np.int32, copy=False)
+
     if type_map is None:
         type_map = inst_map > 0
 
