@@ -2,6 +2,10 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [0.2.5] - 2026-01-30
+### Fixed
+- Fix empty gdf bug in `fiber_feats` and dtype nug in `inst2gdf`.
+
 ## [0.2.4] - 2025-11-14
 ### Fixed
 - Add `WSIPatchIterator`
