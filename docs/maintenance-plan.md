@@ -64,7 +64,7 @@ upgrades. No advisories have been dismissed or fixed by the first patch.
   PyTorch, NumPy, Shapely, pandas, SciPy, image I/O, checkpoint, and WSI backends.
 - [ ] Exercise fresh installations against declared ranges and the locked environment.
   Fix import failures explicitly without relying on preinstalled packages.
-- [ ] Remove the unused CuPy feature-analysis paths as described below, then
+- [ ] Evaluate and simplify the CuPy feature-analysis paths as described below, then
   evaluate remaining WSI backend requirements and optional installation boundaries.
 - [ ] Triage security advisories for runtime, build, and documentation environments.
 
@@ -74,23 +74,30 @@ remain open. A focused texture fix moves its unconditional CuPy import into the
 existing optional GPU guard, with regression checks for known CPU GLCM values.
 This does not yet make the complete package installable without CUDA dependencies.
 
-## Remove CuPy feature acceleration
+## Evaluate CuPy processing and retain cuCIM
 
-The maintainer reports that these paths are unused and provide only marginal
-improvements over CPU processing. Prefer removing this maintenance burden to
-adding a CuPy extra. This is a planned cleanup; the current code is unchanged.
+Keep cuCIM, including its WSI slide-reading backend. Evaluate the CuPy image and
+feature-processing implementations separately. The maintainer reports that these
+paths significantly complicate the code without bringing runtime benefits; use
+representative measurements and correctness comparisons to decide which paths
+to remove or simplify. This is planned work; the current code is unchanged.
 
-- [ ] Remove CuPy/cupyx and cuCIM feature kernels from nuclear texture, intensity,
-  and chromatin features, collagen extraction, and image/mask utilities. Replace
-  cuML image clustering with the existing CPU implementation.
+- [ ] Inventory CuPy/cupyx processing in nuclear texture, intensity, and chromatin
+  features, collagen extraction, and image/mask utilities. Include cuML image
+  clustering in the evaluation against its existing CPU implementation.
+- [ ] Compare CPU and GPU paths on representative image sizes, object counts, and
+  WSI workloads. Record hardware, warmup, synchronization, end-to-end runtime,
+  peak memory, and transfer overhead. Include setup costs and repeated workloads.
+- [ ] Remove or simplify paths that add substantial complexity without a useful
+  measured benefit. Record the evidence and decision for each implementation.
 - [ ] Preserve feature definitions, instance labels, coordinate units, and CPU
   results. Verify representative bundled-data outputs against the CPU baseline.
 - [ ] Resolve the public feature-analysis `device` arguments explicitly. Document
   and test any deprecation or removal of `device="cuda"`, update callers,
   notebooks, docstrings, and tests together, and include migration notes.
-- [ ] Remove cuML and CuPy requirements and regenerate uv.lock once callers are
-  removed. Audit cuCIM separately: its WSI slide-reading backend may still be
-  useful and should have an explicit optional dependency if retained.
+- [ ] Remove CuPy/cuML requirements only when the evaluated cleanup leaves no
+  callers requiring them, and regenerate uv.lock. Retain cuCIM and verify its
+  slide-reading backend; review platform-specific installation boundaries separately.
 - [ ] Verify clean CPU installations and the supported platform/Python matrix.
   Preserve PyTorch CUDA support for panoptic model inference and training.
 

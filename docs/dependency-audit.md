@@ -33,12 +33,12 @@ diagnostic environment, not a validated installation of the complete package.
    Move that import into the existing guard. Test missing CuPy and missing cuCIM
    and verify known CPU GLCM values. This changes no feature formula or GPU path.
 3. **CuPy cleanup:** mandatory cuML/cuCIM block non-Linux installs and add NVIDIA
-   downloads to ordinary CPU installs. The maintainer has requested removal of
-   the unused CuPy feature-analysis paths, citing marginal performance gains.
-   [The maintenance plan](maintenance-plan.md#remove-cupy-feature-acceleration)
-   now prioritizes removal over a CuPy extra. Preserve CPU feature results and
-   handle existing `device` arguments explicitly. Audit the cuCIM WSI reader
-   separately and retain PyTorch CUDA model inference/training support.
+   downloads to ordinary CPU installs. The maintainer has confirmed that cuCIM
+   must remain and requested proper evaluation of CuPy processing, citing added
+   complexity without runtime benefits. [The maintenance plan](maintenance-plan.md#evaluate-cupy-processing-and-retain-cucim)
+   requires representative correctness and performance comparisons before choosing
+   removals. Preserve feature results and handle existing `device` arguments
+   explicitly. Retain cuCIM slide reading and PyTorch CUDA model inference/training.
 4. **Direct requirements:** NumPy, pandas, SciPy, Shapely, PyTorch, Pillow,
    OpenCV, rasterio, pyproj, scikit-learn, polars, psutil, tqdm, Hugging Face Hub,
    and safetensors are imported directly but absent from project.dependencies.
@@ -71,7 +71,7 @@ lock entry does not establish exposure on all platforms.
 
 1. Capture representative spatial feature and real-checkpoint prediction baselines
    with units, inputs, checkpoint identity, preprocessing, and predefined tolerances.
-2. Remove the unused CuPy feature paths and their dependencies in a focused batch;
+2. Evaluate and simplify CuPy processing in a focused batch, retaining cuCIM;
    fix direct dependency declarations and remaining WSI boundaries separately.
 3. Consume the tested upstream Numba/Python compatibility release when available.
 4. Upgrade the PyTorch/checkpoint, image/numerical, geospatial, and tooling families
