@@ -21,7 +21,7 @@ from histolytics.models.stardist_panoptic import StarDistPanoptic, stardist_pano
 )
 def test_model_inference_numpy(model):
     """Test model inference on a single image."""
-    model = model(3, 2, device=torch.device("cpu"))
+    model = model(3, 2, enc_pretrain=False, device=torch.device("cpu"))
     model.set_inference_mode(mixed_precision=False)
 
     single_image = np.random.rand(64, 64, 3).astype(np.float32)  # Random single image
@@ -44,7 +44,7 @@ def test_model_inference_numpy(model):
 )
 def test_model_inference_torch(model):
     """Test model inference on a batch of two images."""
-    model = model(3, 2, device=torch.device("cpu"))
+    model = model(3, 2, enc_pretrain=False, device=torch.device("cpu"))
     model.set_inference_mode(mixed_precision=False)
 
     batch_images = torch.rand(
@@ -61,7 +61,7 @@ def test_model_inference_torch(model):
 def test_cppnet_fwdbwd(enc_name):
     n_rays = 3
     x = torch.rand([1, 3, 64, 64])
-    model = cppnet_panoptic(n_rays, 3, 3, enc_name=enc_name)
+    model = cppnet_panoptic(n_rays, 3, 3, enc_name=enc_name, enc_pretrain=False)
 
     y = model(x)
     y["nuc"].aux_map.mean().backward()
@@ -95,7 +95,7 @@ def test_cellvit_fwdbwd(enc_name):
 @pytest.mark.parametrize("enc_name", ["resnet18", "samvit_base_patch16"])
 def test_hovernet_fwdbwd(enc_name):
     x = torch.rand([1, 3, 64, 64])
-    model = hovernet_panoptic(3, 3, enc_name=enc_name)
+    model = hovernet_panoptic(3, 3, enc_name=enc_name, enc_pretrain=False)
 
     y = model(x)
     y["nuc"].aux_map.mean().backward()
@@ -110,7 +110,7 @@ def test_hovernet_fwdbwd(enc_name):
 def test_stardist_fwdbwd(enc_name):
     n_rays = 3
     x = torch.rand([1, 3, 64, 64])
-    model = stardist_panoptic(n_rays, 3, 3, enc_name=enc_name)
+    model = stardist_panoptic(n_rays, 3, 3, enc_name=enc_name, enc_pretrain=False)
 
     y = model(x)
     y["nuc"].aux_map.mean().backward()
@@ -123,7 +123,7 @@ def test_stardist_fwdbwd(enc_name):
 @pytest.mark.parametrize("enc_name", ["resnet18", "samvit_base_patch16"])
 def test_cellpose_fwdbwd(enc_name):
     x = torch.rand([1, 3, 64, 64])
-    model = cellpose_panoptic(3, 3, enc_name=enc_name)
+    model = cellpose_panoptic(3, 3, enc_name=enc_name, enc_pretrain=False)
 
     y = model(x)
     y["nuc"].aux_map.mean().backward()
