@@ -70,15 +70,20 @@ See [contributing guide](https://github.com/HautaniemiLab/histolytics/blob/main/
 
 ## Citation
 
+If you use histolytics in your research, please cite:
+
+Lehtonen, O., Nordlund, N., Salloum, S., Kalliala, I., Virtanen, A., & Hautaniemi, S. (2025). **Histolytics: A panoptic spatial analysis framework for interpretable histopathology.** *Computational and Structural Biotechnology Journal*, 27, 5135–5147. [https://doi.org/10.1016/j.csbj.2025.11.022](https://doi.org/10.1016/j.csbj.2025.11.022)
+
 ```bibtex
 @article{2025histolytics,
-  title={Histolytics: A Panoptic Spatial Analysis Framework for Interpretable Histopathology},
-  author={Oskari Lehtonen, Niko Nordlund, Shams Salloum, Ilkka Kalliala, Anni Virtanen, Sampsa Hautaniemi},
-  journal={XX},
-  volume={XX},
-  number={XX},
-  pages={XX},
+  title={{Histolytics}: A panoptic spatial analysis framework for interpretable histopathology},
+  author={Lehtonen, Oskari and Nordlund, Niko and Salloum, Shams and Kalliala, Ilkka and Virtanen, Anni and Hautaniemi, Sampsa},
+  journal={Computational and Structural Biotechnology Journal},
+  volume={27},
+  pages={5135--5147},
   year={2025},
-  publisher={XX}
+  doi={10.1016/j.csbj.2025.11.022},
+  url={https://doi.org/10.1016/j.csbj.2025.11.022},
+  publisher={Elsevier}
 }
 ```
