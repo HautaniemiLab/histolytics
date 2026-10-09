@@ -1,6 +1,7 @@
 """Regression checks for instance identities and zero-valued texture rows."""
 
 import numpy as np
+import pytest
 
 from histolytics.nuc_feats.texture import textural_feats
 
@@ -17,9 +18,10 @@ def test_sparse_texture_labels_and_small_nuclei():
     np.testing.assert_allclose(result.to_numpy(), [[1.0, 4.0], [0.0, 0.0]])
 
 
-def test_texture_foreground_without_background_pixels():
+@pytest.mark.parametrize("dtype", [np.int32, np.int64, np.uint32, np.uint64])
+def test_texture_foreground_without_background_pixels(dtype):
     image = np.broadcast_to(np.arange(8, dtype=np.uint8)[None, :, None], (8, 8, 3))
-    result = textural_feats(image, np.full((8, 8), 5, dtype=np.int32))
+    result = textural_feats(image, np.full((8, 8), 5, dtype=dtype))
     assert result.index.tolist() == [5]
     np.testing.assert_allclose(result.to_numpy(), [[1.0, 1.0]])
 

@@ -121,7 +121,7 @@ def textural_feats(
     nuc_textures = []
     nuc_labels = []
     for lab in nuc_lab:
-        slc = nuc_pos[lab - 1]
+        slc = nuc_pos[int(lab) - 1]
         nuc_gray = im_gray[slc] * (label[slc] == lab)
 
         if nuc_gray.sum() == 0 or nuc_gray.shape[0] < 4 or nuc_gray.shape[1] < 4:

@@ -13,7 +13,7 @@
     "scikit-image": "0.25.2",
     "Pillow": "12.3.0"
   },
-  "source_sha256": "e286a802154aa55fba7e5f7435efd49375bfe99b2a39d5c6f488e0cf44a37855",
+  "source_sha256": "7e6c0ada53f922fcf0de0ef0373e0740304e6ab3bfe397648cd382e8a7870ac6",
   "inputs": {
     "hgsc_nest.jpg": "4525ae5db61e7a385f24ec7ff3bf26e10f61a870c36e3c74b1a3cd436990ea57",
     "hgsc_nest_inst_mask.npz": "bde26874264819e60300edb0be133f72b8b4ce785fc064c25394d8102c346119"
@@ -41,14 +41,14 @@
       "angles": [
         0
       ],
-      "first_call_seconds": 0.011739791836589575,
+      "first_call_seconds": 0.01158374990336597,
       "warmup_calls": 1,
       "seconds": [
-        0.010670917108654976,
-        0.010815083980560303,
-        0.010628999909386039
+        0.010633334051817656,
+        0.010835624998435378,
+        0.01040466595441103
       ],
-      "median_seconds": 0.010670917108654976,
+      "median_seconds": 0.010633334051817656,
       "cpu_parity": true,
       "rtol": 1e-06,
       "atol": 1e-08,
@@ -77,14 +77,14 @@
       "angles": [
         0
       ],
-      "first_call_seconds": 0.037433624966070056,
+      "first_call_seconds": 0.037427624920383096,
       "warmup_calls": 1,
       "seconds": [
-        0.036424916004762053,
-        0.03645916609093547,
-        0.0366564579308033
+        0.03639658400788903,
+        0.03702637506648898,
+        0.03685179096646607
       ],
-      "median_seconds": 0.03645916609093547,
+      "median_seconds": 0.03685179096646607,
       "cpu_parity": true,
       "rtol": 1e-06,
       "atol": 1e-08,
@@ -113,14 +113,14 @@
       "angles": [
         0
       ],
-      "first_call_seconds": 0.14641258399933577,
+      "first_call_seconds": 0.14700216590426862,
       "warmup_calls": 1,
       "seconds": [
-        0.14473616611212492,
-        0.15208829194307327,
-        0.14476141706109047
+        0.1462859578896314,
+        0.15069312509149313,
+        0.14421133301220834
       ],
-      "median_seconds": 0.14476141706109047,
+      "median_seconds": 0.1462859578896314,
       "cpu_parity": true,
       "rtol": 1e-06,
       "atol": 1e-08,

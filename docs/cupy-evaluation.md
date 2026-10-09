@@ -37,7 +37,8 @@ a controlled test, and omitted a foreground-only image's sole instance entirely.
 The focused shared-path fix now selects each slice by its instance ID, queries IDs
 after masking, and names zero rows consistently. It preserves the feature formulas
 and GPU preprocessing. Four regression cases cover sparse IDs, small objects,
-foreground without background pixels, fully masked instances, and empty outputs.
+foreground without background pixels across signed/unsigned integer dtypes,
+fully masked instances, and empty outputs.
 The original intended zero behavior replaces NaNs; this is a documented bug fix,
 not an unchanged-output baseline for those defective cases.
 
@@ -67,9 +68,9 @@ Initial [CPU results](validation/texture-cpu-baseline.json), 9 October 2026:
 
 | Center crop | Nuclei | Warm median |
 | --- | --- | --- |
-| 256 × 256 | 44 | 10.7 ms |
-| 512 × 512 | 150 | 36.5 ms |
-| 1024 × 1024 | 585 | 144.8 ms |
+| 256 × 256 | 44 | 10.6 ms |
+| 512 × 512 | 150 | 36.9 ms |
+| 1024 × 1024 | 585 | 146.3 ms |
 
 Hardware: Apple M5, ten logical CPUs, Python 3.12.13. The small diagnostic
 environment uses the locked NumPy/pandas/SciPy/scikit-image versions for Python
