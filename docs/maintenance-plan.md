@@ -34,6 +34,21 @@ checks, archive completeness checks (86 package files each), configured hooks,
 and workflow lint. Full source and installation checks require Linux CI because
 the current mandatory CUDA packages cannot install on this Mac.
 
+Hosted [run 37967723398](https://github.com/HautaniemiLab/histolytics/actions/runs/37967723398)
+passed the build checks and source suites on Python 3.10 and 3.12 (156 passed,
+one skipped each). Clean wheel installs passed on 3.10–3.12, and source installs
+passed on 3.11–3.12. Python 3.13 fails both locked and fresh installation:
+Numba 0.60.0 selects llvmlite 0.43.0, which has no supported Python 3.13 wheel.
+The declared cellseg-models-pytorch 0.1.30 dependency and the locked cuML stack
+constrain this numerical dependency family. The old workflow did not explicitly
+select its matrix interpreter, so the repository's Python 3.12 default could mask
+this gap. Keep the 3.13 checks failing visibly until an independently validated
+compatibility fix lands; this draft is not ready to merge.
+
+The installation smoke check has since been expanded to import implementation
+modules, including WSI readers and segmenters; the latest commit requires fresh
+hosted validation. Empty package entry points do not validate those APIs.
+
 ## Installation and dependency audit
 
 A locked install fails on macOS because mandatory cuml-cu12 has no compatible
