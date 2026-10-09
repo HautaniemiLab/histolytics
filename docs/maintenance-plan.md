@@ -80,9 +80,9 @@ Keep cuCIM, including its WSI slide-reading backend. Evaluate the CuPy image and
 feature-processing implementations separately. The maintainer reports that these
 paths significantly complicate the code without bringing runtime benefits; use
 representative measurements and correctness comparisons to decide which paths
-to remove or simplify. This is planned work; the current code is unchanged.
+to remove or simplify. CuPy removal decisions remain pending evaluation.
 
-- [ ] Inventory CuPy/cupyx processing in nuclear texture, intensity, and chromatin
+- [x] Inventory CuPy/cupyx processing in nuclear texture, intensity, and chromatin
   features, collagen extraction, and image/mask utilities. Include cuML image
   clustering in the evaluation against its existing CPU implementation.
 - [ ] Compare CPU and GPU paths on representative image sizes, object counts, and
@@ -103,6 +103,12 @@ to remove or simplify. This is planned work; the current code is unchanged.
 
 Keep this cleanup separate from numerical dependency upgrades so changes in
 feature values can be attributed and reviewed independently.
+
+See [the CuPy evaluation](cupy-evaluation.md) for transfer boundaries, correctness
+risks, and initial CPU texture timings. GPU comparison and peak-memory evaluation
+remain open. The initial bundled-image run exposed texture label/zero-row bugs;
+the evaluation branch fixes those shared bookkeeping paths with regression cases
+before collecting the corrected CPU reference. No CuPy path has been removed.
 
 ## Reproducible prediction and spatial baselines
 
