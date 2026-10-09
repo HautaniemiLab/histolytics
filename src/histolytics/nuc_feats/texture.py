@@ -1,6 +1,5 @@
 from typing import Sequence
 
-import cupy as cp
 import numpy as np
 import pandas as pd
 import scipy.ndimage as ndimage
@@ -9,6 +8,7 @@ from skimage.feature import graycomatrix, graycoprops
 from skimage.util import img_as_ubyte
 
 try:
+    import cupy as cp
     from cucim.skimage.color import rgb2gray as rgb2gray_cp
     from cucim.skimage.util import img_as_ubyte as img_as_ubyte_cp
 
