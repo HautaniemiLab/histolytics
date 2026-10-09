@@ -45,9 +45,11 @@ select its matrix interpreter, so the repository's Python 3.12 default could mas
 this gap. Keep the 3.13 checks failing visibly until an independently validated
 compatibility fix lands; this draft is not ready to merge.
 
-The installation smoke check has since been expanded to import implementation
-modules, including WSI readers and segmenters; the latest commit requires fresh
-hosted validation. Empty package entry points do not validate those APIs.
+The expanded smoke check passed actual model, WSI, and analysis implementation
+imports for both release formats on Python 3.10–3.12 in run 37968216555. All three
+source suites passed 156 tests with one hardware-dependent CUDA skip each. The
+3.11 wheel job passed on one targeted retry after an NVIDIA download hash mismatch;
+hash verification was preserved. Only the Python 3.13 jobs remain failing.
 
 ## Installation and dependency audit
 
@@ -58,13 +60,19 @@ The inspected Dependabot snapshot contains 127 open alerts, including a critical
 PyTorch alert; assess vulnerable versions and reachable paths before prioritizing
 upgrades. No advisories have been dismissed or fixed by the first patch.
 
-- [ ] Inventory direct imports and undeclared/transitive requirements, including
+- [x] Inventory direct imports and undeclared/transitive requirements, including
   PyTorch, NumPy, Shapely, pandas, SciPy, image I/O, checkpoint, and WSI backends.
 - [ ] Exercise fresh installations against declared ranges and the locked environment.
   Fix import failures explicitly without relying on preinstalled packages.
 - [ ] Evaluate making CUDA and WSI backends optional with lazy import boundaries,
   documented extras, and separate CPU/GPU/platform installation tests.
 - [ ] Triage security advisories for runtime, build, and documentation environments.
+
+See [the dependency audit](dependency-audit.md) for the import/advisory snapshots,
+verified constraints, and initial priorities. Reachability review and upgrades
+remain open. A focused texture fix moves its unconditional CuPy import into the
+existing optional GPU guard, with regression checks for known CPU GLCM values.
+This does not yet make the complete package installable without CUDA dependencies.
 
 ## Reproducible prediction and spatial baselines
 
