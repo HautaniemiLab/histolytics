@@ -10,7 +10,9 @@ import pytest
 
 @pytest.mark.parametrize("missing_package", ["cupy", "cucim"])
 def test_cpu_texture_without_gpu_libraries(monkeypatch, missing_package):
-    monkeypatch.setitem(sys.modules, missing_package, None)
+    for name in [missing_package, *list(sys.modules)]:
+        if name == missing_package or name.startswith(f"{missing_package}."):
+            monkeypatch.setitem(sys.modules, name, None)
     path = Path(__file__).resolve().parents[1] / "src/histolytics/nuc_feats/texture.py"
     spec = importlib.util.spec_from_file_location("texture_without_gpu", path)
     module = importlib.util.module_from_spec(spec)
