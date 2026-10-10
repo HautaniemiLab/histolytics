@@ -7,8 +7,6 @@ on:
   release:
     types:
       - published
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -16,28 +14,27 @@ permissions:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v7
 
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-            python-version: "3.10"
+            python-version: "3.12"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.2.0
         with:
+          version: "0.11.4"
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
         # Step 4: Install dependencies using UV
       - name: Install deps
-        run: uv sync --locked --group docs
+        run: uv sync --locked --group docs --python "3.12"
 
       - name: Deploy Docs
-        run: |
-          source .venv/bin/activate
-          uv run mkdocs gh-deploy --force
+        run: uv run --no-sync mkdocs gh-deploy --force

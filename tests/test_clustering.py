@@ -204,9 +204,9 @@ def test_lisa_clustering(inflammatory_nuclei_with_weights, feature, permutations
             pytest.skip(f"Feature {feature} has low variability, no clusters expected")
         else:
             # Otherwise, we should have found some clusters
-            assert (
-                clustering_detected
-            ), f"Expected to find some LISA clusters with {feature}"
+            assert clustering_detected, (
+                f"Expected to find some LISA clusters with {feature}"
+            )
 
 
 @pytest.fixture
@@ -303,22 +303,22 @@ def test_cluster_feats(clustered_immune_cells, hull_type, normalize_orientation)
         # Orientation checks
         if normalize_orientation:
             # If normalized, orientation should be between 0 and 90
-            assert (
-                0 <= features["orientation"] <= 90
-            ), f"Normalized orientation should be between 0 and 90, got {features['orientation']}"
+            assert 0 <= features["orientation"] <= 90, (
+                f"Normalized orientation should be between 0 and 90, got {features['orientation']}"
+            )
         else:
             # If not normalized, orientation should be between -180 and 180
-            assert (
-                -180 <= features["orientation"] <= 180
-            ), f"Non-normalized orientation should be between -180 and 180, got {features['orientation']}"
+            assert -180 <= features["orientation"] <= 180, (
+                f"Non-normalized orientation should be between -180 and 180, got {features['orientation']}"
+            )
 
         # Validate size against actual data
         cluster_cells = clustered_immune_cells[
             clustered_immune_cells["cluster_id"] == cluster_id
         ]
-        assert features["size"] == len(
-            cluster_cells
-        ), "Size should match number of cells in cluster"
+        assert features["size"] == len(cluster_cells), (
+            "Size should match number of cells in cluster"
+        )
 
 
 def test_cluster_feats_empty_input():
@@ -378,12 +378,12 @@ def test_cluster_tendency_with_clusters(immune_nuclei):
         ]
         bounds = cluster_cells.total_bounds
 
-        assert (
-            bounds[0] <= centroid.x <= bounds[2]
-        ), f"Centroid x outside cluster {cluster_id} bounds"
-        assert (
-            bounds[1] <= centroid.y <= bounds[3]
-        ), f"Centroid y outside cluster {cluster_id} bounds"
+        assert bounds[0] <= centroid.x <= bounds[2], (
+            f"Centroid x outside cluster {cluster_id} bounds"
+        )
+        assert bounds[1] <= centroid.y <= bounds[3], (
+            f"Centroid y outside cluster {cluster_id} bounds"
+        )
 
 
 @pytest.fixture
@@ -430,9 +430,9 @@ def test_ripley_test(neoplastic_nuclei, ripley_alphabet, hull_type, expected_pro
     assert isinstance(pvalues, np.ndarray), "pvalues should be numpy array"
 
     # Check shapes
-    assert len(ripley_stat) == len(
-        distances
-    ), "ripley_stat length should match distances"
+    assert len(ripley_stat) == len(distances), (
+        "ripley_stat length should match distances"
+    )
     assert len(pvalues) == len(distances), "pvalues length should match distances"
     assert sims.shape == (
         n_sim,
@@ -451,9 +451,9 @@ def test_ripley_test(neoplastic_nuclei, ripley_alphabet, hull_type, expected_pro
         # G function should be between 0 and 1
         assert np.all(ripley_stat <= 1), "All G values should be <= 1"
         # G function should be monotonically increasing
-        assert np.all(
-            np.diff(ripley_stat) >= 0
-        ), "G function should be monotonically increasing"
+        assert np.all(np.diff(ripley_stat) >= 0), (
+            "G function should be monotonically increasing"
+        )
 
     # Check that simulations have reasonable values
     assert not np.any(np.isnan(sims)), "Simulations should not contain NaN values"

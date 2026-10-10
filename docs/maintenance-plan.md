@@ -123,7 +123,7 @@ before collecting the corrected CPU reference. No CuPy path has been removed.
 
 ## Dependency and tooling upgrades
 
-- [ ] Update development tooling and hooks separately from runtime packages.
+- [x] Update development tooling and hooks separately from runtime packages.
   Align uv hook pins with the verified workflow and modernize Ruff configuration.
 - [ ] Upgrade cellseg-models-pytorch/PyTorch, numerical/image packages, geospatial
   packages, and CUDA/WSI dependencies in separate batches. Update manifest and lock
@@ -131,6 +131,23 @@ before collecting the corrected CPU reference. No CuPy path has been removed.
 - [ ] Evaluate newer Python versions from compatible wheels and passing source and
   installation checks. Update all metadata and docs together when support changes.
 - [ ] Group weekly dependency and Actions updates after the baseline is reliable.
+
+The development-tooling batch pins Ruff 0.17.0 in the project and hooks, aligns
+uv hooks with CI's 0.11.4, uses current hook stage names, and checks the lockfile
+without rewriting it or automatically synchronizing runtime dependencies.
+The new tools-only CI job runs lint, formatting, and release guards without CUDA.
+Its explicit initial lint scope covers syntax/name errors and import ordering;
+all 88 Python files under src/tests/tools pass. Two legacy test files received
+formatting-only changes with identical ASTs. Broader Ruff modernization findings
+remain a separate backlog, and type checking has not been introduced.
+
+The lock refresh adds Ruff while retaining all 279 existing package versions and
+every shared artifact hash. uv refreshes upload-time metadata and wheel lists:
+eight CMake wheels for non-advertised architectures disappear and eight GraalPy
+pydantic-core wheels appear. CPython source/install validation remains required;
+this tooling change does not resolve the existing Python 3.13 dependency blocker.
+The documentation deployment setup also uses explicit Python 3.12 and the same
+uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Typing and documentation
 

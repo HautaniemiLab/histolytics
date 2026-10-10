@@ -60,6 +60,22 @@ uv run --no-sync pre-commit install --hook-type pre-commit --hook-type pre-push
 - Use `fix/`, `feat/`, `chore/`, or `docs/` branches and Conventional Commits
 - Read [AGENTS.md](AGENTS.md) for segmentation and spatial-analysis contracts
 
+Ruff 0.17.0 is pinned in both the development group and hooks. The initial lint
+gate covers syntax/name errors and import ordering across `src`, `tests`, and
+`tools`; broader modernization rules and type checking are separate work.
+
+For linting and release-guard checks without installing the runtime dependencies:
+
+```bash
+uv sync --locked --only-group dev
+uv run --no-sync ruff check src tests tools
+uv run --no-sync ruff format --check src tests tools
+```
+
+This installs development tools only. Use the full development setup above for
+library tests. The lock hook checks consistency with `uv lock --check`; update
+dependencies deliberately with `uv lock` rather than having hooks rewrite them.
+
 ## Testing
 
 - Write tests for new features
