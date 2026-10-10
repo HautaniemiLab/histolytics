@@ -1,0 +1,1150 @@
+{
+  "date": "2026-10-09",
+  "source": "https://github.com/HautaniemiLab/histolytics/security/dependabot",
+  "state": "open",
+  "alerts": [
+    {
+      "fixed": "21.7.12",
+      "ghsa": "GHSA-x78j-v8h9-3j2q",
+      "number": 130,
+      "package": "virtualenv",
+      "range": "<= 21.7.11",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "21.7.13",
+      "ghsa": "GHSA-p58f-9548-mpm2",
+      "number": 129,
+      "package": "virtualenv",
+      "range": "<= 21.7.12",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.8.0",
+      "ghsa": "GHSA-8988-9cw3-xx77",
+      "number": 128,
+      "package": "urllib3",
+      "range": ">= 1.26.0, < 2.8.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.9",
+      "ghsa": "GHSA-3hv7-mjh2-fv65",
+      "number": 127,
+      "package": "tornado",
+      "range": "<= 6.5.8",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "6.5.9",
+      "ghsa": "GHSA-c2m8-h5v5-343r",
+      "number": 126,
+      "package": "tornado",
+      "range": "<= 6.5.8",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.9",
+      "ghsa": "GHSA-chx6-46f5-w4vp",
+      "number": 125,
+      "package": "tornado",
+      "range": "<= 6.5.8",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "21.7.11",
+      "ghsa": "GHSA-9h9j-4vrj-gf7g",
+      "number": 124,
+      "package": "virtualenv",
+      "range": "<= 21.7.10",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "21.7.12",
+      "ghsa": "GHSA-94p9-xgh2-xp45",
+      "number": 123,
+      "package": "virtualenv",
+      "range": "<= 21.7.11",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.9.0",
+      "ghsa": "GHSA-j934-xhv5-fg8f",
+      "number": 122,
+      "package": "soupsieve",
+      "range": "< 2.9.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.9.0",
+      "ghsa": "GHSA-gjv8-xp57-g29c",
+      "number": 121,
+      "package": "soupsieve",
+      "range": "< 2.9.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "9.7.7",
+      "ghsa": "GHSA-xvg9-69gf-fjrf",
+      "number": 120,
+      "package": "mkdocs-material",
+      "range": ">= 7.2.0, < 9.7.7",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "6.5.8",
+      "ghsa": "GHSA-mpf4-983q-p7j4",
+      "number": 119,
+      "package": "tornado",
+      "range": "<= 6.5.7",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.8",
+      "ghsa": "GHSA-8423-8fgw-73vq",
+      "number": 118,
+      "package": "tornado",
+      "range": "<= 6.5.7",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "11.0.1",
+      "ghsa": "GHSA-gm37-52c6-37mw",
+      "number": 117,
+      "package": "pymdown-extensions",
+      "range": "<= 11.0.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.14.3",
+      "ghsa": "GHSA-cq5v-8q36-5273",
+      "number": 116,
+      "package": "aiohttp",
+      "range": "<= 3.14.2",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.14.2",
+      "ghsa": "GHSA-mfx4-hv73-q22v",
+      "number": 115,
+      "package": "aiohttp",
+      "range": "<= 3.14.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.2",
+      "ghsa": "GHSA-mq44-7p77-q5h7",
+      "number": 114,
+      "package": "aiohttp",
+      "range": "<= 3.14.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "11.0.0",
+      "ghsa": "GHSA-9xwg-3r6f-jcx2",
+      "number": 113,
+      "package": "pymdown-extensions",
+      "range": "<= 10.21.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "83.0.0",
+      "ghsa": "GHSA-h35f-9h28-mq5c",
+      "number": 112,
+      "package": "setuptools",
+      "range": "< 83.0.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-jjj6-mw9f-p565",
+      "number": 111,
+      "package": "Pillow",
+      "range": ">= 5.1.0, < 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-fj7v-r99m-22gq",
+      "number": 110,
+      "package": "Pillow",
+      "range": ">= 5.2.0, < 12.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-vjc4-5qp5-m44j",
+      "number": 109,
+      "package": "pillow",
+      "range": ">= 8.2.0, < 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-9hw9-ch79-4vh6",
+      "number": 108,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-xj96-63gp-2gmr",
+      "number": 107,
+      "package": "Pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-6r8x-57c9-28j4",
+      "number": 106,
+      "package": "Pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-4x4j-2g7c-83w6",
+      "number": 105,
+      "package": "Pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-phj9-mv4w-65pm",
+      "number": 104,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-45hq-cxwh-f6vc",
+      "number": 103,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-8v84-f9pq-wr9x",
+      "number": 102,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-5x94-69rx-g8h2",
+      "number": 101,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.3.0",
+      "ghsa": "GHSA-62p4-gmf7-7g93",
+      "number": 100,
+      "package": "pillow",
+      "range": "< 12.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-r4rv-85jg-w4mf",
+      "number": 99,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-qfrw-5rxm-mhh2",
+      "number": 98,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-c8j7-8cv4-2xmq",
+      "number": 97,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-2hm2-hc3v-44h9",
+      "number": 96,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-8c25-4j27-2rv3",
+      "number": 95,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-g97x-gvcm-x72h",
+      "number": 94,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-4j32-57v6-6g45",
+      "number": 93,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-8mpj-m6qm-5qr8",
+      "number": 92,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-ffq3-xpv3-j92q",
+      "number": 91,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.3",
+      "ghsa": "GHSA-c98p-7wgm-6p64",
+      "number": 90,
+      "package": "tornado",
+      "range": "< 6.5.3",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.3",
+      "ghsa": "GHSA-jhmp-mqwm-3gq8",
+      "number": 89,
+      "package": "tornado",
+      "range": "< 6.5.3",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.3",
+      "ghsa": "GHSA-pr2v-jx2c-wg9f",
+      "number": 88,
+      "package": "tornado",
+      "range": "< 6.5.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.13.0",
+      "ghsa": "GHSA-rrmf-rvhw-rf47",
+      "number": 87,
+      "package": "torch",
+      "range": "<= 2.12.1",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.3.0",
+      "ghsa": "GHSA-qcq2-496w-v96p",
+      "number": 86,
+      "package": "mistune",
+      "range": "< 3.3.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.8.4",
+      "ghsa": "GHSA-2wc2-fm75-p42x",
+      "number": 85,
+      "package": "soupsieve",
+      "range": "<= 2.8.3",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.8.4",
+      "ghsa": "GHSA-836r-79rf-4m37",
+      "number": 84,
+      "package": "soupsieve",
+      "range": "<= 2.8.3",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "1.2.1",
+      "ghsa": "GHSA-6v7p-g79w-8964",
+      "number": 83,
+      "package": "msgpack",
+      "range": "<= 1.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.4.0",
+      "ghsa": "GHSA-gj48-438w-jh9v",
+      "number": 82,
+      "package": "bleach",
+      "range": "< 6.4.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "6.4.0",
+      "ghsa": "GHSA-8rfp-98v4-mmr6",
+      "number": 81,
+      "package": "bleach",
+      "range": "<= 6.3.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "6.5.7",
+      "ghsa": "GHSA-pw6j-qg29-8w7f",
+      "number": 80,
+      "package": "tornado",
+      "range": "<= 6.5.6",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "6.5.6",
+      "ghsa": "GHSA-3x9g-8vmp-wqvf",
+      "number": 79,
+      "package": "tornado",
+      "range": "< 6.5.6",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.6",
+      "ghsa": "GHSA-mgf9-4vpg-hj56",
+      "number": 78,
+      "package": "tornado",
+      "range": "< 6.5.6",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-4m7w-qmgq-4wj5",
+      "number": 77,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-hpj7-wq8m-9hgp",
+      "number": 76,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-xcgm-r5h9-7989",
+      "number": 75,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-9x8q-7h8h-wcw9",
+      "number": 74,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-4fvr-rgm6-gqmc",
+      "number": 73,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-63hw-fmq6-xxg2",
+      "number": 72,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.0",
+      "ghsa": "GHSA-m6qw-4cw2-hm4m",
+      "number": 71,
+      "package": "aiohttp",
+      "range": "<= 3.13.5",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-g3cq-j2xw-wf74",
+      "number": 70,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.1",
+      "ghsa": "GHSA-2fqr-mr3j-6wp8",
+      "number": 69,
+      "package": "aiohttp",
+      "range": "<= 3.14.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "6.5.6",
+      "ghsa": "GHSA-cx3h-4qpv-8hc9",
+      "number": 68,
+      "package": "tornado",
+      "range": "< 6.5.6",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "2.10.0",
+      "ghsa": "GHSA-qfhq-4f3w-5fph",
+      "number": 66,
+      "package": "torch",
+      "range": "< 2.10.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "2.9.1",
+      "ghsa": "GHSA-vgrw-7cvw-pwgx",
+      "number": 65,
+      "package": "torch",
+      "range": "< 2.9.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": null,
+      "ghsa": "GHSA-x3gm-94wq-g975",
+      "number": 64,
+      "package": "torch",
+      "range": "<= 2.6.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": null,
+      "ghsa": "GHSA-f4hp-rmr7-r7v8",
+      "number": 63,
+      "package": "torch",
+      "range": "<= 2.6.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": null,
+      "ghsa": "GHSA-c678-jfcj-6jmf",
+      "number": 62,
+      "package": "torch",
+      "range": "<= 2.6.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "23.0.1",
+      "ghsa": "GHSA-rgxp-2hwp-jwgg",
+      "number": 61,
+      "package": "pyarrow",
+      "range": ">= 15.0.0, < 23.0.1",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.14.0",
+      "ghsa": "GHSA-hg6j-4rv6-33pg",
+      "number": 60,
+      "package": "aiohttp",
+      "range": "< 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.14.0",
+      "ghsa": "GHSA-jg22-mg44-37j8",
+      "number": 59,
+      "package": "aiohttp",
+      "range": "< 3.14.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.15",
+      "ghsa": "GHSA-65pc-fj4g-8rjx",
+      "number": 58,
+      "package": "idna",
+      "range": "< 3.15",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "10.21.3",
+      "ghsa": "GHSA-62q4-447f-wv8h",
+      "number": 57,
+      "package": "pymdown-extensions",
+      "range": ">= 10.0.1, <= 10.21.2",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.7.0",
+      "ghsa": "GHSA-qccp-gfcp-xxvc",
+      "number": 56,
+      "package": "urllib3",
+      "range": ">= 1.23, < 2.7.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.2.1",
+      "ghsa": "GHSA-v87v-83h2-53w7",
+      "number": 55,
+      "package": "mistune",
+      "range": "<= 3.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.2.1",
+      "ghsa": "GHSA-58cw-g322-p94v",
+      "number": 54,
+      "package": "mistune",
+      "range": "<= 3.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": null,
+      "ghsa": "GHSA-8g87-j6q8-g93x",
+      "number": 53,
+      "package": "mistune",
+      "range": "<= 3.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.2.1",
+      "ghsa": "GHSA-8mp2-v27r-99xp",
+      "number": 52,
+      "package": "mistune",
+      "range": ">= 3.0.0a1, <= 3.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.2.0",
+      "ghsa": "GHSA-r73j-pqj5-w3x7",
+      "number": 51,
+      "package": "pillow",
+      "range": ">= 4.2.0, < 12.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.2.0",
+      "ghsa": "GHSA-wjx4-4jcj-g98j",
+      "number": 50,
+      "package": "pillow",
+      "range": "< 12.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.2.0",
+      "ghsa": "GHSA-pwv6-vv43-88gr",
+      "number": 49,
+      "package": "pillow",
+      "range": ">= 10.3.0, < 12.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "12.2.0",
+      "ghsa": "GHSA-5xmw-vc9v-4wf2",
+      "number": 48,
+      "package": "pillow",
+      "range": ">= 11.2.1, < 12.2.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "7.17.1",
+      "ghsa": "GHSA-7jqv-fw35-gmx9",
+      "number": 47,
+      "package": "nbconvert",
+      "range": ">= 6.5.0, < 7.17.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "7.17.1",
+      "ghsa": "GHSA-4c99-qj7h-p3vg",
+      "number": 46,
+      "package": "nbconvert",
+      "range": ">= 6.5.0, < 7.17.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "9.0.3",
+      "ghsa": "GHSA-6w46-j5rx-g56g",
+      "number": 45,
+      "package": "pytest",
+      "range": "< 9.0.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.2.0",
+      "ghsa": "GHSA-whj4-6x5x-4v2j",
+      "number": 44,
+      "package": "pillow",
+      "range": ">= 10.3.0, < 12.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.5",
+      "ghsa": "GHSA-fqwm-6jpj-5wxc",
+      "number": 43,
+      "package": "tornado",
+      "range": "< 6.5.5",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-c427-h43c-vf67",
+      "number": 42,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-63hf-3vf5-4wqf",
+      "number": 41,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-966j-vmvw-g2g9",
+      "number": 40,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-mwh4-6h8g-pg8w",
+      "number": 39,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-3wq7-rqq7-wx6j",
+      "number": 38,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-m5qp-6w8w-w647",
+      "number": 37,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-p998-jp59-783m",
+      "number": 36,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-2vrm-gr82-f7m5",
+      "number": 35,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-hcc4-c3v8-rx92",
+      "number": 34,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.4",
+      "ghsa": "GHSA-w2fm-2cpv-w7v5",
+      "number": 33,
+      "package": "aiohttp",
+      "range": "<= 3.13.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.20.0",
+      "ghsa": "GHSA-5239-wwwm-4pmq",
+      "number": 32,
+      "package": "Pygments",
+      "range": "< 2.20.0",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "2.33.0",
+      "ghsa": "GHSA-gc5v-m9x4-r6x2",
+      "number": 31,
+      "package": "requests",
+      "range": "< 2.33.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.9.0",
+      "ghsa": "GHSA-f38f-5xpm-9r7c",
+      "number": 29,
+      "package": "CairoSVG",
+      "range": "<= 2.8.2",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.5",
+      "ghsa": "GHSA-qjxf-f2mg-c6mc",
+      "number": 28,
+      "package": "tornado",
+      "range": "<= 6.5.4",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "6.5.5",
+      "ghsa": "GHSA-78cv-mqj4-43f7",
+      "number": 27,
+      "package": "tornado",
+      "range": "<= 6.5.4",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "12.1.1",
+      "ghsa": "GHSA-cfh3-3jmp-rvhc",
+      "number": 26,
+      "package": "pillow",
+      "range": ">= 10.3.0, < 12.1.1",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "7.17.0",
+      "ghsa": "GHSA-xm59-rqc7-hhvf",
+      "number": 25,
+      "package": "nbconvert",
+      "range": "< 7.17.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "1.1.2",
+      "ghsa": "GHSA-6497-prx7-gpmq",
+      "number": 24,
+      "package": "geopandas",
+      "range": "< 1.1.2",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2026.1.0",
+      "ghsa": "GHSA-c336-7962-wfj2",
+      "number": 23,
+      "package": "distributed",
+      "range": "< 2026.1.0",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "0.46.2",
+      "ghsa": "GHSA-8rrh-rw8j-w5fx",
+      "number": 22,
+      "package": "wheel",
+      "range": ">= 0.40.0, <= 0.46.1",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "20.36.1",
+      "ghsa": "GHSA-597g-3phw-6986",
+      "number": 21,
+      "package": "virtualenv",
+      "range": "< 20.36.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.20.3",
+      "ghsa": "GHSA-qmgc-5h2g-mvrw",
+      "number": 20,
+      "package": "filelock",
+      "range": "< 3.20.3",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.6.3",
+      "ghsa": "GHSA-38jv-5279-wg99",
+      "number": 19,
+      "package": "urllib3",
+      "range": ">= 1.22, < 2.6.3",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-fh55-r93g-j68g",
+      "number": 18,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-g84x-mcqj-x9qq",
+      "number": 17,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-6jhg-hg63-jvvf",
+      "number": 16,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-jj3x-wxrx-4x23",
+      "number": 15,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-54jq-c3m8-4m76",
+      "number": 14,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-mqqc-3gqh-h2x8",
+      "number": 13,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-69f9-5gxw-wvc2",
+      "number": 12,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "3.13.3",
+      "ghsa": "GHSA-6mq8-rvhq-8wgg",
+      "number": 11,
+      "package": "aiohttp",
+      "range": "<= 3.13.2",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "3.20.1",
+      "ghsa": "GHSA-w853-jp5j-5j7f",
+      "number": 9,
+      "package": "filelock",
+      "range": "< 3.20.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.6.0",
+      "ghsa": "GHSA-2xpw-w6gg-jr37",
+      "number": 8,
+      "package": "urllib3",
+      "range": ">= 1.0, < 2.6.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.6.0",
+      "ghsa": "GHSA-gm62-xv2j-4w53",
+      "number": 7,
+      "package": "urllib3",
+      "range": ">= 1.24, < 2.6.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "4.60.2",
+      "ghsa": "GHSA-768j-98cg-p3fv",
+      "number": 6,
+      "package": "fonttools",
+      "range": ">= 4.33.0, < 4.60.2",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.6.0",
+      "ghsa": "GHSA-53q9-r3pm-6pq6",
+      "number": 5,
+      "package": "torch",
+      "range": "< 2.6.0",
+      "scope": "runtime",
+      "severity": "critical"
+    },
+    {
+      "fixed": "2.8.0",
+      "ghsa": "GHSA-887c-mr87-cxwp",
+      "number": 4,
+      "package": "torch",
+      "range": "<= 2.7.1",
+      "scope": "runtime",
+      "severity": "medium"
+    },
+    {
+      "fixed": "2.7.1-rc1",
+      "ghsa": "GHSA-3749-ghw9-m3mg",
+      "number": 3,
+      "package": "torch",
+      "range": "< 2.7.1-rc1",
+      "scope": "runtime",
+      "severity": "low"
+    },
+    {
+      "fixed": "2.2.0",
+      "ghsa": "GHSA-5pcm-hx3q-hm94",
+      "number": 2,
+      "package": "torch",
+      "range": "< 2.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    },
+    {
+      "fixed": "2.2.0",
+      "ghsa": "GHSA-pg7h-5qx3-wjr3",
+      "number": 1,
+      "package": "torch",
+      "range": "< 2.2.0",
+      "scope": "runtime",
+      "severity": "high"
+    }
+  ]
+}

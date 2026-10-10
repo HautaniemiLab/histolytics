@@ -45,9 +45,11 @@ select its matrix interpreter, so the repository's Python 3.12 default could mas
 this gap. Keep the 3.13 checks failing visibly until an independently validated
 compatibility fix lands; this draft is not ready to merge.
 
-The installation smoke check has since been expanded to import implementation
-modules, including WSI readers and segmenters; the latest commit requires fresh
-hosted validation. Empty package entry points do not validate those APIs.
+The expanded smoke check passed actual model, WSI, and analysis implementation
+imports for both release formats on Python 3.10–3.12 in run 37968216555. All three
+source suites passed 156 tests with one hardware-dependent CUDA skip each. The
+3.11 wheel job passed on one targeted retry after an NVIDIA download hash mismatch;
+hash verification was preserved. Only the Python 3.13 jobs remain failing.
 
 ## Installation and dependency audit
 
@@ -58,13 +60,55 @@ The inspected Dependabot snapshot contains 127 open alerts, including a critical
 PyTorch alert; assess vulnerable versions and reachable paths before prioritizing
 upgrades. No advisories have been dismissed or fixed by the first patch.
 
-- [ ] Inventory direct imports and undeclared/transitive requirements, including
+- [x] Inventory direct imports and undeclared/transitive requirements, including
   PyTorch, NumPy, Shapely, pandas, SciPy, image I/O, checkpoint, and WSI backends.
 - [ ] Exercise fresh installations against declared ranges and the locked environment.
   Fix import failures explicitly without relying on preinstalled packages.
-- [ ] Evaluate making CUDA and WSI backends optional with lazy import boundaries,
-  documented extras, and separate CPU/GPU/platform installation tests.
+- [ ] Evaluate and simplify the CuPy feature-analysis paths as described below, then
+  evaluate remaining WSI backend requirements and optional installation boundaries.
 - [ ] Triage security advisories for runtime, build, and documentation environments.
+
+See [the dependency audit](dependency-audit.md) for the import/advisory snapshots,
+verified constraints, and initial priorities. Reachability review and upgrades
+remain open. A focused texture fix moves its unconditional CuPy import into the
+existing optional GPU guard, with regression checks for known CPU GLCM values.
+This does not yet make the complete package installable without CUDA dependencies.
+
+## Evaluate CuPy processing and retain cuCIM
+
+Keep cuCIM, including its WSI slide-reading backend. Evaluate the CuPy image and
+feature-processing implementations separately. The maintainer reports that these
+paths significantly complicate the code without bringing runtime benefits; use
+representative measurements and correctness comparisons to decide which paths
+to remove or simplify. CuPy removal decisions remain pending evaluation.
+
+- [x] Inventory CuPy/cupyx processing in nuclear texture, intensity, and chromatin
+  features, collagen extraction, and image/mask utilities. Include cuML image
+  clustering in the evaluation against its existing CPU implementation.
+- [ ] Compare CPU and GPU paths on representative image sizes, object counts, and
+  WSI workloads. Record hardware, warmup, synchronization, end-to-end runtime,
+  peak memory, and transfer overhead. Include setup costs and repeated workloads.
+- [ ] Remove or simplify paths that add substantial complexity without a useful
+  measured benefit. Record the evidence and decision for each implementation.
+- [ ] Preserve feature definitions, instance labels, coordinate units, and CPU
+  results. Verify representative bundled-data outputs against the CPU baseline.
+- [ ] Resolve the public feature-analysis `device` arguments explicitly. Document
+  and test any deprecation or removal of `device="cuda"`, update callers,
+  notebooks, docstrings, and tests together, and include migration notes.
+- [ ] Remove CuPy/cuML requirements only when the evaluated cleanup leaves no
+  callers requiring them, and regenerate uv.lock. Retain cuCIM and verify its
+  slide-reading backend; review platform-specific installation boundaries separately.
+- [ ] Verify clean CPU installations and the supported platform/Python matrix.
+  Preserve PyTorch CUDA support for panoptic model inference and training.
+
+Keep this cleanup separate from numerical dependency upgrades so changes in
+feature values can be attributed and reviewed independently.
+
+See [the CuPy evaluation](cupy-evaluation.md) for transfer boundaries, correctness
+risks, and initial CPU texture timings. GPU comparison and peak-memory evaluation
+remain open. The initial bundled-image run exposed texture label/zero-row bugs;
+the evaluation branch fixes those shared bookkeeping paths with regression cases
+before collecting the corrected CPU reference. No CuPy path has been removed.
 
 ## Reproducible prediction and spatial baselines
 

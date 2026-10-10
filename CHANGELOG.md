@@ -2,6 +2,12 @@
 
 All notable changes to Histolytics will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- Allow CPU texture feature extraction to import without CuPy installed.
+- Preserve sparse instance IDs and exclude fully masked nuclei in texture features;
+  return zeros for small/black nuclei and retain columns for empty results.
+
 ## [0.2.5] - 2026-01-30
 ### Fixed
 - Fix empty gdf bug in `fiber_feats` and dtype nug in `inst2gdf`.

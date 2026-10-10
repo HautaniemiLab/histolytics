@@ -1,0 +1,274 @@
+{
+  "PIL": [
+    "src/histolytics/models/_base_model.py",
+    "src/histolytics/wsi/slide_reader.py"
+  ],
+  "albumentations": [
+    "src/histolytics/torch_datasets/h5dataset.py",
+    "src/histolytics/wsi/wsi_segmenter.py"
+  ],
+  "cellseg_models_pytorch": [
+    "src/histolytics/losses/__init__.py",
+    "src/histolytics/metrics/__init__.py",
+    "src/histolytics/models/_base_model.py",
+    "src/histolytics/models/cellpose_panoptic.py",
+    "src/histolytics/models/cellvit_panoptic.py",
+    "src/histolytics/models/cppnet_panoptic.py",
+    "src/histolytics/models/hovernet_panoptic.py",
+    "src/histolytics/models/stardist_panoptic.py",
+    "src/histolytics/torch_datasets/h5dataset.py",
+    "src/histolytics/transforms/__init__.py",
+    "src/histolytics/utils/__init__.py",
+    "src/histolytics/wsi/slide_reader.py",
+    "src/histolytics/wsi/wsi_segmenter.py"
+  ],
+  "cucim": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/utils/im.py"
+  ],
+  "cuml": [
+    "src/histolytics/utils/im.py"
+  ],
+  "cupy": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/utils/im.py",
+    "src/histolytics/utils/mask.py"
+  ],
+  "cupyx": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/utils/mask.py"
+  ],
+  "cv2": [
+    "src/histolytics/utils/plot.py"
+  ],
+  "esda": [
+    "src/histolytics/spatial_clust/autocorr.py",
+    "src/histolytics/spatial_clust/density_clustering.py",
+    "src/histolytics/spatial_clust/lisa_clustering.py"
+  ],
+  "geopandas": [
+    "src/histolytics/data/fetch.py",
+    "src/histolytics/spatial_agg/grid_agg.py",
+    "src/histolytics/spatial_agg/local_character.py",
+    "src/histolytics/spatial_agg/local_distances.py",
+    "src/histolytics/spatial_agg/local_diversity.py",
+    "src/histolytics/spatial_agg/local_values.py",
+    "src/histolytics/spatial_clust/autocorr.py",
+    "src/histolytics/spatial_clust/centrography.py",
+    "src/histolytics/spatial_clust/clust_metrics.py",
+    "src/histolytics/spatial_clust/density_clustering.py",
+    "src/histolytics/spatial_clust/lisa_clustering.py",
+    "src/histolytics/spatial_clust/ripley.py",
+    "src/histolytics/spatial_geom/line_metrics.py",
+    "src/histolytics/spatial_geom/medial_lines.py",
+    "src/histolytics/spatial_geom/shape_metrics.py",
+    "src/histolytics/spatial_graph/graph.py",
+    "src/histolytics/spatial_graph/spatial_weights.py",
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/spatial_ops/h3.py",
+    "src/histolytics/spatial_ops/ops.py",
+    "src/histolytics/spatial_ops/quadbin.py",
+    "src/histolytics/spatial_ops/rect_grid.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/torch_datasets/wsi_patch_dataset.py",
+    "src/histolytics/utils/gdf.py",
+    "src/histolytics/utils/plot.py",
+    "src/histolytics/utils/raster.py",
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/slide_reader.py",
+    "src/histolytics/wsi/utils.py",
+    "src/histolytics/wsi/wsi_iterator.py",
+    "src/histolytics/wsi/wsi_segmenter.py"
+  ],
+  "h3": [
+    "src/histolytics/spatial_ops/h3.py"
+  ],
+  "huggingface_hub": [
+    "src/histolytics/models/_base_model.py"
+  ],
+  "libpysal": [
+    "src/histolytics/spatial_agg/local_character.py",
+    "src/histolytics/spatial_agg/local_distances.py",
+    "src/histolytics/spatial_agg/local_diversity.py",
+    "src/histolytics/spatial_agg/local_values.py",
+    "src/histolytics/spatial_clust/autocorr.py",
+    "src/histolytics/spatial_clust/lisa_clustering.py",
+    "src/histolytics/spatial_geom/hull.py",
+    "src/histolytics/spatial_graph/graph.py",
+    "src/histolytics/spatial_graph/nhood.py",
+    "src/histolytics/spatial_graph/spatial_weights.py",
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/utils.py"
+  ],
+  "mapclassify": [
+    "src/histolytics/spatial_agg/local_diversity.py",
+    "src/histolytics/spatial_graph/nhood.py"
+  ],
+  "matplotlib": [
+    "src/histolytics/utils/plot.py"
+  ],
+  "mpl_toolkits": [
+    "src/histolytics/utils/plot.py"
+  ],
+  "networkx": [
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/utils.py"
+  ],
+  "numpy": [
+    "src/histolytics/data/fetch.py",
+    "src/histolytics/models/_base_model.py",
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/spatial_agg/diversity.py",
+    "src/histolytics/spatial_agg/reduce.py",
+    "src/histolytics/spatial_clust/autocorr.py",
+    "src/histolytics/spatial_clust/centrography.py",
+    "src/histolytics/spatial_clust/density_clustering.py",
+    "src/histolytics/spatial_clust/lisa_clustering.py",
+    "src/histolytics/spatial_clust/ripley.py",
+    "src/histolytics/spatial_geom/axis.py",
+    "src/histolytics/spatial_geom/hull.py",
+    "src/histolytics/spatial_geom/line_metrics.py",
+    "src/histolytics/spatial_geom/medial_lines.py",
+    "src/histolytics/spatial_geom/morphometrics.py",
+    "src/histolytics/spatial_graph/nhood.py",
+    "src/histolytics/spatial_graph/spatial_weights.py",
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/spatial_ops/ops.py",
+    "src/histolytics/spatial_ops/rect_grid.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/stroma_feats/intensity.py",
+    "src/histolytics/torch_datasets/h5dataset.py",
+    "src/histolytics/torch_datasets/wsi_patch_dataset.py",
+    "src/histolytics/utils/_filters.py",
+    "src/histolytics/utils/gdf.py",
+    "src/histolytics/utils/im.py",
+    "src/histolytics/utils/mask.py",
+    "src/histolytics/utils/plot.py",
+    "src/histolytics/utils/raster.py",
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/slide_reader.py",
+    "src/histolytics/wsi/wsi_iterator.py"
+  ],
+  "pandarallel": [
+    "src/histolytics/utils/gdf.py"
+  ],
+  "pandas": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/spatial_clust/clust_metrics.py",
+    "src/histolytics/spatial_clust/density_clustering.py",
+    "src/histolytics/spatial_graph/nhood.py",
+    "src/histolytics/spatial_ops/h3.py",
+    "src/histolytics/spatial_ops/quadbin.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/stroma_feats/intensity.py",
+    "src/histolytics/torch_datasets/wsi_patch_dataset.py",
+    "src/histolytics/utils/gdf.py",
+    "src/histolytics/utils/raster.py",
+    "src/histolytics/wsi/_collate.py",
+    "src/histolytics/wsi/mergers.py"
+  ],
+  "polars": [
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/utils/gdf.py"
+  ],
+  "psutil": [
+    "src/histolytics/utils/gdf.py"
+  ],
+  "pyproj": [
+    "src/histolytics/spatial_ops/utils.py"
+  ],
+  "quadbin": [
+    "src/histolytics/spatial_ops/quadbin.py"
+  ],
+  "rasterio": [
+    "src/histolytics/utils/raster.py"
+  ],
+  "safetensors": [
+    "src/histolytics/models/_base_model.py"
+  ],
+  "scipy": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/spatial_clust/ripley.py",
+    "src/histolytics/spatial_geom/hull.py",
+    "src/histolytics/spatial_geom/medial_lines.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/utils/_filters.py",
+    "src/histolytics/utils/gdf.py",
+    "src/histolytics/utils/im.py",
+    "src/histolytics/utils/mask.py"
+  ],
+  "shapely": [
+    "src/histolytics/spatial_clust/centrography.py",
+    "src/histolytics/spatial_clust/ripley.py",
+    "src/histolytics/spatial_geom/axis.py",
+    "src/histolytics/spatial_geom/hull.py",
+    "src/histolytics/spatial_geom/line_metrics.py",
+    "src/histolytics/spatial_geom/medial_lines.py",
+    "src/histolytics/spatial_geom/morphometrics.py",
+    "src/histolytics/spatial_graph/utils.py",
+    "src/histolytics/spatial_ops/h3.py",
+    "src/histolytics/spatial_ops/ops.py",
+    "src/histolytics/spatial_ops/quadbin.py",
+    "src/histolytics/spatial_ops/rect_grid.py",
+    "src/histolytics/spatial_ops/utils.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/torch_datasets/wsi_patch_dataset.py",
+    "src/histolytics/utils/_filters.py",
+    "src/histolytics/utils/gdf.py",
+    "src/histolytics/utils/raster.py",
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/slide_reader.py",
+    "src/histolytics/wsi/utils.py"
+  ],
+  "skimage": [
+    "src/histolytics/nuc_feats/chromatin.py",
+    "src/histolytics/nuc_feats/intensity.py",
+    "src/histolytics/nuc_feats/texture.py",
+    "src/histolytics/stroma_feats/collagen.py",
+    "src/histolytics/utils/im.py",
+    "src/histolytics/utils/mask.py"
+  ],
+  "sklearn": [
+    "src/histolytics/spatial_clust/density_clustering.py",
+    "src/histolytics/spatial_clust/ripley.py",
+    "src/histolytics/utils/im.py"
+  ],
+  "tables": [
+    "src/histolytics/torch_datasets/h5dataset.py"
+  ],
+  "torch": [
+    "src/histolytics/models/_base_model.py",
+    "src/histolytics/models/cellpose_panoptic.py",
+    "src/histolytics/models/cellvit_panoptic.py",
+    "src/histolytics/models/cppnet_panoptic.py",
+    "src/histolytics/models/hovernet_panoptic.py",
+    "src/histolytics/models/stardist_panoptic.py",
+    "src/histolytics/torch_datasets/h5dataset.py",
+    "src/histolytics/torch_datasets/wsi_patch_dataset.py",
+    "src/histolytics/wsi/_collate.py",
+    "src/histolytics/wsi/_nodes_loader.py",
+    "src/histolytics/wsi/wsi_segmenter.py"
+  ],
+  "torchdata": [
+    "src/histolytics/wsi/_nodes_loader.py"
+  ],
+  "tqdm": [
+    "src/histolytics/wsi/mergers.py",
+    "src/histolytics/wsi/wsi_segmenter.py"
+  ]
+}
