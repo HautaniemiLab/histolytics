@@ -4,52 +4,50 @@ Refresh Histolytics in small, independently reviewable changes. Establish reliab
 tests and release installations before upgrading runtime dependencies. Preserve
 public APIs, checkpoints, spatial feature definitions, and scientific results.
 
-## Baseline and first patch
+## Current state — 10 October 2026
 
-The starting commit is `1aa45db`, version `0.2.5`. The repository uses uv,
-standard project metadata, Hatchling, a src layout, and Python 3.10–3.13 CI.
-The latest inspected source test run passed on commit `31ec317`;
-there are no open PRs or issues as of 9 October 2026.
+PRs 3, 4, 5, and 6 have landed on main at `cfdfdce`; the merged local branches
+have been removed. Package version remains `0.2.5`. No package release or runtime
+dependency upgrade has been performed during this maintenance work.
 
-- [x] Add shared AGENTS.md with the Ponytail instructions, Claude pointer,
-  contributor setup, PR template, and compact commit/review skills.
-- [x] Remove duplicate checkout, pin uv, retain the existing Python matrix,
-  preserve test/coverage reports, and test documentation changes too.
-- [x] Disable pretrained encoder downloads in ordinary model tests.
-- [x] Build wheel/source archives, require version agreement, and verify package
-  files, the existing py.typed marker, and bundled data in each artifact.
-- [x] Add clean installation checks outside the checkout: public imports,
-  bundled data, a synthetic spatial query, and a CPU training step.
-- [x] Gate publication on source and distribution checks, use PyPI OIDC, and
-  publish the exact validated files. Manual dispatch validates without publishing.
-- [ ] Complete hosted validation, including all source and installation jobs.
-- [ ] Verify publisher authentication on a separately authorized release.
+The repository uses uv, Hatchling, a src layout, and explicit Python selection in
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38032156142)
+passed the tooling/build jobs, all six clean wheel/source installations on Python
+3.10–3.12, and 167 source tests with one hardware-dependent CUDA skip per version.
+These results cover the tree now merged on main. Python 3.13 source installation
+and both release-format installations still fail on the existing dependency stack.
+The post-merge main run is separate; do not equate preparation with publication.
 
-Runtime requirements, uv.lock, package version, public APIs, and Python support
-remain unchanged in this first patch. Checkboxes denote implementation, not
-successful hosted validation or account configuration.
+### Completed foundation
 
-Local validation passed five release-guard tests, strict distribution metadata
-checks, archive completeness checks (86 package files each), configured hooks,
-and workflow lint. Full source and installation checks require Linux CI because
-the current mandatory CUDA packages cannot install on this Mac.
+- [x] Shared AGENTS.md with Ponytail instructions, Claude pointer, contributor
+  setup, PR template, and compact commit/review skills.
+- [x] Offline model unit tests, explicit interpreter selection, test/coverage
+  reports, and clean distribution checks outside the source checkout.
+- [x] Project/module/tag version agreement, archive completeness, bundled data,
+  py.typed, public implementation imports, spatial query, and CPU training checks.
+- [x] Publishing workflow gated on validation and configured for PyPI OIDC;
+  manual dispatch validates without publishing.
+- [x] CPU texture import fix and texture label/zero-row correctness fixes,
+  including sparse and unsigned IDs, masking, and empty results.
+- [x] CuPy processing inventory and a diagnostic CPU texture reference.
+- [x] Pinned Ruff/uv hooks, lint/format CI, tools-only setup, and explicit
+  documentation workflow interpreter/tool versions.
 
-Hosted [run 37967723398](https://github.com/HautaniemiLab/histolytics/actions/runs/37967723398)
-passed the build checks and source suites on Python 3.10 and 3.12 (156 passed,
-one skipped each). Clean wheel installs passed on 3.10–3.12, and source installs
-passed on 3.11–3.12. Python 3.13 fails both locked and fresh installation:
-Numba 0.60.0 selects llvmlite 0.43.0, which has no supported Python 3.13 wheel.
-The declared cellseg-models-pytorch 0.1.30 dependency and the locked cuML stack
-constrain this numerical dependency family. The old workflow did not explicitly
-select its matrix interpreter, so the repository's Python 3.12 default could mask
-this gap. Keep the 3.13 checks failing visibly until an independently validated
-compatibility fix lands; this draft is not ready to merge.
+### Open compatibility and release gates
 
-The expanded smoke check passed actual model, WSI, and analysis implementation
-imports for both release formats on Python 3.10–3.12 in run 37968216555. All three
-source suites passed 156 tests with one hardware-dependent CUDA skip each. The
-3.11 wheel job passed on one targeted retry after an NVIDIA download hash mismatch;
-hash verification was preserved. Only the Python 3.13 jobs remain failing.
+- [ ] Resolve Python 3.13 dependency compatibility and validate source, wheel,
+  and source-distribution checks before calling that version supported.
+- [ ] Validate the full package on macOS after a deliberate optional-dependency
+  change; the current mandatory Linux NVIDIA packages still prevent installation.
+- [ ] Verify PyPI publisher/account configuration and authentication on a
+  separately authorized release. Prepared OIDC workflow is not proof of account setup.
+
+Numba 0.60.0/llvmlite 0.43.0 are the confirmed first Python 3.13 blocker.
+cellseg-models-pytorch 0.1.30 and the CUDA stack constrain this family; the inspected
+upstream metadata still uses the Numba 0.60 series. Preserve the failing 3.13 checks
+while fixing compatible requirements, wheels, and numerical baselines. Do not
+bypass upstream constraints or rely on an unpublished checkout for a release.
 
 ## Installation and dependency audit
 
@@ -62,15 +60,17 @@ upgrades. No advisories have been dismissed or fixed by the first patch.
 
 - [x] Inventory direct imports and undeclared/transitive requirements, including
   PyTorch, NumPy, Shapely, pandas, SciPy, image I/O, checkpoint, and WSI backends.
-- [ ] Exercise fresh installations against declared ranges and the locked environment.
-  Fix import failures explicitly without relying on preinstalled packages.
+- [x] Exercise baseline Linux fresh wheel/source installs against declared ranges,
+  alongside locked source tests on Python 3.10–3.12.
+- [ ] Fix remaining CPU/optional import failures without relying on preinstalled
+  packages, then extend installation coverage to the intended extras/platforms.
 - [ ] Evaluate and simplify the CuPy feature-analysis paths as described below, then
   evaluate remaining WSI backend requirements and optional installation boundaries.
 - [ ] Triage security advisories for runtime, build, and documentation environments.
 
 See [the dependency audit](dependency-audit.md) for the import/advisory snapshots,
 verified constraints, and initial priorities. Reachability review and upgrades
-remain open. A focused texture fix moves its unconditional CuPy import into the
+remain open. The merged texture fix moves its unconditional CuPy import into the
 existing optional GPU guard, with regression checks for known CPU GLCM values.
 This does not yet make the complete package installable without CUDA dependencies.
 
@@ -107,7 +107,7 @@ feature values can be attributed and reviewed independently.
 See [the CuPy evaluation](cupy-evaluation.md) for transfer boundaries, correctness
 risks, and initial CPU texture timings. GPU comparison and peak-memory evaluation
 remain open. The initial bundled-image run exposed texture label/zero-row bugs;
-the evaluation branch fixes those shared bookkeeping paths with regression cases
+the merged fix corrects those shared bookkeeping paths with regression cases
 before collecting the corrected CPU reference. No CuPy path has been removed.
 
 ## Reproducible prediction and spatial baselines
@@ -144,7 +144,7 @@ remain a separate backlog, and type checking has not been introduced.
 The lock refresh adds Ruff while retaining all 279 existing package versions and
 every shared artifact hash. uv refreshes upload-time metadata and wheel lists:
 eight CMake wheels for non-advertised architectures disappear and eight GraalPy
-pydantic-core wheels appear. CPython source/install validation remains required;
+pydantic-core wheels appear. CPython source/install checks passed on 3.10–3.12;
 this tooling change does not resolve the existing Python 3.13 dependency blocker.
 The documentation deployment setup also uses explicit Python 3.12 and the same
 uv version. Deployment events and PyPI account configuration are unchanged.
@@ -168,5 +168,20 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 - [ ] Validate a release candidate, write migration notes for intentional breaks,
   and retain the previous release and baseline artifacts for rollback.
 
-No package release, dependency upgrade, or support-policy change is part of the
-first patch. Keep later batches independently revertible.
+## Immediate next work
+
+1. Validate and merge the prepared intensity/chromatin import-boundary fix: defer
+   private CuPy annotations and test CPU values and missing-GPU errors in fresh
+   processes. This does not remove a CuPy implementation or make the full package
+   installable on macOS; mandatory NVIDIA requirements remain separate work.
+2. Complete direct runtime requirement declarations without upgrading package
+   versions, then establish broader checkpoint and spatial result baselines.
+3. Continue the independent Google-style documentation and gradual typing work.
+4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
+   families in reviewable batches to make Python 3.13 support real.
+
+GPU processing comparisons and peak-memory measurements await CUDA hardware.
+They do not block unrelated maintenance. Keep cuCIM and PyTorch CUDA model
+support, and make CuPy removal decisions from the requested evaluation.
+Keep all batches independently revertible; merging maintenance PRs does not
+complete their remaining compatibility, scientific, or publication checks.

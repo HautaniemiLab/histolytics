@@ -601,12 +601,12 @@ def _compute_intensity_feats(values, metrics, quantiles, n_bins, hist_range):
 
 
 def _compute_hist_stats_cp(
-    img: cp.ndarray,
-    labels: cp.ndarray,
-    unique_labels: cp.ndarray,
+    img: "cp.ndarray",
+    labels: "cp.ndarray",
+    unique_labels: "cp.ndarray",
     n_bins: int = 32,
     hist_range: Tuple[float, float] = None,
-) -> Tuple[cp.ndarray, cp.ndarray]:
+) -> Tuple["cp.ndarray", "cp.ndarray"]:
     """Compute histogram-based energy and entropy for an image with cupyx.ndimage."""
     if hist_range is not None:
         hist_min = hist_range[0]
@@ -638,7 +638,7 @@ def _norm_cp(
     label: np.ndarray,
     mask: np.ndarray = None,
     out_range: Tuple[int, int] = None,
-) -> Tuple[cp.ndarray, cp.ndarray]:
+) -> Tuple["cp.ndarray", "cp.ndarray"]:
     """Normalize and rescale intensity (Cupy accelerated)"""
     kwargs = {}
     if out_range is not None:

@@ -4,6 +4,8 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 ### Fixed
+- Allow CPU intensity and chromatin feature imports without CuPy by deferring
+  private GPU type annotations.
 - Allow CPU texture feature extraction to import without CuPy installed.
 - Preserve sparse instance IDs and exclude fully masked nuclei in texture features;
   return zeros for small/black nuclei and retain columns for empty results.
