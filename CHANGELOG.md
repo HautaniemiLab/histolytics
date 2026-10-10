@@ -4,12 +4,15 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 ### Changed
+- Remove the `FileHandler` and `H5Handler` aliases from `histolytics.utils` so
+  shared utilities do not depend on the segmentation stack. Import these upstream
+  classes directly: `from cellseg_models_pytorch.utils import FileHandler, H5Handler`.
 - Declare core numerical, image, geospatial, checkpoint, and CUDA dependencies
   directly instead of relying on transitive installation.
 
 ### Fixed
 - Allow spatial utilities and bundled image loaders to run without importing the
-  segmentation model stack; preserve file-handler exports and decoded image pixels.
+  segmentation model stack; preserve decoded image pixels.
 - Allow CPU intensity and chromatin feature imports without CuPy by deferring
   private GPU type annotations.
 - Allow CPU texture feature extraction to import without CuPy installed.

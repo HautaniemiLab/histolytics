@@ -1,8 +1,9 @@
 # Dependency architecture proposal
 
 Status: proposed, 10 October 2026. This document describes a target and migration
-gates; the current installation metadata and runtime APIs are unchanged. PR 8
-makes existing requirements explicit and remains a separate declaration change.
+gates; implemented API changes are recorded in the changelog. PR 8 made existing
+requirements explicit as a separate declaration change. Installation groups remain
+proposed.
 
 ## Modules first, installation groups second
 
@@ -186,9 +187,10 @@ checkout are already released:
    imports FileHandler/H5Handler from cellseg utilities. That upstream initializer
    imports tensor utilities, which import Torch, and mask utilities using Numba.
    Importing `histolytics.utils.gdf` without cellseg currently fails in the parent
-   initializer before the spatial helper can load. Preserve the FileHandler and
-   H5Handler public names through lazy compatibility re-exports, requested only
-   when callers use them. Do not copy the entire upstream file manager.
+   initializer before the spatial helper can load. Remove these upstream aliases
+   from the shared utility initializer and import the classes directly from
+   `cellseg_models_pytorch.utils` in segmentation examples. Document the import-path
+   migration; do not add dynamic compatibility hooks or copy the upstream manager.
 2. **Bundled samples cross the same boundary.** data.fetch imports FileHandler at
    module load and uses it for two JPEG reads. Those reads are OpenCV imread plus
    BGR-to-RGB conversion. Use the existing codec directly in the sample loader,

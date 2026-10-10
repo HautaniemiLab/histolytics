@@ -183,6 +183,8 @@ workflow/plugin framework or a wholesale folder rewrite.
 
 1. Make the smallest standalone-capability patch: decouple common utility imports
    and the two bundled image reads, with focused import/pixel-equality checks.
+   Remove upstream file-handler aliases from the utility initializer, update their
+   documented imports, and record the migration. Avoid dynamic compatibility hooks.
    Keep installation requirements unchanged in that patch.
 2. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
    expose one reusable seam at a time, with a small composition regression and

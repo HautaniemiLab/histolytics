@@ -20,7 +20,6 @@ def test_analysis_without_model_or_gpu_packages():
         import geopandas as gpd
         import numpy as np
         from shapely.geometry import box
-        import histolytics.utils as utils
         from histolytics.utils.gdf import set_uid
         from histolytics.spatial_ops import get_objs
         from histolytics.data import hgsc_cancer_he, hgsc_stroma_he
@@ -36,13 +35,6 @@ def test_analysis_without_model_or_gpu_packages():
             image = load()
             assert image.shape == (1500, 1500, 3)
             assert image.dtype == np.uint8
-        assert set(utils.__all__).issubset(dir(utils))
-        try:
-            utils.unknown_handler
-        except AttributeError:
-            pass
-        else:
-            raise AssertionError("Unknown exports must raise AttributeError")
         """
     )
     result = subprocess.run(
@@ -63,12 +55,3 @@ def test_bundled_pixels_match_upstream(loader, filename):
     np.testing.assert_array_equal(
         getattr(fetch, loader)(), FileHandler.read_img(fetch.BASE_PATH / filename)
     )
-
-
-def test_file_handler_exports_preserve_identity():
-    from cellseg_models_pytorch.utils import FileHandler, H5Handler
-
-    import histolytics.utils as utils
-
-    assert utils.FileHandler is FileHandler
-    assert utils.H5Handler is H5Handler
