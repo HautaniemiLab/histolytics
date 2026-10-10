@@ -30,8 +30,9 @@ diagnostic environment, not a validated installation of the complete package.
    that change through its ordinary package requirements. Do not override those
    constraints or point a release at an unpublished local checkout.
 2. **CPU texture import:** texture.py imported CuPy before its optional GPU guard.
-   Move that import into the existing guard. Test missing CuPy and missing cuCIM
-   and verify known CPU GLCM values. This changes no feature formula or GPU path.
+   Merged PR 4 moved it into the existing guard and tests missing CuPy/cuCIM
+   against known CPU GLCM values. Merged PR 5 fixed texture instance bookkeeping.
+   Remaining intensity/chromatin import failures are tracked in the evaluation.
 3. **CuPy cleanup:** mandatory cuML/cuCIM block non-Linux installs and add NVIDIA
    downloads to ordinary CPU installs. The maintainer has confirmed that cuCIM
    must remain and requested proper evaluation of CuPy processing, citing added
@@ -66,6 +67,16 @@ not a blanket instruction to upgrade everything to the newest release. Some
 advisories have no first-patched version recorded. Confirm installed/resolved
 versions in every supported environment; an alert against a platform-specific
 lock entry does not establish exposure on all platforms.
+
+## Status after merges — 10 October 2026
+
+PRs 3–6 are merged. The latest pre-merge validation passed 167 source tests with
+one CUDA skip and both distribution installation formats on Python 3.10–3.12.
+Development tooling is now pinned and checked in CI. The advisory JSON remains
+an explicitly dated 9 October snapshot; it is not a current alert count or a record
+of fixed vulnerabilities. Runtime requirement declarations, broader scientific
+baselines, Python 3.13 compatibility, GPU evaluation, and publisher authentication
+remain incomplete.
 
 ## Next batches
 
