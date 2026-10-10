@@ -6,14 +6,14 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 10 October 2026
 
-PRs 3, 4, 5, and 6 have landed on main at `cfdfdce`; the merged local branches
+PRs 3–7 have landed on main at `03a99a9`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38032156142)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38035324059)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 167 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 169 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -30,6 +30,8 @@ The post-merge main run is separate; do not equate preparation with publication.
   manual dispatch validates without publishing.
 - [x] CPU texture import fix and texture label/zero-row correctness fixes,
   including sparse and unsigned IDs, masking, and empty results.
+- [x] CPU intensity/chromatin imports with deferred private CuPy annotations;
+  fresh-process checks cover missing GPU packages and known CPU outputs.
 - [x] CuPy processing inventory and a diagnostic CPU texture reference.
 - [x] Pinned Ruff/uv hooks, lint/format CI, tools-only setup, and explicit
   documentation workflow interpreter/tool versions.
@@ -170,12 +172,12 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Immediate next work
 
-1. Validate and merge the prepared intensity/chromatin import-boundary fix: defer
-   private CuPy annotations and test CPU values and missing-GPU errors in fresh
-   processes. This does not remove a CuPy implementation or make the full package
-   installable on macOS; mandatory NVIDIA requirements remain separate work.
-2. Complete direct runtime requirement declarations without upgrading package
-   versions, then establish broader checkpoint and spatial result baselines.
+1. Validate the prepared core runtime declarations: sixteen formerly transitive
+   requirements become explicit while all 280 locked versions/artifacts stay the
+   same. Polars and HDF5 training extras remain separate installation-boundary work.
+2. Establish broader checkpoint and spatial result baselines before numerical
+   upgrades. Core dependency ownership does not validate optional backends,
+   security fixes, or the full package on macOS.
 3. Continue the independent Google-style documentation and gradual typing work.
 4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.

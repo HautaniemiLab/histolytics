@@ -40,13 +40,37 @@ diagnostic environment, not a validated installation of the complete package.
    requires representative correctness and performance comparisons before choosing
    removals. Preserve feature results and handle existing `device` arguments
    explicitly. Retain cuCIM slide reading and PyTorch CUDA model inference/training.
-4. **Direct requirements:** NumPy, pandas, SciPy, Shapely, PyTorch, Pillow,
-   OpenCV, rasterio, pyproj, scikit-learn, polars, psutil, tqdm, Hugging Face Hub,
-   and safetensors are imported directly but absent from project.dependencies.
-   CuPy is also used directly on GPU paths. Current transitive dependencies
-   supply these packages; that is not a stable direct dependency contract.
-   Declare required packages directly or provide documented extras and tested
-   import boundaries. Review dependencies used only through delegated APIs too.
+4. **Direct requirements:** The follow-up declaration batch makes core NumPy,
+   pandas, SciPy, Shapely, PyTorch, Pillow, OpenCV, rasterio, pyproj, scikit-learn,
+   psutil, tqdm, Hugging Face Hub, safetensors, PyArrow, and CuPy explicit.
+   Polars and HDF5 training dependencies remain optional boundaries requiring
+   separately validated extras. Review dependencies used through delegated APIs too.
+
+## Core requirement declarations
+
+Sixteen packages already present in the runtime lock are now explicit project
+requirements. This fixes dependency ownership without a numerical upgrade.
+Every one of the 280 locked package versions and artifact records remains unchanged.
+
+Minimums reuse existing constraints: cellseg-models-pytorch supplies Torch 2.0,
+SciPy 1.14, scikit-learn 1.3, OpenCV 4.8, rasterio 1.4.3, Arrow 16.1, and tqdm
+4.64; Albumentations supplies NumPy 1.24.4; GeoPandas supplies pandas 1.4 and
+pyproj 3.3; libpysal supplies Shapely 2.0.1; scikit-image supplies Pillow 10.1;
+cuML supplies cupy-cuda12x 12.0. Existing transitive upper bounds remain owned by
+those packages; this batch introduces no new upper caps. Hugging Face Hub,
+safetensors, and psutil have explicit entries without invented minimums where
+the existing dependency path does not provide one.
+
+These bounds preserve the existing eligible dependency family. They are not
+separate minimum-version test results or patched security floors. In particular,
+the old Arrow/Numba constraints remain in the published upstream dependency,
+and the PyTorch security upgrade remains future baseline-validated work.
+
+Polars is imported lazily only when its opt-in conversion path is requested.
+PyTables is checked when constructing DatasetH5, and that training/I/O workflow
+also needs a separately verified delegated HDF5 reader dependency. They are not
+made mandatory by this batch. cuCIM, cuML, and CuPy remain installed as before;
+making GPU/WSI installation boundaries optional is a separate change.
 
 ## Security priorities
 

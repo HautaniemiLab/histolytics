@@ -3,6 +3,10 @@
 All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- Declare core numerical, image, geospatial, checkpoint, and CUDA dependencies
+  directly instead of relying on transitive installation.
+
 ### Fixed
 - Allow CPU intensity and chromatin feature imports without CuPy by deferring
   private GPU type annotations.
