@@ -1,0 +1,133 @@
+{
+  "device": "cpu",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "architecture": "arm64",
+  "cpu_model": "Apple M5",
+  "logical_cpu_count": 10,
+  "python": "3.12.13",
+  "versions": {
+    "histolytics": "0.2.5",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "scipy": "1.16.2",
+    "scikit-image": "0.25.2",
+    "Pillow": "12.3.0"
+  },
+  "source_sha256": "7e6c0ada53f922fcf0de0ef0373e0740304e6ab3bfe397648cd382e8a7870ac6",
+  "inputs": {
+    "hgsc_nest.jpg": "4525ae5db61e7a385f24ec7ff3bf26e10f61a870c36e3c74b1a3cd436990ea57",
+    "hgsc_nest_inst_mask.npz": "bde26874264819e60300edb0be133f72b8b4ce785fc064c25394d8102c346119"
+  },
+  "scope": "End-to-end NumPy input to pandas output; transfers and CPU GLCM included. Imports and image decoding excluded. Peak memory is not measured.",
+  "label_preparation": "Crop IDs remapped densely with zero background; geometry preserved. This keeps the workload consistent when comparing versions.",
+  "cases": [
+    {
+      "shape": [
+        256,
+        256,
+        3
+      ],
+      "image_dtype": "uint8",
+      "label_dtype": "int32",
+      "input_bytes": 458752,
+      "n_instances": 44,
+      "metrics": [
+        "contrast",
+        "dissimilarity"
+      ],
+      "distances": [
+        1
+      ],
+      "angles": [
+        0
+      ],
+      "first_call_seconds": 0.01158374990336597,
+      "warmup_calls": 1,
+      "seconds": [
+        0.010633334051817656,
+        0.010835624998435378,
+        0.01040466595441103
+      ],
+      "median_seconds": 0.010633334051817656,
+      "cpu_parity": true,
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "crop_origin_yx": [
+        622,
+        622
+      ]
+    },
+    {
+      "shape": [
+        512,
+        512,
+        3
+      ],
+      "image_dtype": "uint8",
+      "label_dtype": "int32",
+      "input_bytes": 1835008,
+      "n_instances": 150,
+      "metrics": [
+        "contrast",
+        "dissimilarity"
+      ],
+      "distances": [
+        1
+      ],
+      "angles": [
+        0
+      ],
+      "first_call_seconds": 0.037427624920383096,
+      "warmup_calls": 1,
+      "seconds": [
+        0.03639658400788903,
+        0.03702637506648898,
+        0.03685179096646607
+      ],
+      "median_seconds": 0.03685179096646607,
+      "cpu_parity": true,
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "crop_origin_yx": [
+        494,
+        494
+      ]
+    },
+    {
+      "shape": [
+        1024,
+        1024,
+        3
+      ],
+      "image_dtype": "uint8",
+      "label_dtype": "int32",
+      "input_bytes": 7340032,
+      "n_instances": 585,
+      "metrics": [
+        "contrast",
+        "dissimilarity"
+      ],
+      "distances": [
+        1
+      ],
+      "angles": [
+        0
+      ],
+      "first_call_seconds": 0.14700216590426862,
+      "warmup_calls": 1,
+      "seconds": [
+        0.1462859578896314,
+        0.15069312509149313,
+        0.14421133301220834
+      ],
+      "median_seconds": 0.1462859578896314,
+      "cpu_parity": true,
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "crop_origin_yx": [
+        238,
+        238
+      ]
+    }
+  ]
+}
