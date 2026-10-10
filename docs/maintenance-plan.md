@@ -172,6 +172,12 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Immediate next work
 
+The [dependency architecture proposal](dependency-architecture.md) maps core
+analysis, segmentation, retained cuCIM, CUDA processing, training, Polars, and
+BioIO responsibilities. The recommended spatial/CPU-analysis default is still
+a proposal; extras and installation metadata have not been reorganized. Fix the
+verified common-utility/sample-data import coupling before attempting that split.
+
 1. Validate the prepared core runtime declarations: sixteen formerly transitive
    requirements become explicit while all 280 locked versions/artifacts stay the
    same. Polars and HDF5 training extras remain separate installation-boundary work.
