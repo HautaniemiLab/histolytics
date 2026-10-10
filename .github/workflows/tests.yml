@@ -2,54 +2,52 @@ name: Run Tests
 
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - README.md
-      - CHANGELOG.md
-      - .gitignore
-      - examples/**
-      - docker/**
-      - images/**
-      - imgs/**
-      - docs/**
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
+      fail-fast: false
       matrix:
-        python-version:
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
-
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    env:
+      HF_HUB_OFFLINE: "1"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.4"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: "Set up Python"
-        uses: actions/setup-python@v5
+          cache-dependency-glob: uv.lock
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install locked dependencies and current package
+        run: uv sync --locked --dev --python "${{ matrix.python-version }}"
+      - name: Run tests and preserve coverage
+        run: uv run --no-sync pytest tests --junitxml=test-results.xml --cov=histolytics --cov-report=xml
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-${{ matrix.python-version }}
+          path: |
+            test-results.xml
+            coverage.xml
+          if-no-files-found: warn
 
-      # Step 4: Install dependencies using UV
-      - name: Install deps
-        run: uv sync --locked --all-extras --dev
-
-      # Step 5: Run tests with pytest
-      - name: Run tests
-        run: uv run pytest tests
+  packages:
+    uses: ./.github/workflows/package.yml

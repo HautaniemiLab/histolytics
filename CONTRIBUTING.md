@@ -35,7 +35,8 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 ### Prerequisites
 
 - Python 3.10 or higher
-- pip
+- [uv](https://docs.astral.sh/uv/)
+- Linux for the current mandatory NVIDIA dependencies; macOS support is planned
 
 ### Installation for Development
 
@@ -44,19 +45,20 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 git clone https://github.com/HautaniemiLab/histolytics.git
 cd histolytics
 
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install the current package and locked development dependencies
+uv sync --locked --dev
 
-# Install development dependencies
-pip install -e ".[dev]"
+# Install commit and push hooks
+uv run --no-sync pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
 ## Code Style
 
 - We follow PEP 8 style guidelines
 - Use [ruff](https://docs.astral.sh/ruff/) for linting, formatting, and import sorting
-- Run `pre-commit run --all-files` before committing
+- Run `uv run --no-sync pre-commit run --files <changed-files>` before committing
+- Use `fix/`, `feat/`, `chore/`, or `docs/` branches and Conventional Commits
+- Read [AGENTS.md](AGENTS.md) for segmentation and spatial-analysis contracts
 
 ## Testing
 
@@ -65,8 +67,15 @@ pip install -e ".[dev]"
 - Run tests using:
 
 ```bash
-pytest
+HF_HUB_OFFLINE=1 uv run --no-sync pytest tests
+python -m unittest discover -s tools/tests -v  # Python 3.11+
 ```
+
+Ordinary tests disable pretrained downloads. GPU and real-checkpoint validation
+require separate environments; a CPU check does not validate those paths. CI also
+builds and installs wheels and source distributions outside the source checkout.
+See [the maintenance plan](docs/maintenance-plan.md) and
+[the release guide](docs/releasing.md).
 
 ## Documentation
 
