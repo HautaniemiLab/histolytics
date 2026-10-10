@@ -1,5 +1,7 @@
 import geopandas as gpd
 import pytest
+from pandas.testing import assert_frame_equal
+from shapely.geometry import box
 
 from histolytics.data import cervix_nuclei, cervix_tissue
 from histolytics.spatial_ops.ops import get_interfaces, get_objs
@@ -9,7 +11,7 @@ from histolytics.spatial_ops.ops import get_interfaces, get_objs
     "predicate,expected_relation",
     [
         ("intersects", lambda geom, area: geom.intersects(area)),
-        ("contains", lambda geom, area: area.within(geom)),
+        ("contains", lambda geom, area: area.contains(geom)),
     ],
 )
 def test_get_objs(predicate, expected_relation):
@@ -28,19 +30,48 @@ def test_get_objs(predicate, expected_relation):
     # Verify result is a GeoDataFrame
     assert isinstance(result, gpd.GeoDataFrame)
 
-    # If result is not empty, verify spatial relation
-    if not result.empty:
-        # Check each geometry has the expected spatial relation with the area
-        for geom in result.geometry:
-            # Since test_tissue is a GeoDataFrame, we need to get its geometry
-            area_geom = test_tissue.geometry.iloc[0]
-            # Skip geometries that don't match the predicate
-            # (This handles edge cases where rtree index returns candidates that don't match)
-            if expected_relation(geom, area_geom):
-                assert expected_relation(geom, area_geom)
+    expected = nuclei.loc[
+        nuclei.geometry.apply(
+            lambda geom: expected_relation(geom, test_tissue.geometry.iloc[0])
+        )
+    ].drop_duplicates("geometry")
+    assert_frame_equal(result, expected)
 
-    # Verify no duplicate geometries
-    assert len(result) == len(result.drop_duplicates("geometry"))
+
+@pytest.mark.parametrize("predicate", ["intersects", "contains"])
+@pytest.mark.parametrize("area_kind", ["polygon", "series", "frame"])
+def test_get_objs_uses_object_positions(predicate, area_kind):
+    objects = gpd.GeoDataFrame(
+        {"class_name": ["outside", "outside", "immune", "immune"]},
+        geometry=[
+            box(0, 0, 2, 2),
+            box(10, 0, 12, 2),
+            box(20, 0, 22, 2),
+            box(20, 0, 22, 2),
+        ],
+        index=[11, 23, 47, 59],
+    )
+    area = box(19, -1, 23, 3)
+    if area_kind != "polygon":
+        area = gpd.GeoSeries([box(100, 100, 101, 101), area], index=[101, 303])
+        if area_kind == "frame":
+            area = gpd.GeoDataFrame(geometry=area)
+
+    assert_frame_equal(get_objs(area, objects, predicate), objects.loc[[47]])
+
+
+@pytest.mark.parametrize("empty_input", ["area", "objects", "no_matches"])
+def test_get_objs_empty_selection(empty_input):
+    objects = gpd.GeoDataFrame(
+        {"class_name": ["immune"]}, geometry=[box(0, 0, 2, 2)], index=[47], crs=4328
+    )
+    area = gpd.GeoDataFrame(geometry=[box(10, 10, 12, 12)], crs=objects.crs)
+    if empty_input == "area":
+        area = area.iloc[:0]
+    elif empty_input == "objects":
+        objects = objects.iloc[:0]
+
+    assert_frame_equal(get_objs(area, objects), objects.iloc[:0])
 
 
 @pytest.mark.parametrize(

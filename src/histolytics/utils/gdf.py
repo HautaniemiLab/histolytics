@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 import geopandas as gpd
 import numpy as np
@@ -17,6 +17,7 @@ from shapely.geometry.base import BaseGeometry
 from shapely.wkt import dumps
 
 __all__ = [
+    "get_objs",
     "gdf_to_polars",
     "gdf_apply",
     "set_crs",
@@ -341,3 +342,58 @@ def col_norm(column: np.ndarray, method: str = "quantile") -> np.ndarray:
         raise ValueError(
             f"Unknown normalization method: {method}. Use 'quantile' or 'minmax'."
         )
+
+
+def get_objs(
+    area: gpd.GeoDataFrame | gpd.GeoSeries | shapely.geometry.Polygon,
+    objects: gpd.GeoDataFrame,
+    predicate: str = "intersects",
+    **kwargs: Any,
+) -> gpd.GeoDataFrame:
+    """Select objects matching a spatial predicate against any input area.
+
+    Args:
+        area: Query geometries or a single polygon, in the same coordinate system
+            and units as objects. Pixel coordinates remain pixel coordinates.
+        objects: Indexed objects to select; geometry and attribute columns are
+            preserved.
+        predicate: GeoPandas spatial-index predicate, applied from each area
+            geometry to each object geometry. For example, "contains" selects
+            objects contained by an area.
+        **kwargs: Additional arguments passed to the spatial-index query,
+            including distance in the input coordinate units for "dwithin".
+
+    Returns:
+        Matching rows in their original positional order, with duplicate geometry
+        removed. An empty selection retains the object columns, index, and CRS.
+
+    Raises:
+        ValueError: If the spatial-index predicate or its arguments are invalid.
+
+    Examples:
+        >>> from histolytics.data import cervix_nuclei, cervix_tissue
+        >>> from histolytics.spatial_ops import get_objs
+        >>> # load the data
+        >>> nuc = cervix_nuclei()
+        >>> tis = cervix_tissue()
+        >>> # select the CIN tissue
+        >>> cin_tissue = tis[tis["class_name"] == "cin"]
+        >>>
+        >>> # select all the nuclei contained within CIN tissue
+        >>> nuc_within_cin = get_objs(cin_tissue, nuc, predicate="contains")
+        >>> print(nuc_within_cin.head(3))
+                                                    geometry         class_name
+        1  POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...         connective
+        2  POLYGON ((866 5137.02, 862.77 5137.94, 860 513...   squamous_epithel
+        3  POLYGON ((932 4777.02, 928 4778.02, 922.81 478...  glandular_epithel
+        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
+        >>> nuc_within_cin.plot(ax=ax, color="blue")
+        >>> ax.set_axis_off()
+    ![out](../../img/get_objs.png)
+    """
+    if isinstance(area, shapely.geometry.Polygon):
+        area = gpd.GeoSeries([area], crs=objects.crs)
+
+    inds = objects.geometry.sindex.query(area.geometry, predicate=predicate, **kwargs)
+    objs = objects.iloc[np.unique(inds[1])]
+    return objs.drop_duplicates("geometry")

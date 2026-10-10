@@ -3,8 +3,7 @@ from typing import Any, Callable, Tuple, Union
 
 import geopandas as gpd
 
-from histolytics.spatial_ops.ops import get_objs
-from histolytics.utils.gdf import gdf_apply
+from histolytics.utils.gdf import gdf_apply, get_objs
 
 
 def get_cell_metric(

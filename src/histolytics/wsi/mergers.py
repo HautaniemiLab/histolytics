@@ -14,7 +14,13 @@ from shapely.geometry.base import BaseGeometry
 from shapely.wkt import dumps
 from tqdm import tqdm
 
-from histolytics.utils.gdf import gdf_apply, set_crs, set_geom_precision, set_uid
+from histolytics.utils.gdf import (
+    gdf_apply,
+    get_objs,
+    set_crs,
+    set_geom_precision,
+    set_uid,
+)
 
 __all__ = ["InstMerger"]
 
@@ -137,21 +143,6 @@ class InstMerger:
 
         return merged.reset_index(drop=True)
 
-    def _get_objs(
-        self,
-        objects: gpd.GeoDataFrame,
-        area: gpd.GeoDataFrame,
-        predicate: str,
-        **kwargs,
-    ) -> gpd.GeoDataFrame:
-        """Get the objects that intersect with the midline."""
-        inds = objects.geometry.sindex.query(
-            area.geometry, predicate=predicate, **kwargs
-        )
-        objs: gpd.GeoDataFrame = objects.iloc[np.unique(inds)[1:]]
-
-        return objs.drop_duplicates("geometry")
-
     def _merge_objs_axis(
         self,
         grid: gpd.GeoDataFrame,
@@ -183,7 +174,7 @@ class InstMerger:
         desc = "Merging objects (x-axis)" if axis == "x" else "Merging objects (y-axis)"
         for start, next_col in tqdm(grouped_list[1:], desc=desc):
             grid_union = pd.concat([last_col, next_col]).union_all()
-            objs = self._get_objs(gdf, self._union_to_gdf(grid_union), predicate)
+            objs = get_objs(self._union_to_gdf(grid_union), gdf, predicate)
 
             minx, miny, maxx, maxy = next_col.total_bounds
 
@@ -199,12 +190,12 @@ class InstMerger:
                 midline_gdf = gpd.GeoDataFrame(geometry=[midline])
 
             # get the cells hitting the midline
-            boundary_objs = self._get_objs(objs, midline_gdf, predicate)
+            boundary_objs = get_objs(midline_gdf, objs, predicate)
 
             non_boundary_objs_left = None
             if get_non_boundary_objs:
-                non_boundary_objs_left = self._get_objs(
-                    objs, last_col.buffer(-midline_buffer), "contains"
+                non_boundary_objs_left = get_objs(
+                    last_col.buffer(-midline_buffer), objs, "contains"
                 )
 
             # merge the boundary objects
@@ -246,7 +237,7 @@ class InstMerger:
         class_names = []
         for ix, row in merged.iterrows():
             area = gpd.GeoDataFrame(geometry=[row.geometry])
-            objs = self._get_objs(non_merged, area, predicate="intersects")
+            objs = get_objs(area, non_merged, predicate="intersects")
 
             if objs.empty:
                 continue
@@ -319,7 +310,7 @@ class TissueMerger:
         for _, col in tqdm(grouped_list, desc="Merging tissue columns"):
             grid_union = col.union_all()
             grid_union = self._union_to_gdf(grid_union)
-            objs = self._get_objs(self.gdf, grid_union, "contains")
+            objs = get_objs(grid_union, self.gdf, "contains")
 
             col_tissues = []
             col_cls = []
@@ -401,21 +392,6 @@ class TissueMerger:
         gdf = gdf.set_index(id_col, drop=drop)
 
         return gdf
-
-    def _get_objs(
-        self,
-        objects: gpd.GeoDataFrame,
-        area: gpd.GeoDataFrame,
-        predicate: str,
-        **kwargs,
-    ) -> gpd.GeoDataFrame:
-        """Get the objects that intersect with the midline."""
-        inds = objects.geometry.sindex.query(
-            area.geometry, predicate=predicate, **kwargs
-        )
-        objs: gpd.GeoDataFrame = objects.iloc[np.unique(inds)[2:]]
-
-        return objs.drop_duplicates("geometry")
 
     def _union_to_gdf(self, union: Polygon, buffer_dist: int = 0) -> gpd.GeoDataFrame:
         """Convert a unionized GeoDataFrame back to a GeoDataFrame.
