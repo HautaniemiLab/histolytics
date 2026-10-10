@@ -172,20 +172,26 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Immediate next work
 
-The [dependency architecture proposal](dependency-architecture.md) maps core
-analysis, segmentation, retained cuCIM, CUDA processing, training, Polars, and
-BioIO responsibilities. The recommended spatial/CPU-analysis default is still
-a proposal; extras and installation metadata have not been reorganized. Fix the
-verified common-utility/sample-data import coupling before attempting that split.
+The [dependency architecture proposal](dependency-architecture.md) now starts
+from standalone capabilities and explicit data handoffs. Pipelines compose WSI
+reading, image inference, reconstruction, conversion, assembly, and analysis.
+Installation groups follow those code boundaries; they are not a substitute for
+them. Preserve existing representations and high-level APIs, and avoid a new
+workflow/plugin framework or a wholesale folder rewrite.
 
-1. Validate the prepared core runtime declarations: sixteen formerly transitive
-   requirements become explicit while all 280 locked versions/artifacts stay the
-   same. Polars and HDF5 training extras remain separate installation-boundary work.
-2. Establish broader checkpoint and spatial result baselines before numerical
-   upgrades. Core dependency ownership does not validate optional backends,
-   security fixes, or the full package on macOS.
-3. Continue the independent Google-style documentation and gradual typing work.
-4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
+1. Review/merge the already validated core runtime declarations in PR 8. All 280
+   locked versions/artifacts and runtime selections remain the same; Python
+   3.10–3.12 source and clean installation checks passed. The known 3.13 failure
+   is still separate compatibility work, not a reason to repeat unchanged checks.
+2. Make the smallest standalone-capability patch: decouple common utility imports
+   and the two bundled image reads, with focused import/pixel-equality checks.
+   Keep installation requirements unchanged in that patch.
+3. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
+   expose one reusable seam at a time, with a small composition regression and
+   preserved public convenience APIs. Verify numerical selections before any
+   default/extra split so it does not silently upgrade the analysis stack.
+4. Continue the independent Google-style documentation and gradual typing work.
+5. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.
 
 GPU processing comparisons and peak-memory measurements await CUDA hardware.
