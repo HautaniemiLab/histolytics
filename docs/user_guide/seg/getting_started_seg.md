@@ -27,7 +27,7 @@ model = CellposePanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
 ## 2. Run inference for one image
 ```python
 from albumentations import Resize, Compose
-from histolytics.utils import FileHandler
+from cellseg_models_pytorch.utils import FileHandler
 from histolytics.transforms import MinMaxNormalization
 
 model.set_inference_mode()
@@ -46,7 +46,7 @@ out = model.post_process(prob)
 ## 2.1 Run inference for image batch
 ```python
 import torch
-from histolytics.utils import FileHandler
+from cellseg_models_pytorch.utils import FileHandler
 
 model.set_inference_mode()
 
@@ -73,7 +73,7 @@ out = model.post_process(prob)
 #    (nuc instances (H, W), nuc types (H, W))
 #  ],
 #  "cyto": None,
-#}
+# }
 ```
 
 ## 3. Visualize output
@@ -83,8 +83,8 @@ from skimage.color import label2rgb
 
 fig, ax = plt.subplots(1, 4, figsize=(24, 6))
 ax[0].imshow(im)
-ax[1].imshow(label2rgb(out["nuc"][0][0], bg_label=0)) # inst_map
-ax[2].imshow(label2rgb(out["nuc"][0][1], bg_label=0)) # type_map
-ax[3].imshow(label2rgb(out["tissue"][0], bg_label=0)) # tissue_map
+ax[1].imshow(label2rgb(out["nuc"][0][0], bg_label=0))  # inst_map
+ax[2].imshow(label2rgb(out["nuc"][0][1], bg_label=0))  # type_map
+ax[3].imshow(label2rgb(out["tissue"][0], bg_label=0))  # tissue_map
 ```
 ![out](../../img/out_pan.png)

@@ -6,12 +6,12 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 10 October 2026
 
-PRs 3–7 have landed on main at `03a99a9`; the merged local branches
+PRs 3–9 have landed on main at `e5617b9`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38035324059)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38037794657)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
 3.10–3.12, and 169 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
@@ -35,6 +35,8 @@ The post-merge main run is separate; do not equate preparation with publication.
 - [x] CuPy processing inventory and a diagnostic CPU texture reference.
 - [x] Pinned Ruff/uv hooks, lint/format CI, tools-only setup, and explicit
   documentation workflow interpreter/tool versions.
+- [x] Explicit core runtime declarations with all 280 locked package versions
+  and shared artifact hashes retained; module-first architecture proposal.
 
 ### Open compatibility and release gates
 
@@ -179,19 +181,17 @@ Installation groups follow those code boundaries; they are not a substitute for
 them. Preserve existing representations and high-level APIs, and avoid a new
 workflow/plugin framework or a wholesale folder rewrite.
 
-1. Review/merge the already validated core runtime declarations in PR 8. All 280
-   locked versions/artifacts and runtime selections remain the same; Python
-   3.10–3.12 source and clean installation checks passed. The known 3.13 failure
-   is still separate compatibility work, not a reason to repeat unchanged checks.
-2. Make the smallest standalone-capability patch: decouple common utility imports
+1. Make the smallest standalone-capability patch: decouple common utility imports
    and the two bundled image reads, with focused import/pixel-equality checks.
+   Remove upstream file-handler aliases from the utility initializer, update their
+   documented imports, and record the migration. Avoid dynamic compatibility hooks.
    Keep installation requirements unchanged in that patch.
-3. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
+2. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
    expose one reusable seam at a time, with a small composition regression and
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
-4. Continue the independent Google-style documentation and gradual typing work.
-5. Consume a tested upstream compatibility release and upgrade numerical/CUDA
+3. Continue the independent Google-style documentation and gradual typing work.
+4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.
 
 GPU processing comparisons and peak-memory measurements await CUDA hardware.

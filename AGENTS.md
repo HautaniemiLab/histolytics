@@ -26,6 +26,12 @@ The next two sections contain the Ponytail development instructions.
 
 Read the task and the code it touches. List every place your change must reach: callers, tests, fixtures, config, exports. Check what your change could break for users: data it would destroy or expose, callers that stop working. That is scope. Extra features are not.
 
+Do not introduce hot fixes or creative workarounds that conceal dependency,
+architecture, or correctness problems. Fix the root cause through explicit module
+boundaries and straightforward code. If a clean solution requires a public API
+change or an upstream fix, explain that tradeoff before adding compatibility
+machinery, dynamic attribute hooks, monkeypatches, or fallback behavior.
+
 ## The smallest complete change
 
 Take the first option that fully works:
