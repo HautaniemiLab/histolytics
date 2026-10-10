@@ -1,71 +1,8 @@
-from typing import Union
-
 import geopandas as gpd
-import numpy as np
-import shapely
 
-from histolytics.utils.gdf import set_crs
+from histolytics.utils.gdf import get_objs, set_crs
 
 __all__ = ["get_objs", "get_interfaces"]
-
-
-def get_objs(
-    area: gpd.GeoDataFrame,
-    objects: gpd.GeoDataFrame,
-    predicate: str = "intersects",
-    **kwargs,
-) -> Union[gpd.GeoDataFrame, None]:
-    """Query objects in relation to the given `area` GeoDataFrame (tissue segmentations).
-
-    Parameters:
-        area (gpd.GeoDataFrame):
-            Area of interest. The objects that intersect with this area will be returned.
-        objects (gpd.GeoDataFrame):
-            Objects to check for intersection with the area.
-        predicate (str):
-            Predicate for the spatial query. One of contains", "contains_properly",
-            "covered_by", "covers", "crosses", "intersects", "overlaps", "touches",
-            "within", "dwithin"
-        **kwargs (Any):
-            Additional keyword arguments to pass to the spatial query.
-
-    Returns:
-        Union[gpd.GeoDataFrame, None]:
-            Objects that intersect with the given area.
-
-    Examples:
-        >>> from histolytics.data import cervix_nuclei, cervix_tissue
-        >>> from histolytics.spatial_ops import get_objs
-        >>> # load the data
-        >>> nuc = cervix_nuclei()
-        >>> tis = cervix_tissue()
-        >>> # select the CIN tissue
-        >>> cin_tissue = tis[tis["class_name"] == "cin"]
-        >>>
-        >>> # select all the nuclei contained within CIN tissue
-        >>> nuc_within_cin = get_objs(cin_tissue, nuc, predicate="contains")
-        >>> print(nuc_within_cin.head(3))
-                                                    geometry         class_name
-        1  POLYGON ((906.01 5350.02, 906.01 5361, 908.01 ...         connective
-        2  POLYGON ((866 5137.02, 862.77 5137.94, 860 513...   squamous_epithel
-        3  POLYGON ((932 4777.02, 928 4778.02, 922.81 478...  glandular_epithel
-        >>> ax = tis.plot(column="class_name", figsize=(5, 5), aspect=1, alpha=0.5)
-        >>> nuc_within_cin.plot(ax=ax, color="blue")
-        >>> ax.set_axis_off()
-    ![out](../../img/get_objs.png)
-    """
-    if isinstance(area, shapely.geometry.Polygon):
-        area = gpd.GeoSeries([area], crs=objects.crs)
-
-    # NOTE, gdfs need to have same crs, otherwise warning flood.
-    inds = objects.geometry.sindex.query(area.geometry, predicate=predicate, **kwargs)
-
-    # filter indices that are out of bounds
-    obj_pos_index = np.arange(len(objects))
-    inds = np.intersect1d(np.unique(inds), obj_pos_index)
-    objs: gpd.GeoDataFrame = objects.iloc[inds]
-
-    return objs.drop_duplicates("geometry")
 
 
 def get_interfaces(
