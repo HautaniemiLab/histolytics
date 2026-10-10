@@ -32,9 +32,9 @@ def textural_feats(
         Uses `skimage.feature.graycomatrix` and `skimage.feature.graycoprops`
         See [scikit-image docs](https://scikit-image.org/docs/0.25.x/api/skimage.feature.html#skimage.feature.graycoprops)
 
-    Parameters:
-        im_gray (np.ndarray):
-            Grayscale image. Shape (H, W), Dtype: uint8.
+    Args:
+        img (np.ndarray):
+            RGB image. Shape (H, W, 3), uint8 or floating point in [0, 1].
         label (np.ndarray):
             Instance label map. Shape (H, W), Dtype: int.
         metrics (Sequence[str]): Texture metrics to compute. Allowed values are:
@@ -68,7 +68,9 @@ def textural_feats(
             is done on the GPU. The CLCM computation is performed on the CPU.
 
     Returns:
-        pd.DataFrame: DataFrame containing the computed texture features for each nucleus.
+        pd.DataFrame: Texture features indexed by positive instance IDs. Fully masked
+            instances are excluded. Small or black nuclei receive zeros, and empty
+            results retain the requested feature columns.
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_he, hgsc_cancer_inst_mask
@@ -97,30 +99,33 @@ def textural_feats(
     """
     if device == "cuda" and _has_cp:
         im_gray = img_as_ubyte_cp(rgb2gray_cp(cp.array(img))).get()
-        nuc_lab = cp.unique(cp.array(label))[1:].get()
     else:
         im_gray = img_as_ubyte(rgb2gray(img))
-        nuc_lab = np.unique(label)[1:]
 
     if mask is not None:
         if mask.dtype != bool:
             mask = mask > 0
         label = label * mask
 
+    nuc_lab = np.unique(label)
+    nuc_lab = nuc_lab[nuc_lab > 0]
     nuc_pos = ndimage.find_objects(label)
+    columns = [
+        f"{metric}_d-{distance}_a-{angle:.2f}"
+        for metric in metrics
+        for distance in distances
+        for angle in angles
+    ]
+    columns = list(dict.fromkeys(columns))
 
     nuc_textures = []
     nuc_labels = []
-    for slc, lab in zip(nuc_pos, nuc_lab):
-        if slc is None:
-            nuc_textures.append(np.zeros(len(metrics)))
-            nuc_labels.append(lab)
-            continue
-
+    for lab in nuc_lab:
+        slc = nuc_pos[int(lab) - 1]
         nuc_gray = im_gray[slc] * (label[slc] == lab)
 
         if nuc_gray.sum() == 0 or nuc_gray.shape[0] < 4 or nuc_gray.shape[1] < 4:
-            nuc_textures.append(np.zeros(len(metrics)))
+            nuc_textures.append(pd.Series(np.zeros(len(columns)), index=columns))
             nuc_labels.append(lab)
             continue
 
@@ -131,7 +136,7 @@ def textural_feats(
         nuc_textures.append(texture_feats)
         nuc_labels.append(lab)
 
-    return pd.DataFrame(data=nuc_textures, index=nuc_labels)
+    return pd.DataFrame(data=nuc_textures, index=nuc_labels, columns=columns)
 
 
 def _compute_texture_feats_np(
