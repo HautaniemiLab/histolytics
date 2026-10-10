@@ -8,6 +8,8 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Allow spatial utilities and bundled image loaders to run without importing the
+  segmentation model stack; preserve file-handler exports and decoded image pixels.
 - Allow CPU intensity and chromatin feature imports without CuPy by deferring
   private GPU type annotations.
 - Allow CPU texture feature extraction to import without CuPy installed.

@@ -1,9 +1,8 @@
 from pathlib import Path
 
+import cv2
 import geopandas as gpd
 import numpy as np
-
-from histolytics.utils import FileHandler
 
 BASE_PATH = Path(__file__).parent.resolve()
 
@@ -195,8 +194,11 @@ def hgsc_cancer_type_mask():
     return data["nuc_raster"]
 
 
-def hgsc_cancer_he():
+def hgsc_cancer_he() -> np.ndarray:
     """A 1500x1500 H&E image of HGSC containing a tumor nest.
+
+    Returns:
+        RGB uint8 image with shape (1500, 1500, 3) and values in [0, 255].
 
     Note:
         Pairs with:
@@ -214,7 +216,9 @@ def hgsc_cancer_he():
         >>> ax.set_axis_off()
     ![out](../../img/hgsc_cancer_he.png)
     """
-    return FileHandler.read_img(BASE_PATH / "hgsc_nest.jpg")
+    return cv2.cvtColor(
+        cv2.imread((BASE_PATH / "hgsc_nest.jpg").as_posix()), cv2.COLOR_BGR2RGB
+    )
 
 
 def hgsc_stroma_nuclei():
@@ -232,8 +236,11 @@ def hgsc_stroma_nuclei():
     return _load(BASE_PATH / "hgsc_stromal_cells.parquet")
 
 
-def hgsc_stroma_he():
+def hgsc_stroma_he() -> np.ndarray:
     """A 1500x1500 H&E image of HGSC containing stroma.
+
+    Returns:
+        RGB uint8 image with shape (1500, 1500, 3) and values in [0, 255].
 
     Note:
         Pairs with `hgsc_stroma_nuclei()`.
@@ -247,4 +254,6 @@ def hgsc_stroma_he():
         >>> ax.set_axis_off()
     ![out](../../img/hgsc_stroma_he.png)
     """
-    return FileHandler.read_img(BASE_PATH / "hgsc_stromal_he.jpg")
+    return cv2.cvtColor(
+        cv2.imread((BASE_PATH / "hgsc_stromal_he.jpg").as_posix()), cv2.COLOR_BGR2RGB
+    )
