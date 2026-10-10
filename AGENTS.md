@@ -102,6 +102,9 @@ change lands. Do not call an environment with omitted dependencies a clean insta
 | Task | Command from repository root |
 | --- | --- |
 | Install locked development environment | `uv sync --locked --dev` |
+| Install development tools only | `uv sync --locked --only-group dev` |
+| Lint library, tests, and release tools | `uv run --no-sync ruff check src tests tools` |
+| Check formatting | `uv run --no-sync ruff format --check src tests tools` |
 | Targeted library test | `HF_HUB_OFFLINE=1 uv run --no-sync pytest tests/test_ops.py -x` |
 | Library suite and coverage | `HF_HUB_OFFLINE=1 uv run --no-sync pytest tests --cov=histolytics --cov-report=xml` |
 | Release guard tests (Python 3.11+) | `python -m unittest discover -s tools/tests -v` |
@@ -112,8 +115,11 @@ change lands. Do not call an environment with omitted dependencies a clean insta
 | Build docs | `uv sync --locked --group docs && uv run --no-sync mkdocs build` |
 
 Run focused checks then required CI checks. Report versions, results, and unverified
-platforms/devices. Do not bypass hooks. The existing Ruff and uv hooks are old;
-modernize their pins and configuration separately from runtime upgrades.
+platforms/devices. Do not bypass hooks. Ruff 0.17.0 is pinned in the development
+group and hooks; the initial gate covers syntax/name errors and import ordering.
+Broader modernization rules and type checking remain separate work. The uv hook
+uses the CI version and checks the lockfile without rewriting it. A tools-only
+environment validates tooling, not runtime imports or numerical behavior.
 
 ## Documentation and delivery
 

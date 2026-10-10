@@ -76,22 +76,22 @@ def test_extract_collagen_fibers(stroma_data, sigma, rm_bg, expected_properties)
 
     # Check minimum coverage if specified
     if "min_coverage" in expected_properties:
-        assert (
-            coverage >= expected_properties["min_coverage"]
-        ), f"Coverage {coverage:.4f} is less than minimum {expected_properties['min_coverage']}"
+        assert coverage >= expected_properties["min_coverage"], (
+            f"Coverage {coverage:.4f} is less than minimum {expected_properties['min_coverage']}"
+        )
 
     # Check maximum coverage if specified
     if "max_coverage" in expected_properties:
-        assert (
-            coverage <= expected_properties["max_coverage"]
-        ), f"Coverage {coverage:.4f} exceeds maximum {expected_properties['max_coverage']}"
+        assert coverage <= expected_properties["max_coverage"], (
+            f"Coverage {coverage:.4f} exceeds maximum {expected_properties['max_coverage']}"
+        )
 
     # Check that fibers are not touching nuclei
     if mask is not None:
         nuclei_overlap = np.logical_and(collagen_mask, mask > 0)
-        assert (
-            np.sum(nuclei_overlap) / np.sum(mask > 0) < 0.05
-        ), "Too many collagen fibers detected within nuclei regions"
+        assert np.sum(nuclei_overlap) / np.sum(mask > 0) < 0.05, (
+            "Too many collagen fibers detected within nuclei regions"
+        )
 
     # Check that we have distinct fiber segments, not just noise
     labeled_fibers = label(collagen_mask)
@@ -166,9 +166,9 @@ def test_fiber_feats_metrics_computation(stroma_data, metrics, expected_columns)
 
     # Check that all requested metrics are present
     for metric in expected_columns:
-        assert (
-            metric in result.columns
-        ), f"Metric '{metric}' not found in result columns"
+        assert metric in result.columns, (
+            f"Metric '{metric}' not found in result columns"
+        )
 
     # Check that geometry column exists
     assert "geometry" in result.columns
@@ -181,9 +181,9 @@ def test_fiber_feats_metrics_computation(stroma_data, metrics, expected_columns)
         values = result[metric].values
         assert not np.all(np.isnan(values)), f"All values for metric '{metric}' are NaN"
         assert not np.all(values == 0), f"All values for metric '{metric}' are zero"
-        assert np.all(
-            np.isfinite(values)
-        ), f"Non-finite values found in metric '{metric}'"
+        assert np.all(np.isfinite(values)), (
+            f"Non-finite values found in metric '{metric}'"
+        )
 
 
 @pytest.mark.parametrize(
