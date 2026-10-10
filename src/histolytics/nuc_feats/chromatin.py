@@ -278,9 +278,9 @@ def _chrom_feats_np(
 
 
 def _chrom_feats_cp(
-    img: cp.ndarray,
-    chrom_clumps: cp.ndarray,
-    label: cp.ndarray,
+    img: "cp.ndarray",
+    chrom_clumps: "cp.ndarray",
+    label: "cp.ndarray",
     metrics: Tuple[str, ...] = ("chrom_area", "chrom_nuc_prop"),
 ) -> pd.DataFrame:
     img = cp.array(img)
@@ -397,8 +397,8 @@ def _compute_manders_coloc_coeff_np(
 
 
 def _compute_manders_coloc_coeff_cp(
-    img: cp.ndarray, label1: cp.ndarray, label2: cp.ndarray
-) -> cp.ndarray:
+    img: "cp.ndarray", label1: "cp.ndarray", label2: "cp.ndarray"
+) -> "cp.ndarray":
     """Compute the Manders' colocalization coefficient for two label masks."""
     index = cp.unique(label1)[1:]
     intensity_sum_lab1 = ndimage_cp.sum(img, label1, index=index)

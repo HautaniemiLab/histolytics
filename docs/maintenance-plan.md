@@ -170,9 +170,10 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Immediate next work
 
-1. Repair the confirmed eager CuPy-annotation import failure in the intensity and
-   chromatin modules, with CPU-value and missing-GPU error regressions. This is
-   an import-boundary fix, not removal of a CuPy implementation.
+1. Validate and merge the prepared intensity/chromatin import-boundary fix: defer
+   private CuPy annotations and test CPU values and missing-GPU errors in fresh
+   processes. This does not remove a CuPy implementation or make the full package
+   installable on macOS; mandatory NVIDIA requirements remain separate work.
 2. Complete direct runtime requirement declarations without upgrading package
    versions, then establish broader checkpoint and spatial result baselines.
 3. Continue the independent Google-style documentation and gradual typing work.

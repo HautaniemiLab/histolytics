@@ -23,10 +23,13 @@ or matched partitions rather than demanding identical raw cluster IDs.
 
 ## Confirmed CPU import and texture defects
 
-In the local diagnostic environment without CuPy, importing intensity.py and
-chromatin.py raises `NameError: name 'cp' is not defined` from eagerly evaluated
-GPU annotations. Their import guards alone do not make the CPU paths importable.
-Resolve this independently before broader CPU-only installations or benchmarking.
+The local diagnostic environment without CuPy reproduced
+`NameError: name 'cp' is not defined` when importing intensity.py and chromatin.py
+because private GPU annotations were evaluated eagerly. The follow-up import fix
+quotes only those CuPy annotations, leaving public annotations and calculations
+unchanged. A fresh-process regression blocks GPU packages and verifies fractional
+CPU intensity values, empty chromatin behavior, and explicit missing-CUDA errors.
+This import repair does not remove mandatory CUDA dependencies from installation.
 
 The bundled 256-pixel HGSC crop exposed NaN texture rows for two small nuclei.
 Zero-result arrays were mixed with named pandas Series, losing their column labels.
