@@ -124,9 +124,13 @@ assembly; those metadata are not discarded at the image-model step.
   independently usable. Do not replace it with a generic workflow scheduler.
 - `BaseModelPanoptic.post_process` requires inference mode and also accepts save
   paths, coordinates, smoothing, and class dictionaries. Reconstruction on supplied
-  predictions must eventually be callable without an initialized model. Reuse the
-  upstream processor; first test actual in-memory returns and save-mode behavior
-  before moving any existing convenience method or changing outputs.
+  predictions is already callable through the upstream PostProcessor without a
+  model instance. Reuse that API and test in-memory returns and saved geometry
+  rather than adding another wrapper. Verify the model facade forwards explicit
+  smoothing settings and preserves default geometry. The published asynchronous
+  processor assumes tissue is present and leaves cytoplasm results unresolved;
+  those upstream limitations must be fixed before promising broader standalone
+  asynchronous support.
 - `WSIPatchIterator` and `WSIPatchDataset` combine readers, spatial queries,
   rasterization, Torch loading, and callbacks. That is workflow composition, not
   the minimal reader. Preserve those APIs as adapters and keep a direct region-read

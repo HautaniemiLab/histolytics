@@ -76,6 +76,34 @@ out = model.post_process(prob)
 # }
 ```
 
+## 2.2 Reconstruct supplied prediction maps
+
+Reconstruction can run without a model instance when prediction maps are already
+available. Use the existing processor and select the algorithm that produced the
+auxiliary maps:
+
+```python
+from cellseg_models_pytorch.inference.post_processor import PostProcessor
+
+processor = PostProcessor("hovernet")
+out = processor.postproc_serial(prediction_maps)
+```
+
+`prediction_maps` uses the same `nuc`, `cyto`, and `tissue` keys as `model.predict`.
+Type maps contain class IDs with shape `(B, H, W)`; auxiliary channels depend on
+the algorithm. Serial processing supports absent cytoplasm/tissue outputs as
+`None`. Instance results are `(instance_labels, class_labels)` arrays, while tissue
+results are class-label arrays. Supplying save paths writes geometry and returns
+`None` for those entries. `coords` supplies pixel offsets; class dictionaries map
+IDs to names for saved geometry. Set the relevant smoothing callback to `None`
+to disable geometry smoothing, or pass a callable to change it explicitly.
+For asynchronous processing, callbacks must be pickleable module-level functions;
+locally defined functions and lambdas are not supported by the published queue.
+
+The published asynchronous processor requires tissue maps and leaves cytoplasm
+results unresolved. Use the serial path for those standalone cases until the
+upstream contract is corrected.
+
 ## 3. Visualize output
 ```python
 from matplotlib import pyplot as plt

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, Tuple, Union
 
 import numpy as np
 import torch
@@ -160,71 +160,62 @@ class BaseModelPanoptic:
 
     def post_process(
         self,
-        x: Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]],
+        x: dict[str, SoftSemanticOutput | SoftInstanceOutput | None],
         *,
         use_async_postproc: bool = True,
         start_method: str = "threading",
         n_jobs: int = 4,
-        save_paths_nuc: List[Union[Path, str]] = None,
-        save_paths_cyto: List[Union[Path, str]] = None,
-        save_paths_tissue: List[Union[Path, str]] = None,
-        coords: List[Tuple[int, int, int, int]] = None,
-        class_dict_nuc: Dict[int, str] = None,
-        class_dict_cyto: Dict[int, str] = None,
-        class_dict_tissue: Dict[int, str] = None,
-        nuc_smooth_func: Callable = gaussian_smooth,
-        cyto_smooth_func: Callable = gaussian_smooth,
-        tissue_smooth_func: Callable = None,
-    ) -> Dict[str, List[np.ndarray]]:
-        """Post-process the output of the model.
+        save_paths_nuc: list[Path | str] | None = None,
+        save_paths_cyto: list[Path | str] | None = None,
+        save_paths_tissue: list[Path | str] | None = None,
+        coords: list[tuple[int, int, int, int]] | None = None,
+        class_dict_nuc: dict[int, str] | None = None,
+        class_dict_cyto: dict[int, str] | None = None,
+        class_dict_tissue: dict[int, str] | None = None,
+        nuc_smooth_func: Callable | None = gaussian_smooth,
+        cyto_smooth_func: Callable | None = gaussian_smooth,
+        tissue_smooth_func: Callable | None = None,
+    ) -> dict[str, list[Any] | None]:
+        """Reconstruct labels from predictor outputs and optionally save geometry.
 
-        Parameters:
-            x (Dict[str, Union[SoftSemanticOutput, SoftInstanceOutput]]):
-                The output of the .predict() method.
-            use_async_postproc (bool):
-                Whether to use async post-processing. Can give some run-time benefits.
-            start_method (str):
-                The start method. One of: "threading", "fork", "spawn". See mpire docs.
-            n_jobs (int):
-                The number of workers for the post-processing.
-            save_paths_nuc (List[Union[Path, str]]):
-                The paths to save the panlei masks. If None, the masks are not saved.
-            save_paths_cyto (List[Union[Path, str]]):
-                The paths to save the cytoplasm masks. If None, the masks are not saved.
-            save_paths_tissue (List[Union[Path, str]]):
-                The paths to save the tissue masks. If None, the masks are not saved.
-            coords (List[Tuple[int, int, int, int]]):
-                The XYWH coordinates of the image patch. If not None, the coordinates are
-                saved in the filenames of outputs.
-            class_dict_nuc (Dict[int, str]):
-                The dictionary of panlei classes. E.g. {0: "bg", 1: "neoplastic"}
-            class_dict_cyto (Dict[int, str]):
-                The dictionary of cytoplasm classes. E.g. {0: "bg", 1: "macrophage_cyto"}
-            class_dict_tissue (Dict[int, str]):
-                The dictionary of tissue classes. E.g. {0: "bg", 1: "stroma", 2: "tumor"}
-            nuc_smooth_func (Callable):
-                The smoothing function to apply to the nuclei instance maps before
-                post-processing. If None, no smoothing is applied. This is only used when
-                nuclei segmentation masks are saved into vectorized format (e.g. parquet).
-                Ignored save_paths_nuc is None.
-            cyto_smooth_func (Callable):
-                The smoothing function to apply to the cytoplasm instance maps before
-                post-processing. If None, no smoothing is applied. This is only used when
-                cytoplasm segmentation masks are saved into vectorized format (e.g. parquet).
-                Ignored save_paths_cyto is None.
-            tissue_smooth_func (Callable):
-                The smoothing function to apply to the tissue type maps before
-                post-processing. If None, no smoothing is applied. This is only used when
-                tissue segmentation masks are saved into vectorized format (e.g. parquet).
-                Ignored save_paths_tissue is None.
+        Args:
+            x: Predictor output with "nuc", "cyto", and "tissue" keys. This model
+                facade requires nuclei and tissue maps; cytoplasm may be None.
+                Type maps contain class IDs with shape (B, H, W), not logits.
+                Instance auxiliary maps have shape (B, C_aux, H, W), where
+                C_aux and values depend on the reconstruction algorithm. Optional
+                binary maps contain foreground probabilities with shape (B, 1, H, W).
+                The upstream processor handles tensor detachment and CPU conversion.
+            use_async_postproc: Use asynchronous processing for batches larger
+                than one. Single-image batches always run serially.
+            start_method: Worker backend: "threading", "fork", or "spawn".
+            n_jobs: Number of workers for parallel processing.
+            save_paths_nuc: One destination per image for nuclei geometry, or None
+                to return reconstructed nuclei arrays.
+            save_paths_cyto: Cytoplasm destinations, or None to return arrays.
+            save_paths_tissue: Tissue destinations, or None to return arrays.
+            coords: Per-image (x, y, width, height) in pixels. Vector output is
+                translated by x and y; no physical-unit conversion is performed.
+            class_dict_nuc: Nuclei class-ID to class-name mapping for vector output.
+            class_dict_cyto: Cytoplasm class mapping for vector output.
+            class_dict_tissue: Tissue class mapping for vector output.
+            nuc_smooth_func: Geometry callback for saved nuclei polygons. None
+                disables smoothing; ignored for in-memory array outputs. Async
+                callbacks must be pickleable, for example module-level functions.
+            cyto_smooth_func: Geometry callback for saved cytoplasm polygons.
+            tissue_smooth_func: Geometry callback for saved tissue polygons.
 
         Returns:
-            Dict[str, List[np.ndarray]]:
-                Dictionary of post-processed outputs:
+            The upstream processor result, unchanged, under "nuc", "cyto", and
+            "tissue". In serial/synchronous processing, instance results are lists
+            of (instance labels, class labels) int32 arrays with shape (H, W), and
+            tissue results are lists of int32 class-label arrays. Absent outputs
+            are None; saved entries are None instead of arrays. The published
+            asynchronous processor's cytoplasm return is not normalized here.
 
-                - "nuclei": List of output nuclei masks (H, W).
-                - "cyto": List of output cytoplasm masks (H, W).
-                - "tissue": List of output tissue masks (H, W).
+        Raises:
+            ValueError: If inference mode has not been enabled. Processor and
+                file-writing errors propagate to the caller.
 
         Examples:
             >>> my_model.set_inference_mode()
@@ -252,6 +243,9 @@ class BaseModelPanoptic:
                 class_dict_nuc=class_dict_nuc,
                 class_dict_cyto=class_dict_cyto,
                 class_dict_tissue=class_dict_tissue,
+                nuc_smooth_func=nuc_smooth_func,
+                cyto_smooth_func=cyto_smooth_func,
+                tissue_smooth_func=tissue_smooth_func,
             )
 
         if use_async_postproc:
@@ -266,9 +260,9 @@ class BaseModelPanoptic:
                 class_dict_nuc=class_dict_nuc,
                 class_dict_cyto=class_dict_cyto,
                 class_dict_tissue=class_dict_tissue,
-                nuc_smooth_func=gaussian_smooth,
-                cyto_smooth_func=gaussian_smooth,
-                tissue_smooth_func=None,
+                nuc_smooth_func=nuc_smooth_func,
+                cyto_smooth_func=cyto_smooth_func,
+                tissue_smooth_func=tissue_smooth_func,
             )
         else:
             x = self.post_processor.postproc_parallel(
@@ -282,9 +276,9 @@ class BaseModelPanoptic:
                 class_dict_nuc=class_dict_nuc,
                 class_dict_cyto=class_dict_cyto,
                 class_dict_tissue=class_dict_tissue,
-                nuc_smooth_func=gaussian_smooth,
-                cyto_smooth_func=gaussian_smooth,
-                tissue_smooth_func=None,
+                nuc_smooth_func=nuc_smooth_func,
+                cyto_smooth_func=cyto_smooth_func,
+                tissue_smooth_func=tissue_smooth_func,
             )
 
         return x
