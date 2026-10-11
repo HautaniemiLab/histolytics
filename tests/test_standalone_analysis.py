@@ -55,3 +55,57 @@ def test_bundled_pixels_match_upstream(loader, filename):
     np.testing.assert_array_equal(
         getattr(fetch, loader)(), FileHandler.read_img(fetch.BASE_PATH / filename)
     )
+
+
+def test_saved_segmentation_to_analysis_without_model_packages():
+    code = textwrap.dedent(
+        """
+        import sys
+        for package in (
+            "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
+        ):
+            sys.modules[package] = None
+
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        import geopandas as gpd
+        import numpy as np
+        from shapely.geometry import box
+        from histolytics.utils.raster import inst2gdf
+        from histolytics.spatial_ops import get_objs
+        from histolytics.wsi.mergers import TissueMerger
+        from histolytics.spatial_agg.grid_agg import get_cell_metric
+
+        labels = np.zeros((8, 24), dtype=np.int32)
+        labels[1:5, 1:5] = 7
+        labels[1:5, 12:16] = 42
+        types = np.zeros_like(labels)
+        types[labels == 7] = 1
+        types[labels == 42] = 2
+        objects = inst2gdf(
+            labels, types, xoff=100, yoff=200, min_size=0, smooth_func=None,
+            class_dict={1: "neoplastic", 2: "immune"},
+        )
+        objects.index = [101, 303]
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "segmentation.parquet"
+            objects.to_parquet(path)
+            saved = gpd.read_parquet(path)
+        assert saved.uid.tolist() == [7, 42]
+        area = gpd.GeoDataFrame(geometry=[box(111, 200, 117, 207)])
+        selected = get_objs(area, saved, predicate="contains")
+        assert selected.index.tolist() == [303]
+        assert selected.uid.tolist() == [42]
+        assert selected.class_name.tolist() == ["immune"]
+        assert selected.geometry.iloc[0].bounds == (112, 201, 116, 205)
+        assert selected.geometry.area.tolist() == [16.0]
+        assert get_cell_metric(area.geometry.iloc[0], saved, len, "contains") == 1
+        assembled = TissueMerger(saved, [(100, 200, 24, 8)]).merge(simplify_level=0)
+        assert assembled.class_name.tolist() == ["immune", "neoplastic"]
+        assert len(assembled) == 2
+        """
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, timeout=30
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

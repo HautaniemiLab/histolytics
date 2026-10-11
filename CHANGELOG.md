@@ -11,6 +11,8 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Select only matching object rows in spatial queries and tile assembly, avoiding
+  unrelated objects and discarded matches caused by mixing spatial-index row arrays.
 - Allow spatial utilities and bundled image loaders to run without importing the
   segmentation model stack; preserve decoded image pixels.
 - Allow CPU intensity and chromatin feature imports without CuPy by deferring

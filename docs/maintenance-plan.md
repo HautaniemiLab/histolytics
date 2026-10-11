@@ -6,14 +6,14 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 10 October 2026
 
-PRs 3–9 have landed on main at `e5617b9`; the merged local branches
+PRs 3–10 have landed on main at `49b5510`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38037794657)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38047448208)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 169 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 172 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -37,6 +37,9 @@ The post-merge main run is separate; do not equate preparation with publication.
   documentation workflow interpreter/tool versions.
 - [x] Explicit core runtime declarations with all 280 locked package versions
   and shared artifact hashes retained; module-first architecture proposal.
+- [x] Standalone spatial utility imports and bundled image reads without the
+  model stack. Removed upstream file-handler aliases with documented import
+  migration and exact JPEG pixel comparisons; no dynamic compatibility hooks.
 
 ### Open compatibility and release gates
 
@@ -181,17 +184,16 @@ Installation groups follow those code boundaries; they are not a substitute for
 them. Preserve existing representations and high-level APIs, and avoid a new
 workflow/plugin framework or a wholesale folder rewrite.
 
-1. Make the smallest standalone-capability patch: decouple common utility imports
-   and the two bundled image reads, with focused import/pixel-equality checks.
-   Remove upstream file-handler aliases from the utility initializer, update their
-   documented imports, and record the migration. Avoid dynamic compatibility hooks.
-   Keep installation requirements unchanged in that patch.
-2. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
+1. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
    expose one reusable seam at a time, with a small composition regression and
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
-3. Continue the independent Google-style documentation and gradual typing work.
-4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
+   The first composition check exposed spatial-query row mixing: query geometry
+   positions were being treated as object positions, while duplicated merger
+   queries discarded matches. Consolidate this stateless query in geometry
+   utilities and verify selection, class assignment, and saved segmentation input.
+2. Continue the independent Google-style documentation and gradual typing work.
+3. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.
 
 GPU processing comparisons and peak-memory measurements await CUDA hardware.

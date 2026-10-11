@@ -113,6 +113,11 @@ assembly; those metadata are not discarded at the image-model step.
 
 ## Current seams to improve
 
+- Raster/vector conversion and spatial selection already accept externally
+  generated segmentation arrays and saved GeoDataFrames. Exercise their composition
+  with model/GPU packages blocked, preserving sparse IDs, class names, pixel offsets,
+  and geometry. Keep basic geometry queries in shared utilities so analysis and tile
+  assembly use one implementation without depending on each other.
 - `WsiPanopticSegmenter.segment` currently owns reading/batching, layout/device
   conversion, prediction, reconstruction, class mapping, and output filenames.
   Keep it as the public composition entry point while making the called operations

@@ -7,7 +7,7 @@ import pandas as pd
 from shapely import Polygon
 from torch.utils.data import Dataset
 
-from histolytics.spatial_ops import get_objs
+from histolytics.utils.gdf import get_objs
 from histolytics.utils.raster import gdf2inst, gdf2sem
 from histolytics.wsi.slide_reader import SlideReader
 from histolytics.wsi.utils import _polygon_to_xywh
