@@ -6,13 +6,28 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
+    inputs:
+      scope:
+        type: string
+        default: routine
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Validation scope (Python 3.13 is currently unsupported)
+        type: choice
+        default: routine
+        options: [routine, full, python313]
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ inputs.scope || 'routine' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   tooling:
+    if: inputs.scope != 'python313'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -35,6 +50,7 @@ jobs:
         run: uv run --no-sync python -m unittest discover -s tools/tests -v
 
   documentation:
+    if: inputs.scope != 'python313'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -53,6 +69,7 @@ jobs:
         run: uv run --no-sync mkdocs build
 
   wsi-readers:
+    if: inputs.scope != 'python313'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -95,7 +112,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ${{ fromJSON(inputs.scope == 'python313' && '["3.13"]' || '["3.10","3.11","3.12"]') }}
     env:
       HF_HUB_OFFLINE: "1"
       OMP_NUM_THREADS: "2"
@@ -128,3 +145,5 @@ jobs:
 
   packages:
     uses: ./.github/workflows/package.yml
+    with:
+      scope: ${{ inputs.scope || 'routine' }}

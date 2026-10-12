@@ -11,6 +11,8 @@ permissions:
 jobs:
   validate:
     uses: ./.github/workflows/tests.yml
+    with:
+      scope: full
 
   publish:
     needs: validate
