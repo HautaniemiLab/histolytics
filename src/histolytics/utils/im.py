@@ -11,9 +11,9 @@ try:
     import cupy as cp
     from cuml.cluster import KMeans as KMeans_cp
 
-    _has_cp = True
+    _has_cuml = True
 except ImportError:
-    _has_cp = False
+    _has_cuml = False
 
 
 __all__ = [
@@ -39,9 +39,9 @@ try:
         threshold_otsu as threshold_otsu_cp,
     )
 
-    _has_cp = True
+    _has_cucim = True
 except ImportError:
-    _has_cp = False
+    _has_cucim = False
 
 Number = Union[int, float]
 
@@ -60,7 +60,7 @@ def hed_decompose(
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: The H, E, D channels.
     """
-    if device == "cuda" and _has_cp:
+    if device == "cuda" and _has_cucim:
         return _hed_decompose_cp(img)
     else:
         return _hed_decompose_np(img)
@@ -79,7 +79,7 @@ def get_eosin_mask(img_eosin: np.ndarray, device: str = "cpu") -> np.ndarray:
         np.ndarray:
             The binary eosin mask. Shape (H, W).
     """
-    if device == "cuda" and _has_cp:
+    if device == "cuda" and _has_cucim:
         return _get_eosin_mask_cp(img_eosin)
     else:
         return _get_eosin_mask_np(img_eosin)
@@ -102,7 +102,7 @@ def get_hematoxylin_mask(
         np.ndarray:
             The binary hematoxylin mask. Shape (H, W).
     """
-    if device == "cuda" and _has_cp:
+    if device == "cuda" and _has_cucim:
         return _get_hematoxylin_mask_cp(img_hematoxylin, eosin_mask)
     else:
         return _get_hematoxylin_mask_np(img_hematoxylin, eosin_mask)
@@ -111,28 +111,28 @@ def get_hematoxylin_mask(
 def kmeans_img(
     img: np.ndarray, n_clust: int = 3, seed: int = 42, device: str = "cpu"
 ) -> np.ndarray:
-    """Performs KMeans clustering on the input image.
+    """Cluster image pixels by RGB color using the requested backend.
 
-    Parameters:
-        img (np.ndarray):
-            Image to cluster. Shape (H, W, 3).
-        n_clust (int):
-            Number of clusters.
-        seed (int):
-            Random seed.
-        device (str):
-            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
-            Cuml will be used for GPU acceleration.
+    Args:
+        img: RGB image with shape (H, W, 3).
+        n_clust: Number of color clusters.
+        seed: Random seed passed to the selected KMeans implementation.
+        device: "cpu" for scikit-learn or "cuda" for CuPy/cuML. CUDA clustering
+            does not require cuCIM.
 
     Returns:
-        np.ndarray:
-            Label image. Shape (H, W).
+        NumPy integer label image with shape (H, W), with labels starting at 1.
+        Images with fewer unique colors than requested clusters return zeros.
+
+    Raises:
+        RuntimeError: If CUDA clustering is requested without CuPy/cuML.
+        ValueError: If the device is unsupported or KMeans rejects its inputs.
     """
-    if device == "cuda" and not _has_cp:
+    if device == "cuda" and not _has_cuml:
         raise RuntimeError(
-            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
+            "CuPy and cuML are required for GPU acceleration (device='cuda'). "
             "Please install them with:\n"
-            "  pip install cupy-cuda12x cucim-cu12\n"
+            "  pip install cupy-cuda12x cuml-cu12\n"
             "or set device='cpu'."
         )
 
@@ -154,23 +154,23 @@ def kmeans_img(
 
 
 def tissue_components(
-    img: np.ndarray, label: np.ndarray = None, device: str = "cpu"
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Segment background and foreground masks from H&E image. Uses k-means clustering.
+    img: np.ndarray, label: np.ndarray | None = None, device: str = "cpu"
+) -> tuple[np.ndarray, np.ndarray]:
+    """Segment background and dark-component masks using RGB color clusters.
 
-    Parameters:
-        img (np.ndarray):
-            The input H&E image. Shape (H, W, 3).
-        label (np.ndarray):
-            The nuclei label mask. Shape (H, W). This is used to mask out the nuclei when
-            extracting tissue components. If None, the entire image is used.
-        device (str):
-            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
-            Cupy will be used for GPU acceleration.
+    Args:
+        img: RGB H&E image with shape (H, W, 3) and pixel values in [0, 255].
+        label: Optional nuclei labels with shape (H, W); positive labels are
+            included in the dark-component mask.
+        device: "cpu" or "cuda". CUDA clustering requires CuPy/cuML; mask cleanup
+            checks its own CUDA dependencies.
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]:
-            The background and foreground masks. Shapes (H, W).
+        Background and dark-component NumPy boolean masks with shape (H, W).
+
+    Raises:
+        RuntimeError: If a required CUDA backend is unavailable.
+        ValueError: If clustering rejects the inputs or device.
     """
     # mask out dark pixels
     kmasks = kmeans_img(img, n_clust=3, device=device)
@@ -180,7 +180,7 @@ def tissue_components(
         dark_mask = np.zeros(kmasks.shape[:2], dtype=bool)
         return bg_mask, dark_mask
 
-    if _has_cp and device == "cuda":
+    if device == "cuda":
         bg_mask, dark_mask = _get_tissue_bg_fg_cp(img, kmasks, label)
     else:
         bg_mask, dark_mask = _get_tissue_bg_fg_np(img, kmasks, label)
