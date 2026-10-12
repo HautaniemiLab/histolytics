@@ -6,22 +6,17 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–20 have landed on main at `3c3ec64`; the merged local branches
+PRs 3–21 and 23 have landed on main at `b08410a`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38250732151)
-passed tooling/build and documentation, all 20 intended archive/profile checks
-(Linux 3.10–3.12 and macOS 3.12), and 238 source tests with one hardware-dependent
-CUDA skip per version. OpenSlide Linux/macOS and cuCIM CPU-read jobs each
-passed 19 real-reader checks without skips. The full Linux archive checks select
-the all extra directly.
-These results cover PR 19; PR 20 separately passed 255 source tests and 39 checks
-in each native-reader environment, plus all 20 supported installation combinations.
-Python 3.13 source installation and analysis/full release-format installations still fail on the existing
-dependency stack.
-The post-merge main run is separate; do not equate preparation with publication.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38268556552)
+passed all 15 routine jobs, including the saved image-to-analysis composition.
+The earlier full installation validation covered all 20 supported archive/profile
+combinations. Python 3.13 remains unsupported and has a separate manual
+compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
+is not included in this main revision. No package release has occurred.
 
 ### Completed foundation
 
@@ -113,7 +108,8 @@ See [the dependency audit](dependency-audit.md) for the import/advisory snapshot
 verified constraints, and initial priorities. Reachability review and upgrades
 remain open. The merged texture fix moves its unconditional CuPy import into the
 existing optional GPU guard, with regression checks for known CPU GLCM values.
-This does not yet make the complete package installable without CUDA dependencies.
+CPU analysis is now available without model/NVIDIA packages through the merged
+installation split; GPU processing remains optional and awaits evaluation.
 
 ## Evaluate CuPy processing and retain cuCIM
 
@@ -219,7 +215,7 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Milestone: verified image-to-analysis composition
+## Completed milestone: verified image-to-analysis composition
 
 Goal: independently usable capabilities exchange explicit data, and pipeline code
 combines them. Complete one small CPU image-to-analysis path using existing APIs:
@@ -253,8 +249,8 @@ Reuse existing native-reader and assembly checks; do not build a workflow framew
 
 The composition and its supporting local checks passed (21 tests, locked macOS
 Python 3.12.13 CPU segmentation profile). Lint, formatting, changed-file hooks and
-seven tooling guards passed. Final milestone completion requires the existing
-15-job CI gate to pass; record its result in the introducing PR. No code change
+seven tooling guards passed. All 15 CI jobs passed in run 38268556552; PR 23 is
+merged. This bounded milestone is complete. No code change
 beyond the regression test is needed to connect this path.
 
 - `tests/test_postprocessing.py::test_image_predictions_to_saved_analysis`: real
@@ -290,3 +286,49 @@ padding wrappers, fallback behavior or compatibility machinery.
 Before any next PR, name the unmet acceptance criterion and its direct evidence.
 If the current criteria pass, mark the milestone complete and propose the next
 bounded milestone before further implementation work.
+
+## Active milestone: reproducible CPU image-feature reference
+
+Purpose: record real-data numerical outputs before runtime dependency upgrades,
+so future changes can be assessed against a reviewed reference. The preceding
+composition milestone verified handoff contracts with controlled data; it did not
+record real histology feature values.
+
+Scope: one 128×128 central crop of the bundled HGSC tumor-nest RGB image and its
+existing instance/type masks. Retain original sparse instance IDs and zero
+background; edge objects are cropped, not dropped or densely relabeled. Record
+RGB intensity mean/std and GLCM contrast/dissimilarity through existing public CPU
+APIs. This is a small feature reference, not coverage of every analysis capability.
+
+### Done means
+
+- One committed reference records source revision, input SHA-256 hashes, image/mask
+  axes/dtypes, pixel crop origin, instance IDs/counts/classes, explicit feature
+  settings, capture platform and relevant package versions. No physical calibration
+  is assumed, no patient identifiers added, and existing bundled-data provenance
+  is retained.
+- Record numerical values, output IDs/column names/dtypes and predefined
+  `rtol=1e-6`, `atol=1e-8` (the existing texture-evaluation tolerances). Input
+  identity, class labels and pixel counts require exact agreement.
+- One small regression recomputes these features against the fixed reference in
+  supported source and installed analysis profiles, using the existing CI gate.
+  Capture uses a complete locked CPU analysis environment without model/NVIDIA
+  packages. Do not add CI jobs, dependencies, a benchmark framework or new APIs.
+- Record successful validation and stop. A baseline failure is investigated;
+  expected values or tolerances are never updated merely to make a test pass.
+  Intentional future numerical changes need reviewed justification.
+
+Real-checkpoint predictions, morphology/graph/collagen/chromatin baselines, CUDA
+comparisons, image-decoder changes and all runtime upgrades are outside this batch.
+Only a demonstrated blocker in these two selected feature families belongs here.
+
+### Acceptance evidence
+
+- [Reference values and capture identity](validation/cpu-image-feature-reference.json)
+  and [reproduction notes](cpu-image-reference.md).
+- `tests/test_cpu_image_reference.py::test_bundled_cpu_image_feature_reference`
+  checks exact inputs/labels/pixel counts and both feature tables, including sparse
+  IDs, column names, dtypes and finite values.
+- Capture and the focused regression pass in the complete locked analysis profile.
+  Final completion requires the existing 15-job CI gate; record results in the
+  introducing PR and stop at this milestone.
