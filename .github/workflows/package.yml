@@ -82,7 +82,7 @@ jobs:
         run: |
           uv venv --python "${{ matrix.python-version }}" "$RUNNER_TEMP/package-env"
           if [ "$PROFILE" = full ]; then
-            extras="segmentation,cucim,cuda-analysis"
+            extras="all"
           elif [ "$PROFILE" = segmentation ]; then
             extras="segmentation"
           elif [ "$PROFILE" = cuda-analysis ]; then

@@ -46,7 +46,8 @@
 ## Installation 🛠️
 
 ```shell
-pip install histolytics                       # CPU spatial/image analysis
+pip install 'histolytics[all]'               # Recommended full installation (Linux)
+pip install histolytics                      # CPU spatial/image analysis
 pip install 'histolytics[segmentation]'       # Models and segmentation workflows
 pip install 'histolytics[cucim]'              # Retained cuCIM WSI backend (Linux)
 pip install 'histolytics[cuda-analysis]'      # Existing CUDA analysis (Linux)
@@ -54,8 +55,8 @@ pip install 'histolytics[cuda-analysis]'      # Existing CUDA analysis (Linux)
 
 These groups apply to the next release/current source. Published 0.2.5 retains
 its previous installation requirements. Existing model users must select
-`segmentation`; to retain all prior capabilities on Linux, install
-`histolytics[segmentation,cucim,cuda-analysis]`. See the
+`segmentation` or `all`; to retain all prior capabilities on Linux, install
+`histolytics[all]`. See the
 [installation guide](https://hautaniemilab.github.io/histolytics/installation/) for
 source installation, reader prerequisites, and CPU Torch setup.
 

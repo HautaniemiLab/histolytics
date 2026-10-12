@@ -103,7 +103,8 @@ Do not hide missing dependencies or regressions by skipping failing tests.
 
 The default installation provides CPU analysis. Model/WSI workflows use the
 segmentation extra; NVIDIA processing uses cuda-analysis, and the retained cuCIM
-reader uses cucim (which includes segmentation). Full development tests select all
+reader uses cucim (which includes segmentation). The all extra combines these
+capabilities for a full Linux installation. Full development tests select all
 extras on Linux. Report the installed profile and distinguish complete profile
 installations from diagnostic environments with omitted requirements. macOS does
 not support the NVIDIA extras; CPU analysis and segmentation are checked separately.

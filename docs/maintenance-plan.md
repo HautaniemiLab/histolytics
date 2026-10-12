@@ -203,7 +203,8 @@ workflow/plugin framework or a wholesale folder rewrite.
    Saved-segmentation, assembly, reconstruction, and external-weight checks are
    merged, including tuple-input compatibility, independent image-backend availability,
    and mask-cleanup dependency guidance. The current batch makes analysis the default
-   installation and adds segmentation, cucim, and cuda-analysis extras. Preserve the
+   installation and adds segmentation, cucim, and cuda-analysis extras, with all
+   as the recommended full-install aggregate. Preserve the
    old numerical constraints (including cuDF's pandas bound), lock selections, GPU
    implementations, and public computation APIs. Validate analysis without model or
    NVIDIA distributions, segmentation with offline CPU training, and complete Linux

@@ -42,6 +42,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+all = ["histolytics[segmentation,cucim,cuda-analysis]"]
 segmentation = [
     "albumentations>=2.0.6",
     "cellseg-models-pytorch>=0.1.30",

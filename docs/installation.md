@@ -3,6 +3,20 @@
 These installation groups apply to the next release and current source checkout.
 Published Histolytics 0.2.5 still installs the model and NVIDIA dependencies by default.
 
+### Recommended full installation
+
+On a supported Linux CUDA environment:
+
+```bash
+pip install 'histolytics[all]'
+```
+
+`all` combines the segmentation, cuCIM reader, and CUDA-analysis extras. This is
+the recommended installation for users who want the full existing dependency set.
+OpenSlide, BioIO format plugins, HDF5 (`tables`), and Polars remain separately
+installed when those optional paths are needed; GPU drivers and native libraries
+are system prerequisites. On macOS, choose CPU analysis or segmentation below.
+
 ### CPU analysis
 
 ```bash
@@ -49,11 +63,11 @@ or a measured speed benefit. They are not supported on macOS.
 
 ### Migration and source development
 
-Existing model users must add `segmentation` to their installation command. To
+Existing model users must select `segmentation` or `all` in their installation command. To
 retain all previously mandatory capabilities on Linux:
 
 ```bash
-pip install 'histolytics[segmentation,cucim,cuda-analysis]'
+pip install 'histolytics[all]'
 ```
 
 Public computation APIs and their `device` defaults are unchanged. Explicit CUDA
@@ -65,6 +79,7 @@ Numba/llvmlite and Arrow dependency family; this split is not a runtime upgrade.
 To install current source rather than the published release:
 
 ```bash
+uv pip install 'histolytics[all] @ git+https://github.com/HautaniemiLab/histolytics.git'
 uv pip install 'histolytics @ git+https://github.com/HautaniemiLab/histolytics.git'
 uv pip install 'histolytics[segmentation] @ git+https://github.com/HautaniemiLab/histolytics.git'
 ```

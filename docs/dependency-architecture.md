@@ -3,7 +3,8 @@
 Status: installation split in review, 12 October 2026. This document describes a target and migration
 gates; implemented API changes are recorded in the changelog. PR 8 made existing
 requirements explicit as a separate declaration change. The current batch implements the base, segmentation, cucim, and cuda-analysis
-installation groups; finer training/backend groups remain proposed.
+installation groups, plus all as their documented full-install aggregate; finer
+training/backend groups remain proposed.
 
 ## Modules first, installation groups second
 
@@ -162,7 +163,8 @@ Public computation APIs and device defaults remain unchanged.
 
 ## Feature groups
 
-Base, segmentation, cucim, and cuda-analysis are implemented in the current batch.
+Base, segmentation, cucim, cuda-analysis, and their all aggregate are implemented
+in the current batch.
 Training, polars, and bioio below remain future proposals, not available extras.
 The segmentation group retains datasets for the existing finetuning notebook and
 Albumentations for published upstream inference imports. Avoid an extra for every
@@ -187,9 +189,10 @@ distributions: use the CUDA-specific provider consistent with the cuCIM/cuML sta
 Target commands would be `histolytics`, `histolytics[segmentation]`, and, for
 cuCIM WSI inference, `histolytics[segmentation,cucim]`. These commands apply to the next release/current source, not published 0.2.5.
 The cucim extra includes segmentation prerequisites; cuda-analysis does not include models. Training and backend
-groups must include or clearly compose their shared prerequisites. A single
-cross-platform `all` extra is not proposed: Linux NVIDIA backends have different
-requirements from a CPU analysis installation.
+groups must include or clearly compose their shared prerequisites. The `all` extra combines the implemented segmentation, cucim, and cuda-analysis
+groups and is the recommended full installation on supported Linux CUDA systems.
+It is not a cross-platform installation profile: macOS users choose analysis or
+segmentation, and optional reader/native prerequisites remain separate.
 
 ## Verified import constraints
 
