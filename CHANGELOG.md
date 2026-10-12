@@ -16,6 +16,8 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Allow sequential WSI patch iteration with zero workers without blocking on an
+  empty prefetch queue, and report the correct batch count when dropping the final batch.
 - Report CuPy/cupyx rather than cuCIM as the CUDA mask-cleanup requirements.
 - Detect cuML clustering and cuCIM color-processing backends independently in
   image utilities; report the correct missing CUDA clustering dependencies.

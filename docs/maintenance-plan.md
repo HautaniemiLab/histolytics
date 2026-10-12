@@ -6,16 +6,18 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–16 have landed on main at `f853265`; the merged local branches
+PRs 3–17 have landed on main at `eb26902`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38222767325)
-passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 233 source tests with one hardware-dependent CUDA skip per version.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38230409272)
+passed tooling/build and documentation, all 20 intended archive/profile checks
+(Linux 3.10–3.12 and macOS 3.12), and 233 source tests with one hardware-dependent
+CUDA skip per version. The full Linux archive checks select the all extra directly.
 These results cover the tree now merged on main. Python 3.13 source installation
-and both release-format installations still fail on the existing dependency stack.
+and analysis/full release-format installations still fail on the existing
+dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
 
 ### Completed foundation
@@ -52,11 +54,15 @@ The post-merge main run is separate; do not equate preparation with publication.
   output checks and optional-import/dispatch combinations; GPU computation unverified.
 - [x] Correct CuPy/cupyx mask-cleanup guidance and standalone CPU connectivity/cutoff checks.
 
+- [x] Analysis-default installation and explicit segmentation, cucim, cuda-analysis,
+  and all extras; numerical bounds and all 280 locked versions retained. Verified
+  Linux/macOS profiles and CPU tutorial outputs; published 0.2.5 remains unchanged.
+
 ### Open compatibility and release gates
 
 - [ ] Resolve Python 3.13 dependency compatibility and validate source, wheel,
   and source-distribution checks before calling that version supported.
-- [ ] Validate the analysis and segmentation installation profiles on macOS and
+- [x] Validate the analysis and segmentation installation profiles on macOS and
   Linux. NVIDIA extras remain Linux-only; record each profile separately.
 - [ ] Verify PyPI publisher/account configuration and authentication on a
   separately authorized release. Prepared OIDC workflow is not proof of account setup.
@@ -69,9 +75,10 @@ bypass upstream constraints or rely on an unpublished checkout for a release.
 
 ## Installation and dependency audit
 
-Main before the installation split requires cuml-cu12, which has no compatible
-macOS wheel. The proposed split makes analysis the default and moves models and
-NVIDIA processing into explicit extras. Validate complete profile installations
+The installation split makes analysis the default and moves models and NVIDIA
+processing into explicit extras. Analysis and segmentation install on macOS 3.12;
+Linux 3.10–3.12 analysis/full and Linux 3.12 segmentation/CUDA-analysis profiles
+are verified. NVIDIA extras have no compatible macOS installation. Validate complete profile installations
 rather than describing omitted-dependency environments as clean installations. Avoid claiming cross-platform support from partial installs.
 The inspected Dependabot snapshot contains 127 open alerts, including a critical
 PyTorch alert; assess vulnerable versions and reachable paths before prioritizing
@@ -202,14 +209,15 @@ workflow/plugin framework or a wholesale folder rewrite.
    default/extra split so it does not silently upgrade the analysis stack.
    Saved-segmentation, assembly, reconstruction, and external-weight checks are
    merged, including tuple-input compatibility, independent image-backend availability,
-   and mask-cleanup dependency guidance. The current batch makes analysis the default
-   installation and adds segmentation, cucim, and cuda-analysis extras, with all
-   as the recommended full-install aggregate. Preserve the
-   old numerical constraints (including cuDF's pandas bound), lock selections, GPU
-   implementations, and public computation APIs. Validate analysis without model or
-   NVIDIA distributions, segmentation with offline CPU training, and complete Linux
-   installation profiles from both archive formats. Verify macOS CPU profiles separately. The
-   published asynchronous reconstruction processor still
+   and mask-cleanup dependency guidance. The installation split is merged, including
+   the all aggregate and CPU onboarding corrections. Next verify actual WSI reading
+   with generated TIFF pixels and explicit OpenSlide/cuCIM test environments. Keep
+   xywh in level-zero pixel units, distinguish array axes from coordinate order,
+   and exercise sequential tile batches without whole-level reads. Fix the confirmed
+   zero-worker prefetch deadlock and drop-last batch count in shared iterator code.
+   Preserve defaults, masks, classes, positive-worker mapping, and inference behavior.
+   The published reader adapters mix coordinate scales at reduced-level boundaries;
+   record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
    consume an upstream correction before extending those contracts.
 2. Continue the independent Google-style documentation and gradual typing work.
@@ -221,3 +229,6 @@ They do not block unrelated maintenance. Keep cuCIM and PyTorch CUDA model
 support, and make CuPy removal decisions from the requested evaluation.
 Keep all batches independently revertible; merging maintenance PRs does not
 complete their remaining compatibility, scientific, or publication checks.
+
+See [WSI backend checks](wsi-backend-checks.md) for the generated fixture, explicit
+environments, covered coordinate contracts, and the upstream boundary limitation.

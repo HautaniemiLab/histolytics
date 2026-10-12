@@ -92,6 +92,12 @@ docs = [
     "pymdown-extensions>=10.15",
 ]
 
+wsi-tests = [
+    "openslide-bin>=4.0",
+    "openslide-python>=1.4",
+    "tifffile>=2025.5.10",
+]
+
 [tool.ruff]
 target-version = "py310"
 

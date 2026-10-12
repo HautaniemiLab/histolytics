@@ -147,11 +147,13 @@ class WSIPatchIterator:
 
         return next(self._iterator)
 
-    def __len__(self):
-        """Get the total number of batches."""
+    def __len__(self) -> int:
+        """Return the batch count, excluding an incomplete batch when requested."""
         if self._dataset is None:
             raise RuntimeError("Context manager not entered. Use 'with' statement.")
 
+        if self.drop_last:
+            return len(self._dataset) // self.batch_size
         return int(np.ceil(len(self._dataset) / self.batch_size))
 
     @property
