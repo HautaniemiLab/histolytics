@@ -6,14 +6,14 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–15 have landed on main at `20a57b1`; the merged local branches
+PRs 3–16 have landed on main at `f853265`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38219779710)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38222767325)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 229 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 233 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -50,13 +50,14 @@ The post-merge main run is separate; do not equate preparation with publication.
   reciprocal distances, pandas rows, and empty tuples.
 - [x] Independent cuML clustering and cuCIM color-backend detection, with CPU
   output checks and optional-import/dispatch combinations; GPU computation unverified.
+- [x] Correct CuPy/cupyx mask-cleanup guidance and standalone CPU connectivity/cutoff checks.
 
 ### Open compatibility and release gates
 
 - [ ] Resolve Python 3.13 dependency compatibility and validate source, wheel,
   and source-distribution checks before calling that version supported.
-- [ ] Validate the full package on macOS after a deliberate optional-dependency
-  change; the current mandatory Linux NVIDIA packages still prevent installation.
+- [ ] Validate the analysis and segmentation installation profiles on macOS and
+  Linux. NVIDIA extras remain Linux-only; record each profile separately.
 - [ ] Verify PyPI publisher/account configuration and authentication on a
   separately authorized release. Prepared OIDC workflow is not proof of account setup.
 
@@ -68,9 +69,10 @@ bypass upstream constraints or rely on an unpublished checkout for a release.
 
 ## Installation and dependency audit
 
-A locked install fails on macOS because mandatory cuml-cu12 has no compatible
-wheel. Linux CI remains the existing installation baseline. A full macOS install
-has not been validated. Avoid claiming cross-platform support from partial installs.
+Main before the installation split requires cuml-cu12, which has no compatible
+macOS wheel. The proposed split makes analysis the default and moves models and
+NVIDIA processing into explicit extras. Validate complete profile installations
+rather than describing omitted-dependency environments as clean installations. Avoid claiming cross-platform support from partial installs.
 The inspected Dependabot snapshot contains 127 open alerts, including a critical
 PyTorch alert; assess vulnerable versions and reachable paths before prioritizing
 upgrades. No advisories have been dismissed or fixed by the first patch.
@@ -199,10 +201,14 @@ workflow/plugin framework or a wholesale folder rewrite.
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
    Saved-segmentation, assembly, reconstruction, and external-weight checks are
-   merged, including the tuple-input review correction and independent image-backend
-   availability. Next correct the mask-cleanup dependency guidance and verify its
-   independent CuPy/cupyx boundary, CPU connectivity, and exclusive area cutoff.
-   Preserve GPU implementations and existing dispatch/error policy. The
+   merged, including tuple-input compatibility, independent image-backend availability,
+   and mask-cleanup dependency guidance. The current batch makes analysis the default
+   installation and adds segmentation, cucim, and cuda-analysis extras, with all
+   as the recommended full-install aggregate. Preserve the
+   old numerical constraints (including cuDF's pandas bound), lock selections, GPU
+   implementations, and public computation APIs. Validate analysis without model or
+   NVIDIA distributions, segmentation with offline CPU training, and complete Linux
+   installation profiles from both archive formats. Verify macOS CPU profiles separately. The
    published asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
    consume an upstream correction before extending those contracts.

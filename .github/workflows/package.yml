@@ -39,13 +39,24 @@ jobs:
 
   install:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         distribution: [wheel, sdist]
+        profile: [analysis, full]
+        os: [ubuntu-latest]
+        include:
+          - {python-version: "3.12", distribution: wheel, profile: analysis, os: macos-latest}
+          - {python-version: "3.12", distribution: sdist, profile: analysis, os: macos-latest}
+          - {python-version: "3.12", distribution: wheel, profile: cuda-analysis, os: ubuntu-latest}
+          - {python-version: "3.12", distribution: sdist, profile: cuda-analysis, os: ubuntu-latest}
+          - {python-version: "3.12", distribution: wheel, profile: segmentation, os: ubuntu-latest}
+          - {python-version: "3.12", distribution: sdist, profile: segmentation, os: ubuntu-latest}
+          - {python-version: "3.12", distribution: wheel, profile: segmentation, os: macos-latest}
+          - {python-version: "3.12", distribution: sdist, profile: segmentation, os: macos-latest}
     env:
       HF_HUB_OFFLINE: "1"
       OMP_NUM_THREADS: "2"
@@ -67,14 +78,34 @@ jobs:
       - name: Install the built distribution with declared dependencies
         env:
           DISTRIBUTION: ${{ matrix.distribution }}
+          PROFILE: ${{ matrix.profile }}
         run: |
           uv venv --python "${{ matrix.python-version }}" "$RUNNER_TEMP/package-env"
-          if [ "$DISTRIBUTION" = wheel ]; then
-            uv pip install --python "$RUNNER_TEMP/package-env/bin/python" dist/*.whl
+          if [ "$PROFILE" = full ]; then
+            extras="all"
+          elif [ "$PROFILE" = segmentation ]; then
+            extras="segmentation"
+          elif [ "$PROFILE" = cuda-analysis ]; then
+            extras="cuda-analysis"
           else
-            uv pip install --python "$RUNNER_TEMP/package-env/bin/python" dist/*.tar.gz
+            extras=""
           fi
+          if [ "$DISTRIBUTION" = wheel ]; then
+            artifact=$(find dist -name '*.whl' -print -quit)
+          else
+            artifact=$(find dist -name '*.tar.gz' -print -quit)
+          fi
+          if [ -n "$extras" ]; then
+            artifact="$artifact[$extras]"
+          fi
+          uv pip install --python "$RUNNER_TEMP/package-env/bin/python" "$artifact"
           uv pip check --python "$RUNNER_TEMP/package-env/bin/python"
-      - name: Check installed imports, sample data, spatial queries, and CPU training
+      - name: Check installed capability profile outside the checkout
         working-directory: ${{ runner.temp }}
-        run: '"$RUNNER_TEMP/package-env/bin/python" "$GITHUB_WORKSPACE/tools/check_installed_package.py"'
+        run: '"$RUNNER_TEMP/package-env/bin/python" "$GITHUB_WORKSPACE/tools/check_installed_package.py" --profile "${{ matrix.profile }}"'
+      - name: Exercise analysis regressions without the model stack
+        if: matrix.profile == 'analysis'
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv pip install --python "$RUNNER_TEMP/package-env/bin/python" 'pytest>=8.3.5'
+          "$RUNNER_TEMP/package-env/bin/python" -m pytest "$GITHUB_WORKSPACE/tests" --ignore="$GITHUB_WORKSPACE/tests/test_models.py" --ignore="$GITHUB_WORKSPACE/tests/test_postprocessing.py" -k 'not bundled_pixels_match_upstream'

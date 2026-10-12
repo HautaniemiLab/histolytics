@@ -7,16 +7,27 @@ import textwrap
 import numpy as np
 import pytest
 
+_BLOCK_MODEL_GPU_IMPORTS = textwrap.dedent(
+    """
+    import sys
+    from importlib.abc import MetaPathFinder
+
+    class BlockModelGpuImports(MetaPathFinder):
+        def find_spec(self, fullname, path=None, target=None):
+            if fullname.split(".")[0] in (
+                "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
+            ):
+                raise ModuleNotFoundError(f"Blocked optional package: {fullname}", name=fullname)
+
+    sys.meta_path.insert(0, BlockModelGpuImports())
+    """
+)
+
 
 def test_analysis_without_model_or_gpu_packages():
-    code = textwrap.dedent(
+    code = _BLOCK_MODEL_GPU_IMPORTS + textwrap.dedent(
         """
         import sys
-        for package in (
-            "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
-        ):
-            sys.modules[package] = None
-
         import geopandas as gpd
         import numpy as np
         from shapely.geometry import box
@@ -58,14 +69,9 @@ def test_bundled_pixels_match_upstream(loader, filename):
 
 
 def test_saved_segmentation_to_analysis_without_model_packages():
-    code = textwrap.dedent(
+    code = _BLOCK_MODEL_GPU_IMPORTS + textwrap.dedent(
         """
         import sys
-        for package in (
-            "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
-        ):
-            sys.modules[package] = None
-
         from pathlib import Path
         from tempfile import TemporaryDirectory
         import geopandas as gpd
@@ -112,11 +118,10 @@ def test_saved_segmentation_to_analysis_without_model_packages():
 
 
 def test_external_weights_to_analysis_without_graph_construction():
-    code = textwrap.dedent(
+    code = _BLOCK_MODEL_GPU_IMPORTS + textwrap.dedent(
         """
         import sys
         for package in (
-            "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
             "histolytics.spatial_geom", "histolytics.spatial_graph.graph",
             "histolytics.spatial_graph.spatial_weights",
         ):

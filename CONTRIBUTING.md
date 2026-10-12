@@ -36,7 +36,7 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 
 - Python 3.10 or higher
 - [uv](https://docs.astral.sh/uv/)
-- Linux for the current mandatory NVIDIA dependencies; macOS support is planned
+- Linux for NVIDIA extras; Linux/macOS for CPU analysis and segmentation profiles
 
 ### Installation for Development
 
@@ -46,7 +46,7 @@ git clone https://github.com/HautaniemiLab/histolytics.git
 cd histolytics
 
 # Install the current package and locked development dependencies
-uv sync --locked --dev
+uv sync --locked --dev --all-extras
 
 # Install commit and push hooks
 uv run --no-sync pre-commit install --hook-type pre-commit --hook-type pre-push
@@ -72,8 +72,9 @@ uv run --no-sync ruff check src tests tools
 uv run --no-sync ruff format --check src tests tools
 ```
 
-This installs development tools only. Use the full development setup above for
-library tests. The lock hook checks consistency with `uv lock --check`; update
+This installs development tools only. Use the full development setup above on Linux for library tests. For analysis
+development on macOS, use `uv sync --locked --dev`; model development adds
+`--extra segmentation`. NVIDIA extras require a supported Linux CUDA environment. The lock hook checks consistency with `uv lock --check`; update
 dependencies deliberately with `uv lock` rather than having hooks rewrite them.
 
 ## Testing

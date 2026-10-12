@@ -101,13 +101,17 @@ encoders in ordinary tests and keep them offline. Real checkpoint, optional back
 slow, and GPU checks need explicit environments; report their execution and skips.
 Do not hide missing dependencies or regressions by skipping failing tests.
 
-The current mandatory NVIDIA dependencies prevent a full locked installation on
-macOS. Linux CI is the baseline until a separately tested optional-dependency
-change lands. Do not call an environment with omitted dependencies a clean install.
+The default installation provides CPU analysis. Model/WSI workflows use the
+segmentation extra; NVIDIA processing uses cuda-analysis, and the retained cuCIM
+reader uses cucim (which includes segmentation). The all extra combines these
+capabilities for a full Linux installation. Full development tests select all
+extras on Linux. Report the installed profile and distinguish complete profile
+installations from diagnostic environments with omitted requirements. macOS does
+not support the NVIDIA extras; CPU analysis and segmentation are checked separately.
 
 | Task | Command from repository root |
 | --- | --- |
-| Install locked development environment | `uv sync --locked --dev` |
+| Install locked development environment | `uv sync --locked --dev --all-extras` |
 | Install development tools only | `uv sync --locked --only-group dev` |
 | Lint library, tests, and release tools | `uv run --no-sync ruff check src tests tools` |
 | Check formatting | `uv run --no-sync ruff format --check src tests tools` |
@@ -118,7 +122,7 @@ change lands. Do not call an environment with omitted dependencies a clean insta
 | Hooks for changed files | `uv run --no-sync pre-commit run --files <changed-files>` |
 | Install hooks | `uv run --no-sync pre-commit install --hook-type pre-commit --hook-type pre-push` |
 | Build and verify archives | `uv build && python tools/check_distributions.py` |
-| Build docs | `uv sync --locked --group docs && uv run --no-sync mkdocs build` |
+| Build docs | `uv sync --locked --group docs --extra segmentation && uv run --no-sync mkdocs build` |
 
 Run focused checks then required CI checks. Report versions, results, and unverified
 platforms/devices. Do not bypass hooks. Ruff 0.17.0 is pinned in the development
