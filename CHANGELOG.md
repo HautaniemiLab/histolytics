@@ -4,6 +4,8 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 ### Changed
+- Require Torch 2.9.1–2.9.x for segmentation, replacing legacy Torch 2.0 support
+  and aligning the locked torchvision/Triton companions. CPU analysis stays independent.
 - Add an explicit Rasterio affine grid to instance/semantic rasterization, retaining
   legacy unit-grid defaults and requiring unambiguous output dimensions/offsets.
 - Make CPU analysis the default installation; move models/workflows to

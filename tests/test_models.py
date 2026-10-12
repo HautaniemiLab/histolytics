@@ -12,6 +12,22 @@ from histolytics.models.hovernet_panoptic import HoverNetPanoptic, hovernet_pano
 from histolytics.models.stardist_panoptic import StarDistPanoptic, stardist_panoptic
 
 
+def test_local_pytorch_state_dict_round_trip(tmp_path):
+    torch.manual_seed(42)
+    original = HoverNetPanoptic(
+        3, 2, enc_name="resnet18", enc_pretrain=False, device=torch.device("cpu")
+    )
+    checkpoint = tmp_path / "hovernet.pt"
+    torch.save(original.model.state_dict(), checkpoint)
+    loaded = HoverNetPanoptic.from_pretrained(checkpoint, device=torch.device("cpu"))
+    assert loaded.model.state_dict().keys() == original.model.state_dict().keys()
+    for name, value in original.model.state_dict().items():
+        torch.testing.assert_close(
+            loaded.model.state_dict()[name], value, rtol=0, atol=0
+        )
+        assert loaded.model.state_dict()[name].device.type == "cpu"
+
+
 @pytest.fixture
 def checkpoint_reference_module():
     path = Path(__file__).resolve().parents[1] / "tools/check_checkpoint_reference.py"

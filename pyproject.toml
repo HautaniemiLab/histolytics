@@ -50,7 +50,7 @@ segmentation = [
     "huggingface-hub",
     "pillow>=10.1",
     "safetensors",
-    "torch>=2.0.0",
+    "torch>=2.9.1,<2.10",
     "torchdata>=0.11.0",
 ]
 cucim = [

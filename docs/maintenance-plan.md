@@ -425,3 +425,18 @@ If fixed comparisons fail, investigate the concrete platform/version difference
 without relaxing criteria, replacing expectations or hiding failures. Only blockers
 on this exact path belong in the batch. Model dependency upgrades, GPU checks,
 whole-slide behavior and new reference files remain outside this milestone.
+
+## Active batch: focused Torch 2.9 upgrade and validation cleanup
+
+User-authorized scope: require Torch >=2.9.1,<2.10, retain the reviewed 2.9 family,
+update only its required torchvision/Triton companions, and preserve all remaining
+numerical/runtime package versions. Remove the legacy CUDA 11 dependency closure.
+No CI expansion, new scientific baseline or unrelated fixes.
+
+Done means the existing source/profile/reader gate passes, the same pinned public
+checkpoint passes fixed comparisons on macOS and Linux with the upgraded lock,
+and local Torch state-dictionary loading retains exact tensors on CPU. Once those
+checks pass, remove the temporary checkpoint workflow scope and its guard, retire
+obsolete validation reports, and keep only compact scientific regression fixtures
+with essential immutable provenance. Validation evidence belongs in this PR and
+existing CI logs. GPU computation and Python 3.13 remain unverified/unresolved.
