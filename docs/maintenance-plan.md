@@ -219,46 +219,74 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Immediate next work
+## Milestone: verified image-to-analysis composition
 
-The [dependency architecture proposal](dependency-architecture.md) now starts
-from standalone capabilities and explicit data handoffs. Pipelines compose WSI
-reading, image inference, reconstruction, conversion, assembly, and analysis.
-Installation groups follow those code boundaries; they are not a substitute for
-them. Preserve existing representations and high-level APIs, and avoid a new
-workflow/plugin framework or a wholesale folder rewrite.
+Goal: independently usable capabilities exchange explicit data, and pipeline code
+combines them. Complete one small CPU image-to-analysis path using existing APIs:
+image → predictor outputs → standalone reconstruction → vector geometry → saved
+Parquet → fresh-process CPU image features and spatial selection/aggregation.
+Reuse existing native-reader and assembly checks; do not build a workflow framework.
 
-1. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
-   expose one reusable seam at a time, with a small composition regression and
-   preserved public convenience APIs. Verify numerical selections before any
-   default/extra split so it does not silently upgrade the analysis stack.
-   Saved-segmentation, assembly, reconstruction, and external-weight checks are
-   merged, including tuple-input compatibility, independent image-backend availability,
-   and mask-cleanup dependency guidance. The installation split is merged, including
-   the all aggregate and CPU onboarding corrections. Real OpenSlide/cuCIM reads and
-   sequential image-only tile batches are verified, with shared zero-worker and
-   drop-last corrections merged. Level-zero image/mask packing and type-mask returns
-   are verified with clipped/empty masks and saved annotations feeding CPU features.
-   PR 20 rasterizes annotations directly on the requested pyramid grid through an
-   explicit affine option in the shared raster primitives. Preserve legacy default
-   rendering, GDAL boundary ties, IDs/class mappings, source geometry, actual reader
-   shapes, and level-zero coordinate origins. Integer/fractional grids, rounded
-   region dimensions, aliases, empty/type masks and feature callbacks are verified.
-   Unequal-axis metadata remains inconsistent in the published adapters; reject masked use rather
-   than approximate its pixel grid or hide the dependency problem.
-   The published reader adapters mix coordinate scales at reduced-level boundaries;
-   record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still
-   assumes tissue maps are present and returns unresolved cytoplasm results;
-   consume an upstream correction before extending those contracts.
-2. Continue the independent Google-style documentation and gradual typing work.
-3. Consume a tested upstream compatibility release and upgrade numerical/CUDA
-   families in reviewable batches to make Python 3.13 support real.
+### Done means
 
-GPU processing comparisons and peak-memory measurements await CUDA hardware.
-They do not block unrelated maintenance. Keep cuCIM and PyTorch CUDA model
-support, and make CuPy removal decisions from the requested evaluation.
-Keep all batches independently revertible; merging maintenance PRs does not
-complete their remaining compatibility, scientific, or publication checks.
+- One deterministic offline composition regression carries actual image input
+  through the unmocked predictor, standalone processor, raster/vector conversion,
+  saved Parquet, and downstream analysis. A tiny controlled Torch producer makes
+  expected outputs independent of learned weights; it is a contract fixture, not
+  evidence of pretrained segmentation quality.
+- The test checks tensor/image axes and dtype, logits versus labels, background,
+  nonempty instance IDs, class names, exact pixel geometry/origin, and saved identity.
+  Rasterize with the explicit saved uid column; table indices are not instance IDs.
+- A fresh analysis process consumes saved outputs with model/NVIDIA imports
+  blocked and produces analytically checked RGB features and spatial counts.
+  It neither instantiates nor retains the producer/processor.
+- Existing tissue-assembly tests confirm standalone use without running segmentation;
+  existing real-reader tests confirm aligned image/mask inputs at supported grids.
+  Record their scope instead of extending this milestone into slide-wide inference.
+- Supported source suites, archive/profile checks and native-reader checks pass
+  in the existing 15-job gate. No additional CI jobs or runtime dependencies.
+- The plan records acceptance evidence and remaining limitations, and this
+  milestone stops. Only demonstrated blockers on this path justify implementation
+  changes; successful composition may require tests only.
 
-See [WSI backend checks](wsi-backend-checks.md) for the generated fixture, explicit
-environments, covered coordinate contracts, and the upstream boundary limitation.
+### Acceptance evidence
+
+The composition and its supporting local checks passed (21 tests, locked macOS
+Python 3.12.13 CPU segmentation profile). Lint, formatting, changed-file hooks and
+seven tooling guards passed. Final milestone completion requires the existing
+15-job CI gate to pass; record its result in the introducing PR. No code change
+beyond the regression test is needed to connect this path.
+
+- `tests/test_postprocessing.py::test_image_predictions_to_saved_analysis`: real
+  Predictor execution with a controlled CPU Torch producer, standalone HoVer-Net
+  reconstruction, exact labels/classes, vector conversion at origin (100, 200),
+  Parquet persistence, uid-based rasterization, RGB means, selection and counts.
+  Both reconstructed objects have 256 square-pixel area; table indices 101/303
+  deliberately differ from instance uids 1/2. No physical-unit conversion.
+- `tests/test_standalone_analysis.py::test_saved_segmentation_to_analysis_without_model_packages`
+  and `tests/test_mergers.py::test_tissue_assembly_keeps_single_column_objects`:
+  standalone tissue assembly from saved/external data, without model execution.
+- `tools/wsi_tests/test_readers.py`: actual OpenSlide Linux/macOS and cuCIM CPU reads,
+  aligned mask grids and saved annotations feeding CPU features. These are existing
+  native-reader jobs, not new CI environments.
+
+### Current batch and scope boundary
+
+The current regression fills the complete saved-artifact handoff between
+segmentation and an independent analysis process. Prediction, reconstruction, saved geometry,
+standalone assembly, CPU imports and real-reader grids already have separate tests.
+The composition regression connects these contracts using existing outputs,
+class dictionaries, Parquet files, raster functions and analysis APIs unchanged.
+No standalone PostProcessor user-guide example is required.
+
+Published checkpoint accuracy/reproducibility, whole-slide stitching quality,
+CUDA performance/removal decisions, physical calibration, vendor formats,
+unequal-axis/off-slide reader fixes, asynchronous cytoplasm handling, Python 3.13,
+security/dependency upgrades, general typing and documentation sweeps are separate
+backlog milestones. Do not start them as incidental fixes in this milestone.
+Published reader/reconstruction limitations require upstream corrections, not local
+padding wrappers, fallback behavior or compatibility machinery.
+
+Before any next PR, name the unmet acceptance criterion and its direct evidence.
+If the current criteria pass, mark the milestone complete and propose the next
+bounded milestone before further implementation work.

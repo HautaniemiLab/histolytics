@@ -1,5 +1,8 @@
 """Prediction handoffs preserve processor settings and reconstruction outputs."""
 
+import subprocess
+import sys
+import textwrap
 from unittest.mock import Mock
 
 import geopandas as gpd
@@ -11,10 +14,130 @@ from cellseg_models_pytorch.decoders.multitask_decoder import (
     SoftSemanticOutput,
 )
 from cellseg_models_pytorch.inference.post_processor import PostProcessor
+from cellseg_models_pytorch.inference.predictor import Predictor
 from geopandas.testing import assert_geodataframe_equal
 from shapely.affinity import translate
 
 from histolytics.models._base_model import BaseModelPanoptic
+from histolytics.utils.raster import inst2gdf
+
+
+def test_image_predictions_to_saved_analysis(tmp_path):
+    class ControlledProducer(torch.nn.Module):
+        """Known logits from RGB; this fixture measures no segmentation accuracy."""
+
+        def __init__(self):
+            super().__init__()
+            self.head = torch.nn.Conv2d(3, 3, 1, bias=False)
+            with torch.no_grad():
+                self.head.weight.copy_(10 * torch.eye(3).reshape(3, 3, 1, 1))
+
+        def forward(self, image):
+            assert image.shape == (1, 3, 64, 64)
+            assert image.dtype == torch.float32 and image.device.type == "cpu"
+            assert image.min() == 0 and image.max() == 1
+            yy, xx = torch.meshgrid(
+                torch.linspace(-1, 1, 64), torch.linspace(-1, 1, 64), indexing="ij"
+            )
+            return {
+                "nuc": SoftInstanceOutput(
+                    type_map=self.head(image),
+                    aux_map=torch.stack([yy, xx])[None],
+                    binary_map=(image[:, 1:].amax(1, keepdim=True) > 0).float(),
+                ),
+                "cyto": None,
+                "tissue": None,
+            }
+
+    image = np.zeros((64, 64, 3), dtype=np.uint8)
+    image[..., 0] = 255
+    image[8:24, 8:24] = [0, 255, 0]
+    image[40:56, 40:56] = [0, 0, 255]
+    expected = np.zeros((64, 64), dtype=np.int32)
+    expected[8:24, 8:24] = 1
+    expected[40:56, 40:56] = 2
+
+    predictor = Predictor(ControlledProducer().eval(), mixed_precision=False)
+    predictions = predictor.predict(image)
+    assert predictions["nuc"].type_map.dtype == torch.int64
+    np.testing.assert_array_equal(predictions["nuc"].type_map[0].numpy(), expected)
+    result = PostProcessor(
+        "hovernet", postproc_kwargs={"enhance": False}
+    ).postproc_serial(predictions)
+    assert result["cyto"] is None and result["tissue"] is None
+    instances, types = result["nuc"][0]
+    assert instances.dtype == types.dtype == np.int32
+    np.testing.assert_array_equal(instances, expected)
+    np.testing.assert_array_equal(types, expected)
+
+    objects = inst2gdf(
+        instances,
+        types,
+        xoff=100,
+        yoff=200,
+        min_size=0,
+        smooth_func=None,
+        class_dict={1: "immune", 2: "neoplastic"},
+    )
+    objects.index = [101, 303]
+    objects.to_parquet(tmp_path / "nuclei.parquet")
+    np.save(tmp_path / "image.npy", image)
+
+    code = textwrap.dedent(
+        """
+        import sys
+        from importlib.abc import MetaPathFinder
+        from pathlib import Path
+
+        blocked = {"torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml"}
+        class BlockProducerImports(MetaPathFinder):
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname.split(".")[0] in blocked:
+                    raise ModuleNotFoundError(fullname, name=fullname)
+        sys.meta_path.insert(0, BlockProducerImports())
+
+        import geopandas as gpd
+        import numpy as np
+        from shapely.geometry import box
+        from histolytics.utils.raster import gdf2inst
+        from histolytics.nuc_feats.intensity import rgb_intensity_feats
+        from histolytics.spatial_ops import get_objs
+        from histolytics.spatial_agg.grid_agg import get_cell_metric
+
+        directory = Path(sys.argv[1])
+        objects = gpd.read_parquet(directory / "nuclei.parquet")
+        image = np.load(directory / "image.npy", allow_pickle=False)
+        assert objects.index.tolist() == [101, 303]
+        assert objects.uid.tolist() == [1, 2]
+        assert objects.class_name.tolist() == ["immune", "neoplastic"]
+        assert objects.geometry.bounds.to_numpy().tolist() == [
+            [108, 208, 124, 224], [140, 240, 156, 256]
+        ]
+        assert objects.geometry.area.tolist() == [256, 256]
+        labels = gdf2inst(objects, id_col="uid", xoff=100, yoff=200, width=64, height=64)
+        expected = np.zeros((64, 64), dtype=np.int32)
+        expected[8:24, 8:24] = 1
+        expected[40:56, 40:56] = 2
+        assert labels.dtype == np.int32
+        np.testing.assert_array_equal(labels, expected)
+        features = rgb_intensity_feats(image, labels, metrics=("mean",), device="cpu")
+        assert features.index.tolist() == [1, 2]
+        np.testing.assert_allclose(features.to_numpy(), [[0, 1, 0], [0, 0, 1]], rtol=0, atol=0)
+        area = gpd.GeoDataFrame(geometry=[box(139, 239, 157, 257)])
+        selected = get_objs(area, objects, predicate="contains")
+        assert selected.uid.tolist() == [2]
+        assert selected.index.tolist() == [303]
+        assert get_cell_metric(area.geometry.iloc[0], objects, len, "contains") == 1
+        assert not any(name.split(".")[0] in blocked for name in sys.modules)
+        """
+    )
+    analysis = subprocess.run(
+        [sys.executable, "-c", code, str(tmp_path)],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert analysis.returncode == 0, analysis.stdout + analysis.stderr
 
 
 def shift_geometry(geometry):
