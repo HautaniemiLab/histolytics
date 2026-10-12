@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from libpysal.weights import W
 
-from histolytics.spatial_geom.axis import _dist
 from histolytics.utils.gdf import is_categorical
 
 __all__ = [
@@ -165,46 +164,49 @@ def nhood_type_count(
 
 
 def nhood_dists(
-    nhood: Sequence[int],
+    nhood: Sequence[int | str] | np.ndarray | pd.Series | float | None,
     centroids: pd.Series,
-    ids: pd.Series = None,
+    ids: pd.Series | None = None,
     invert: bool = False,
 ) -> np.ndarray:
-    """Compute the neighborhood distances between the center node.
+    """Compute distances from the first node in the supplied neighborhood.
 
-    Note:
-        It is assumed that the center node is the first index in the `nhood`
-        array. Use `include_self=True` in `neighborhood` to include the center.
-
-    Parameters:
-        nhood (Sequence[int]):
-            An array containing neighbor indices. The first index is assumed to be
-            the center node.
-        centroids (pd.Series):
-            A pd.Series array containing the centroid Points of the full gdf.
-        ids (pd.Series):
-            A pd.Series array containing the ids of the full gdf.
-        invert (bool):
-            Flag, whether to invert the distances. E.g. 1/dists. Defaults to False.
+    Args:
+        nhood: Ordered node IDs, with the center first. A pandas row may contain
+            the sequence in its first cell. None or NaN denotes no neighborhood.
+            Use include_self=True in nhood() to include the center.
+        centroids: Series of Shapely points indexed by object row labels. Distances
+            retain the coordinate units; pixel coordinates give pixel distances.
+        ids: Optional unique node IDs indexed by the corresponding centroid row
+            labels. If omitted, neighborhood IDs are centroid index labels.
+        invert: Return reciprocal distances, clipping distances below 1e-6 in the
+            input units before inversion. This includes the zero self-distance.
 
     Returns:
-        np.ndarray:
-            An array containing the distances between the center node and its
-            neighborhood.
+        Float32 distances in the supplied order, including the center's zero
+        distance (or clipped reciprocal). Missing/empty neighborhoods return the
+        existing integer [0] sentinel.
+
+    Raises:
+        KeyError: If a neighborhood ID or its mapped centroid row is missing.
+        ValueError: If supplied node IDs are not unique.
     """
     if isinstance(nhood, pd.Series):
         nhood = nhood.iloc[0]  # assume that the series is a row
 
     nhood_dists = np.array([0])
-    if nhood not in (None, np.nan) and isinstance(nhood, (Sequence, np.ndarray)):
+    if isinstance(nhood, (Sequence, np.ndarray)) and len(nhood) > 0:
         if ids is not None:
-            nhood = ids[ids.isin(nhood)].index
+            if not ids.is_unique:
+                raise ValueError("ids must contain unique node IDs")
+            id_to_index = pd.Series(ids.index, index=ids.to_numpy())
+            nhood = id_to_index.loc[nhood].to_numpy()
 
         node = nhood[0]
         center_node = centroids.loc[node]
         nhood_nodes = centroids.loc[nhood].to_numpy()
-        nhood_dists = np.array([_dist(center_node, c) for c in nhood_nodes]).astype(
-            np.float32
+        nhood_dists = np.array(
+            [center_node.distance(c) for c in nhood_nodes], dtype=np.float32
         )
         if invert:
             # Ensure minimum distance to avoid huge reciprocals
