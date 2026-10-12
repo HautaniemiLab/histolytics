@@ -1,0 +1,179 @@
+{
+  "scope": "One published checkpoint/image CPU behavior reference; not clinical accuracy or cross-device validation.",
+  "source_revision": "49680f4642d8a5103e08a7e4a9ca8db74c5aeaab",
+  "checkpoint": {
+    "repo_id": "histolytics-hub/hovernet-histo-hgsc-pan-v1",
+    "revision": "976ae141db64d800e11ff6c7d84b59d9f2527ba1",
+    "filename": "hovernet_hgsc_v1_efficientnet_b5.safetensors",
+    "sha256": "832e478100c27182034576ce307caade6c3054df04ced7e63a33476423805fe4",
+    "bytes": 153801344,
+    "license": "Apache-2.0",
+    "model_card": "https://huggingface.co/histolytics-hub/hovernet-histo-hgsc-pan-v1/tree/976ae141db64d800e11ff6c7d84b59d9f2527ba1"
+  },
+  "capture": {
+    "python": "3.12.13",
+    "system": "Darwin",
+    "architecture": "arm64",
+    "profile": "complete locked segmentation + dev + wsi-tests",
+    "device": "cpu",
+    "threads": 2,
+    "seed": 42,
+    "mixed_precision": false,
+    "model_eval": true,
+    "versions": {
+      "histolytics": "0.2.5",
+      "cellseg-models-pytorch": "0.1.30",
+      "torch": "2.9.0",
+      "timm": "1.0.20",
+      "safetensors": "0.6.2",
+      "numpy": "1.26.4",
+      "scipy": "1.16.2",
+      "scikit-image": "0.25.2",
+      "opencv-python": "4.11.0.86",
+      "albumentations": "2.0.8"
+    }
+  },
+  "model_configuration": {
+    "encoder": "efficientnet_b5",
+    "nuclei_classes": 7,
+    "tissue_classes": 7,
+    "strict_weights": true,
+    "enc_pretrain": false
+  },
+  "class_mappings": {
+    "nuc": {
+      "0": "background",
+      "1": "neoplastic",
+      "2": "inflammatory",
+      "3": "connective",
+      "4": "dead",
+      "5": "macrophage_cell",
+      "6": "macrophage_nuc"
+    },
+    "tissue": {
+      "0": "background",
+      "1": "stroma",
+      "2": "omental_fat",
+      "3": "tumor",
+      "4": "hemorrage",
+      "5": "necrosis",
+      "6": "serum"
+    }
+  },
+  "image_file": "hgsc_nest.jpg",
+  "image_sha256": "4525ae5db61e7a385f24ec7ff3bf26e10f61a870c36e3c74b1a3cd436990ea57",
+  "crop_xywh": [
+    686,
+    686,
+    128,
+    128
+  ],
+  "input": {
+    "raw_shape": [
+      128,
+      128,
+      3
+    ],
+    "raw_dtype": "uint8",
+    "normalized_shape": [
+      128,
+      128,
+      3
+    ],
+    "normalized_dtype": "float32",
+    "range": [
+      0.0,
+      1.0
+    ],
+    "coordinates": "uncalibrated level-zero pixels, x right/y down; no resize"
+  },
+  "normalized_image_sha256": "f4efadb7d97f17b8e0576986a3a28f2b9c599684782e54e02743e38f8b952a88",
+  "preprocessing": "Public MinMaxNormalization amin=0,amax=1,copy=True, applied to RGB crop; Predictor converts HWC to BCHW without uint8 rescaling because input is already float32.",
+  "reconstruction": {
+    "method": "hovernet",
+    "enhance": true,
+    "mode": "postproc_serial",
+    "smoothing": "not used for returned arrays"
+  },
+  "arrays_file": "hgsc-hovernet-reference.npz",
+  "arrays_sha256": "02f633709e85dc402f8fddab4afc02c17be2ebd838671afc50e6fcfbf8a15aec",
+  "arrays": {
+    "nuc_type": {
+      "shape": [
+        1,
+        128,
+        128
+      ],
+      "dtype": "int64"
+    },
+    "nuc_aux": {
+      "shape": [
+        1,
+        2,
+        128,
+        128
+      ],
+      "dtype": "float32"
+    },
+    "tissue_type": {
+      "shape": [
+        1,
+        128,
+        128
+      ],
+      "dtype": "int64"
+    },
+    "nuc_instances": {
+      "shape": [
+        128,
+        128
+      ],
+      "dtype": "int32"
+    },
+    "nuc_classes": {
+      "shape": [
+        128,
+        128
+      ],
+      "dtype": "int32"
+    },
+    "tissue_classes": {
+      "shape": [
+        128,
+        128
+      ],
+      "dtype": "int32"
+    }
+  },
+  "instance_pixel_counts": {
+    "ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "counts": [
+      12831,
+      255,
+      720,
+      1613,
+      495,
+      153,
+      226,
+      91
+    ]
+  },
+  "comparison": {
+    "floating": {
+      "rtol": 0.0001,
+      "atol": 1e-05
+    },
+    "labels": "exact equality, including background and instance IDs",
+    "shapes_and_dtypes": "exact equality",
+    "purpose": "Predeclared upgrade comparison criteria; investigate changes without relaxing thresholds or regenerating expected arrays."
+  }
+}

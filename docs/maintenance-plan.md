@@ -6,13 +6,13 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–21 and 23 have landed on main at `b08410a`; the merged local branches
+PRs 3–21 and 23–24 have landed on main at `49680f4`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38268556552)
-passed all 15 routine jobs, including the saved image-to-analysis composition.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38271817656)
+passed all 15 routine jobs, including the fixed CPU image-feature reference.
 The earlier full installation validation covered all 20 supported archive/profile
 combinations. Python 3.13 remains unsupported and has a separate manual
 compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
@@ -287,7 +287,7 @@ Before any next PR, name the unmet acceptance criterion and its direct evidence.
 If the current criteria pass, mark the milestone complete and propose the next
 bounded milestone before further implementation work.
 
-## Active milestone: reproducible CPU image-feature reference
+## Completed milestone: reproducible CPU image-feature reference
 
 Purpose: record real-data numerical outputs before runtime dependency upgrades,
 so future changes can be assessed against a reviewed reference. The preceding
@@ -330,5 +330,51 @@ Only a demonstrated blocker in these two selected feature families belongs here.
   checks exact inputs/labels/pixel counts and both feature tables, including sparse
   IDs, column names, dtypes and finite values.
 - Capture and the focused regression pass in the complete locked analysis profile.
-  Final completion requires the existing 15-job CI gate; record results in the
-  introducing PR and stop at this milestone.
+  All 15 CI jobs passed in run 38271817656; PR 24 is merged. This bounded
+  milestone is complete.
+
+## Active milestone: one published-checkpoint CPU reference
+
+Purpose: establish a real pretrained-model loading/prediction baseline before
+upgrading the model dependency stack. The controlled-producer composition and CPU
+feature references do not validate published weights.
+
+Scope: HGSC HoVer-Net/EfficientNet-B5, one immutable Hugging Face revision, one
+bundled image crop, CPU float32 with mixed precision disabled. Preserve published
+weight keys, learned tensors, class mappings and reconstruction settings. Retain
+model licensing/provenance and record crop/normalization explicitly. No GPU run,
+checkpoint rewrite, pretrained encoder download or runtime dependency upgrade.
+
+### Done means
+
+- Pin the public artifact revision/filename and verify its SHA-256. Record model
+  configuration, input identity, preprocessing, shapes/dtypes, versions and device.
+- The public checkpoint-loading API loads the actual artifact strictly, without
+  guessed configuration, monkeypatches, silent fallback or partial tensor loading.
+  If loading fails, verify the root cause and fix only this path with an offline
+  regression before capturing predictions. Explain any required public API tradeoff.
+- Run one bounded image prediction/reconstruction; retain reference data/settings
+  and explicit comparison criteria for later upgrades. Class/instance semantics
+  and background stay intact; a baseline is not evidence of clinical accuracy.
+- Keep ordinary CI offline. Real artifact checks use an explicit local environment;
+  the existing 15-job gate validates affected offline contracts. No new CI jobs.
+- Record all results and limits; stop when this single checkpoint/image path is
+  verified. Other models, whole-slide stitching, calibration, CUDA comparisons,
+  general checkpoint redesign and unrelated fixes remain outside this milestone.
+
+### Acceptance evidence
+
+- [Pinned checkpoint/capture metadata](validation/hgsc-hovernet-reference.json),
+  [six fixed output arrays](validation/hgsc-hovernet-reference.npz), and
+  [reproduction/licensing notes](published-checkpoint-reference.md).
+- The public CPU loading/prediction path succeeded on the actual SHA-256-verified
+  154 MB safetensors artifact. One 128×128 crop reconstructed seven instances.
+  `tools/check_checkpoint_reference.py` repeated the real-artifact check against
+  saved arrays; labels are exact and float auxiliary maps use fixed criteria.
+- Five offline regression cases verify rejection of a wrong checkpoint, changed
+  instance IDs, changed float values and changed dtypes, and acceptance of small
+  float roundoff. Actual artifact validation is separate from ordinary CI.
+- Capture/repeat validation uses locked macOS ARM64 CPU segmentation. Linux real
+  artifact execution and GPU behavior remain unverified; do not claim those from
+  offline CI. Completion requires the existing 15-job gate and ends this single
+  checkpoint/image milestone.
