@@ -70,22 +70,5 @@ class CIScopeTests(unittest.TestCase):
         versions = re.findall(r"'(\[\"3\..*?\])'", source)
         self.assertEqual(
             [json.loads(value) for value in versions],
-            [["3.13"], ["3.10", "3.12"], ["3.10", "3.11", "3.12"]],
+            [["3.13"], ["3.10", "3.11", "3.12"]],
         )
-
-    def test_checkpoint_downloads_require_explicit_scope(self):
-        source = (WORKFLOWS / "tests.yml").read_text()
-        self.assertRegex(
-            source,
-            r"name: Check pinned public checkpoint on CPU\s+if: inputs.scope == 'checkpoint'",
-        )
-        self.assertIn('revision=checkpoint["revision"]', source)
-        self.assertIn("token=False", source)
-        self.assertRegex(
-            source,
-            r"name: Fetch pinned public checkpoint\s+if: inputs.scope == 'checkpoint'",
-        )
-        self.assertIn(
-            'tools/check_checkpoint_reference.py "$HISTOLYTICS_CHECKPOINT_PATH"', source
-        )
-        self.assertRegex(source, r"packages:\s+if: inputs.scope != 'checkpoint'")

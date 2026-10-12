@@ -35,15 +35,25 @@ pip install 'histolytics[segmentation]'
 ```
 
 This adds models, inference/reconstruction, WSI adapters, and the existing
-segmentation/training dependencies. Albumentations remains in this group because
+segmentation/training dependencies. The model group requires Torch >=2.9.1,<2.10;
+Linux Torch wheels require glibc >=2.28; macOS model wheels require Apple silicon
+(ARM64). CPU analysis remains independent of Torch. Albumentations remains in this group because
 the published upstream inference imports require it. OpenSlide and BioIO backends
 still need their backend dependencies; this group does not install them. The default
 reader remains OpenSlide. HDF5 training additionally requires `tables`, as before. Install `openslide-python` and its system library (or
 `openslide-bin`) for that backend (see [OpenSlide installation](https://openslide.org/api/python/#installing)); BioIO requires `bioio` and a format reader plugin.
 
 Torch's Linux wheels can include NVIDIA runtime packages even for CPU execution.
-For a CPU-only model environment, install the appropriate CPU Torch/torchvision
-wheels using [PyTorch’s installation selector](https://pytorch.org/get-started/locally/) before adding this extra. The analysis-only default
+For a CPU-only Linux model environment, install the matching
+[PyTorch CPU wheels](https://pytorch.org/get-started/previous-versions/#v291) first:
+
+```bash
+pip install torch==2.9.1 torchvision==0.24.1 --index-url https://download.pytorch.org/whl/cpu
+pip install 'histolytics[segmentation]'
+```
+
+These versions satisfy the model extra without replacing CPU wheels with a newer
+Torch family. The analysis-only default
 does not require Torch or a special package index. Select the model device
 explicitly, for example `from_pretrained(..., device=torch.device("cpu"))`;
 the public model-loading default remains CUDA.
