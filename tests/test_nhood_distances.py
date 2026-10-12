@@ -11,7 +11,7 @@ from histolytics.spatial_agg.local_distances import local_distances
 from histolytics.spatial_graph.nhood import nhood_dists
 
 
-@pytest.mark.parametrize("container", [list, np.array])
+@pytest.mark.parametrize("container", [list, tuple, np.array])
 @pytest.mark.parametrize("mapped_ids", [False, True])
 @pytest.mark.parametrize("invert", [False, True])
 def test_nhood_distances_preserve_center_and_order(container, mapped_ids, invert):
@@ -26,7 +26,7 @@ def test_nhood_distances_preserve_center_and_order(container, mapped_ids, invert
     np.testing.assert_allclose(result, expected, rtol=1e-7, atol=0)
 
 
-@pytest.mark.parametrize("neighbors", [None, np.nan, [], np.array([], dtype=int)])
+@pytest.mark.parametrize("neighbors", [None, np.nan, [], (), np.array([], dtype=int)])
 def test_nhood_distances_missing_or_empty(neighbors):
     result = nhood_dists(neighbors, pd.Series(dtype=object))
     np.testing.assert_array_equal(result, [0])
@@ -46,10 +46,11 @@ def test_nhood_distances_reject_ambiguous_ids():
         nhood_dists([7], centroids, ids=ids)
 
 
-def test_nhood_distances_preserve_string_ids_and_repeated_neighbors():
+@pytest.mark.parametrize("container", [tuple, np.array])
+def test_nhood_distances_preserve_string_ids_and_repeated_neighbors(container):
     centroids = pd.Series([Point(0, 0), Point(3, 4)], index=["row_a", "row_b"])
     ids = pd.Series(["left", "center"], index=centroids.index)
-    row = pd.Series([np.array(["center", "left", "left"])])
+    row = pd.Series([container(["center", "left", "left"])])
     np.testing.assert_array_equal(nhood_dists(row, centroids, ids=ids), [0, 5, 5])
 
 
