@@ -4,6 +4,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from rasterio.features import rasterize, shapes
+from rasterio.transform import Affine
 from shapely.geometry import shape
 
 from histolytics.utils._filters import uniform_smooth
@@ -220,38 +221,34 @@ def gdf2inst(
     gdf: gpd.GeoDataFrame,
     xoff: int = 0,
     yoff: int = 0,
-    width: int = None,
-    height: int = None,
+    width: int | None = None,
+    height: int | None = None,
     reset_index: bool = False,
-    id_col: str = None,
-) -> gpd.GeoDataFrame:
-    """Converts a GeoDataFrame to an instance segmentation raster mask.
+    id_col: str | None = None,
+    transform: Affine | None = None,
+) -> np.ndarray:
+    """Rasterize instance geometry onto a discrete integer grid.
 
-    Parameters:
-        gdf (gpd.GeoDataFrame):
-            GeoDataFrame to convert to an instance segmentation mask.
-        xoff (int):
-            X offset. This is used to translate the geometries in the GeoDataFrame to
-            burn the geometries in correctly to the raster mask.
-        yoff (int):
-            Y offset. This is used to translate the geometries in the GeoDataFrame to
-            burn the geometries in correctly to the raster mask.
-        width (int):
-            Width of the output. This should match with the underlying image width.
-            If None, the width will be calculated from the input gdf.
-        height (int):
-            Height of the output. This should match with the underlying image height.
-            If None, the height will be calculated from the input gdf.
-        reset_index (bool):
-            Whether to reset the index of the output GeoDataFrame.
-        id_col (str):
-            If provided, the column name to use for the instance IDs. If None, the index
-            of the GeoDataFrame will be used as instance IDs. Ignored if `reset_index`
-            is set to True.
+    Args:
+        gdf: Instance geometries in the output grid's coordinate units.
+        xoff: Unit-grid x origin when ``transform`` is omitted.
+        yoff: Unit-grid y origin when ``transform`` is omitted.
+        width: Output columns. Inferred from geometry bounds only on the unit grid.
+        height: Output rows. Inferred from geometry bounds only on the unit grid.
+        reset_index: Assign IDs 1 through N instead of retaining existing IDs.
+        id_col: Column providing instance IDs; defaults to the frame index and is
+            ignored when ``reset_index`` is true.
+        transform: Rasterio affine mapping (column, row) pixel corners to geometry
+            coordinates. Requires explicit width/height and zero xoff/yoff.
+            Geometry and transform must use the same units; no CRS conversion occurs.
 
     Returns:
-        np.ndarray:
-            Instance segmentation mask of the input gdf. Shape (height, width).
+        Int32 instance labels with shape (height, width), background zero, and
+        Rasterio's existing pixel-center/edge burning rules. IDs are not interpolated.
+
+    Raises:
+        ValueError: If an explicit grid lacks dimensions or also supplies offsets.
+        TypeError: If empty geometry has no unit-grid output dimensions.
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_nuclei
@@ -272,6 +269,14 @@ def gdf2inst(
         >>> fig.tight_layout()
     ![out](../../img/gdf2inst.png)
     """
+    if transform is not None:
+        if width is None or height is None:
+            raise ValueError("An explicit transform requires width and height.")
+        if xoff != 0 or yoff != 0:
+            raise ValueError(
+                "An explicit transform contains its own offsets; use xoff=yoff=0."
+            )
+
     if gdf.empty:
         try:
             return np.zeros((int(height), int(width)), dtype=np.int32)
@@ -281,16 +286,20 @@ def gdf2inst(
                 " are not provided. Cannot infer the output shape."
             )
 
-    xmin, ymin, xmax, ymax = gdf.total_bounds
-    xoff = xoff - xmin
-    yoff = yoff - ymin
+    if transform is None:
+        xmin, ymin, xmax, ymax = gdf.total_bounds
+        xoff = xoff - xmin
+        yoff = yoff - ymin
 
-    if width is None:
-        width = int(xmax - xmin)
-    if height is None:
-        height = int(ymax - ymin)
+        if width is None:
+            width = int(xmax - xmin)
+        if height is None:
+            height = int(ymax - ymin)
 
-    geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+        geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+        transform = Affine.identity()
+    else:
+        geoms = gdf.geometry
 
     if reset_index:
         labels = range(1, len(gdf) + 1)
@@ -307,6 +316,7 @@ def gdf2inst(
         out_shape=image_shape,
         fill=0,
         dtype=np.int32,
+        transform=transform,
     )
 
     return out_mask
@@ -316,35 +326,32 @@ def gdf2sem(
     gdf: gpd.GeoDataFrame,
     xoff: int = 0,
     yoff: int = 0,
-    class_dict: Dict[str, int] = None,
-    width: int = None,
-    height: int = None,
+    class_dict: dict[str, int] | None = None,
+    width: int | None = None,
+    height: int | None = None,
+    transform: Affine | None = None,
 ) -> np.ndarray:
-    """Converts a GeoDataFrame to a semantic segmentation raster mask.
+    """Rasterize semantic geometry onto a discrete integer grid.
 
-    Parameters:
-        gdf (gpd.GeoDataFrame):
-            GeoDataFrame with a "class_name" column.
-        xoff (int):
-            X offset. This is used to translate the geometries in the GeoDataFrame to
-            burn the geometries in correctly to the raster mask.
-        yoff (int):
-            Y offset. This is used to translate the geometries in the GeoDataFrame to
-            burn the geometries in correctly to the raster mask.
-        class_dict (Dict[str, int], default=None):
-            Dictionary mapping class names to integers. e.g. {"neoplastic":1, "immune":2}
-            If None, the classes will be mapped to integers in the order they appear in
-            the GeoDataFrame.
-        width (int):
-            Width of the output. This should match with the underlying image width.
-            If None, the width will be calculated from the input gdf.
-        height (int):
-            Height of the output. This should match with the underlying image height.
-            If None, the height will be calculated from the input gdf.
+    Args:
+        gdf: Geometries with a class_name column, in the output grid's coordinate units.
+        xoff: Unit-grid x origin when ``transform`` is omitted.
+        yoff: Unit-grid y origin when ``transform`` is omitted.
+        class_dict: Class-name to integer mapping. Without one, retain the existing
+            pandas categorical-code mapping plus one.
+        width: Output columns. Inferred from geometry bounds only on the unit grid.
+        height: Output rows. Inferred from geometry bounds only on the unit grid.
+        transform: Rasterio affine mapping (column, row) pixel corners to geometry
+            coordinates. Requires explicit width/height and zero xoff/yoff.
+            Geometry and transform must use the same units; no CRS conversion occurs.
 
     Returns:
-        np.ndarray:
-            Semantic segmentation mask of the input gdf.
+        Int32 class labels with shape (height, width), background zero, and
+        Rasterio's existing pixel-center/edge burning rules. Classes are not interpolated.
+
+    Raises:
+        ValueError: If an explicit grid lacks dimensions or also supplies offsets.
+        TypeError: If empty geometry has no unit-grid output dimensions.
 
     Examples:
         >>> from histolytics.data import hgsc_cancer_nuclei
@@ -365,6 +372,14 @@ def gdf2sem(
         >>> fig.tight_layout()
     ![out](../../img/gdf2sem.png)
     """
+    if transform is not None:
+        if width is None or height is None:
+            raise ValueError("An explicit transform requires width and height.")
+        if xoff != 0 or yoff != 0:
+            raise ValueError(
+                "An explicit transform contains its own offsets; use xoff=yoff=0."
+            )
+
     if gdf.empty:
         try:
             return np.zeros((int(height), int(width)), dtype=np.int32)
@@ -374,17 +389,21 @@ def gdf2sem(
                 " are not provided. Cannot infer the output shape."
             )
 
-    xmin, ymin, xmax, ymax = gdf.total_bounds
-    xoff = xoff - xmin
-    yoff = yoff - ymin
+    if transform is None:
+        xmin, ymin, xmax, ymax = gdf.total_bounds
+        xoff = xoff - xmin
+        yoff = yoff - ymin
 
-    if width is None:
-        width = int(xmax - xmin)
-    if height is None:
-        height = int(ymax - ymin)
+        if width is None:
+            width = int(xmax - xmin)
+        if height is None:
+            height = int(ymax - ymin)
 
-    # Translate geometries to the correct position
-    geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+        # Translate geometries to the correct position
+        geoms = gdf.geometry.translate(xoff=-xmin - xoff, yoff=-ymin - yoff)
+        transform = Affine.identity()
+    else:
+        geoms = gdf.geometry
 
     # Map class names to integer labels
     if class_dict is None:
@@ -399,6 +418,7 @@ def gdf2sem(
         out_shape=image_shape,
         fill=0,
         dtype=np.int32,
+        transform=transform,
     )
 
     return out_mask

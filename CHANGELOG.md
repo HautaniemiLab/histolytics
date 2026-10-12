@@ -4,6 +4,8 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 ### Changed
+- Add an explicit Rasterio affine grid to instance/semantic rasterization, retaining
+  legacy unit-grid defaults and requiring unambiguous output dimensions/offsets.
 - Make CPU analysis the default installation; move models/workflows to
   `histolytics[segmentation]`, the retained cuCIM reader to `histolytics[cucim]`,
   and existing CUDA processing to `histolytics[cuda-analysis]`. Existing users
@@ -16,6 +18,9 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Rasterize WSI masks directly on the requested pyramid pixel grid, preserving
+  discrete IDs and class mappings without resizing labels. Unequal-axis reader
+  downsamples are rejected until upstream coordinate handling is corrected.
 - Pack level-zero WSI RGB patches and optional nuclei/tissue masks along the channel
   axis without discarding integer IDs; return the requested nuclei instance/type pair.
 - Allow sequential WSI patch iteration with zero workers without blocking on an
