@@ -1,6 +1,6 @@
 # Dependency architecture proposal
 
-Status: installation split merged; WSI checks in progress, 12 October 2026. This document describes a target and migration
+Status: installation split and image-only WSI checks merged; mask handoffs in progress, 12 October 2026. This document describes a target and migration
 gates; implemented API changes are recorded in the changelog. PR 8 made existing
 requirements explicit as a separate declaration change. PR 17 implements the base, segmentation, cucim, and cuda-analysis
 installation groups, plus all as their documented full-install aggregate; finer
@@ -315,3 +315,7 @@ Real reader coverage is tracked in [WSI backend checks](wsi-backend-checks.md).
 The generated fixture verifies pixel-level reading and sequential tile handoffs;
 it does not establish vendor-format support or GPU computation. Reduced-level
 boundary clipping in the published adapters remains an upstream limitation.
+
+The current mask-handoff batch repairs channel packing at level zero and verifies
+external saved annotation tables as feature inputs. It retains index-based instance
+IDs and explicit class mappings; reduced-level raster alignment remains separate.

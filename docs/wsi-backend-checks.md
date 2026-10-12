@@ -32,7 +32,12 @@ level-zero xywh coordinates, pyramid dimensions/downsamples, invalid levels,
 level-zero white edge padding, overlapping tile placement, and sequential patch
 batches at levels zero and one. A wrapped real region reader counts calls: each
 zero-worker batch reads only its own tiles, and full-level reads are rejected.
-Incomplete-batch handling and context cleanup are checked. Separate ordinary
+Incomplete-batch handling and context cleanup are checked. Level-zero annotation
+checks cover RGB/instance/tissue channel order, integer IDs above 255, clipping,
+empty masks, explicit class mappings, and untouched source geometry. Saved Parquet
+annotations also feed a CPU intensity pipeline with known normalized RGB means.
+The pipeline continues receiving separate RGB/label/tissue arrays; packed arrays
+use int32 when annotation channels are present to retain their IDs. Separate ordinary
 subprocess tests cover zero/positive worker counts and invalid negative workers;
 positive-worker native-reader multiprocessing is not validated here.
 
@@ -44,6 +49,11 @@ uses the same clipping structure; reduced-level boundary behavior needs an
 upstream correction and dedicated validation before promising uniform padding.
 These tests cover correct interior pixels and level-zero padding; they do not
 change or conceal this boundary limitation with a Histolytics wrapper.
+
+Annotation rasters are currently generated in level-zero pixels even when the
+reader uses a reduced pyramid level. Use level zero for masked patches until a
+separate coordinate-grid correction is validated; this batch does not change
+rasterization or silently resample masks.
 
 Synthetic TIFF checks do not validate every vendor format, ICC profiles, physical
 pixel calibration, BioIO plugins, pretrained checkpoints, segmentation/stitching
