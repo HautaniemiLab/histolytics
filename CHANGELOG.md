@@ -4,6 +4,11 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 ### Changed
+- Make CPU analysis the default installation; move models/workflows to
+  `histolytics[segmentation]`, the retained cuCIM reader to `histolytics[cucim]`,
+  and existing CUDA processing to `histolytics[cuda-analysis]`. Existing users
+  can retain all prior capabilities with `histolytics[segmentation,cucim,cuda-analysis]`
+  on Linux. Preserve numerical dependency bounds and locked versions.
 - Remove the `FileHandler` and `H5Handler` aliases from `histolytics.utils` so
   shared utilities do not depend on the segmentation stack. Import these upstream
   classes directly: `from cellseg_models_pytorch.utils import FileHandler, H5Handler`.

@@ -1,22 +1,24 @@
 """Exercise release installations from outside the source checkout."""
 
+import argparse
 import importlib
 import sys
-from importlib.metadata import version
+from importlib.metadata import distributions, version
 from pathlib import Path
 
 import geopandas as gpd
-import torch
+import numpy as np
 from shapely.geometry import box
 
 import histolytics
 from histolytics.data import cervix_nuclei_crop
-from histolytics.models.cellpose_panoptic import cellpose_panoptic
+from histolytics.nuc_feats.intensity import intensity_feats
+from histolytics.nuc_feats.texture import textural_feats
 from histolytics.spatial_ops import get_objs
 
 
-def main() -> None:
-    """Check package identity, public imports, data, spatial queries, and training."""
+def check_analysis() -> None:
+    """Check installed identity, analysis imports, data, queries, and CPU features."""
     installed_path = Path(histolytics.__file__).resolve()
     if not installed_path.is_relative_to(Path(sys.prefix).resolve()):
         raise RuntimeError(f"Expected an installed package, got {installed_path}")
@@ -25,24 +27,29 @@ def main() -> None:
     if not installed_path.with_name("py.typed").is_file():
         raise RuntimeError("Installed package is missing py.typed")
     for module in (
-        "models.hovernet_panoptic",
-        "models.cppnet_panoptic",
-        "models.cellvit_panoptic",
-        "models.stardist_panoptic",
         "spatial_ops",
         "spatial_graph.graph",
+        "spatial_graph.nhood",
         "spatial_geom.shape_metrics",
+        "spatial_geom.medial_lines",
         "spatial_clust.density_clustering",
-        "spatial_agg",
+        "spatial_clust.autocorr",
+        "spatial_clust.clust_metrics",
+        "spatial_clust.ripley",
+        "spatial_clust.lisa_clustering",
+        "spatial_clust.centrography",
+        "spatial_agg.local_distances",
+        "spatial_agg.local_values",
+        "spatial_agg.local_character",
+        "spatial_agg.local_diversity",
+        "spatial_agg.grid_agg",
         "nuc_feats.chromatin",
+        "nuc_feats.texture",
         "stroma_feats.collagen",
-        "wsi.slide_reader",
-        "wsi.wsi_segmenter",
-        "wsi.wsi_iterator",
-        "torch_datasets.h5dataset",
-        "transforms",
-        "losses",
-        "metrics",
+        "stroma_feats.intensity",
+        "utils.raster",
+        "utils.plot",
+        "wsi.mergers",
         "data",
     ):
         importlib.import_module(f"histolytics.{module}")
@@ -54,6 +61,39 @@ def main() -> None:
     selected = get_objs(area, objects)
     if selected.index.tolist() != [0]:
         raise RuntimeError("Spatial query selected incorrect objects")
+    values = np.array([[0.1, 0.3], [0.5, 0.7]])
+    labels = np.full((2, 2), 7, dtype=np.int32)
+    image = np.repeat(values[..., None], 3, axis=-1)
+    features = intensity_feats(image, labels, metrics=("mean", "std"), device="cpu")
+    assert features.index.tolist() == [7]
+    np.testing.assert_allclose(features.to_numpy(), [[0.4, np.sqrt(0.05)]])
+    image = np.broadcast_to(np.arange(8, dtype=np.uint8)[None, :, None], (8, 8, 3))
+    features = textural_feats(image, np.full((8, 8), 42, dtype=np.int32))
+    assert features.index.tolist() == [42]
+    np.testing.assert_allclose(features.to_numpy(), [[1.0, 1.0]])
+    print(f"Validated {installed_path}, bundled data, spatial query, and CPU features")
+
+
+def check_segmentation() -> None:
+    """Check model/WSI imports and offline CPU forward/backward training."""
+    import torch
+
+    from histolytics.models.cellpose_panoptic import cellpose_panoptic
+
+    for module in (
+        "models.hovernet_panoptic",
+        "models.cppnet_panoptic",
+        "models.cellvit_panoptic",
+        "models.stardist_panoptic",
+        "wsi.slide_reader",
+        "wsi.wsi_segmenter",
+        "wsi.wsi_iterator",
+        "torch_datasets.h5dataset",
+        "transforms",
+        "losses",
+        "metrics",
+    ):
+        importlib.import_module(f"histolytics.{module}")
     torch.manual_seed(0)
     torch.set_num_threads(2)
     model = cellpose_panoptic(3, 2, enc_name="resnet18", enc_pretrain=False)
@@ -84,8 +124,59 @@ def main() -> None:
     ):
         raise RuntimeError("CPU gradients are missing or nonfinite")
     optimizer.step()
-    print(f"Validated {installed_path}, bundled data, spatial query, and CPU training")
+    print("Validated model/WSI imports and CPU training")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--profile",
+        choices=("analysis", "segmentation", "cuda-analysis", "full"),
+        default="analysis",
+    )
+    profile = parser.parse_args().profile
+    if profile in ("analysis", "cuda-analysis"):
+        names = {
+            dist.metadata["Name"].lower().replace("_", "-") for dist in distributions()
+        }
+        forbidden = {
+            "torch",
+            "torchvision",
+            "torchdata",
+            "cellseg-models-pytorch",
+            "timm",
+        }
+        unexpected = {
+            name
+            for name in names
+            if name in forbidden
+            or (
+                profile == "analysis"
+                and name.startswith(
+                    (
+                        "nvidia-",
+                        "cuda-",
+                        "cupy",
+                        "cucim",
+                        "cuml",
+                        "libcudf",
+                        "libcuml",
+                        "libraft",
+                        "librmm",
+                        "rmm",
+                        "pylibraft",
+                        "pylibcudf",
+                    )
+                )
+            )
+        }
+        if unexpected:
+            raise RuntimeError(
+                f"{profile} installation contains unexpected packages: {sorted(unexpected)}"
+            )
+    check_analysis()
+    if profile in ("segmentation", "full"):
+        check_segmentation()
+    if profile in ("cuda-analysis", "full"):
+        for package in ("cupy-cuda12x", "cucim-cu12", "cuml-cu12"):
+            version(package)

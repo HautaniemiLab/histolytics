@@ -34,6 +34,24 @@ jobs:
       - name: Check release guard tests
         run: uv run --no-sync python -m unittest discover -s tools/tests -v
 
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.4"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install documentation and segmentation without NVIDIA extras
+        run: uv sync --locked --group docs --extra segmentation --python "3.12"
+      - name: Build documentation
+        run: uv run --no-sync mkdocs build
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -58,7 +76,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install locked dependencies and current package
-        run: uv sync --locked --dev --python "${{ matrix.python-version }}"
+        run: uv sync --locked --dev --all-extras --python "${{ matrix.python-version }}"
       - name: Run tests and preserve coverage
         run: uv run --no-sync pytest tests --junitxml=test-results.xml --cov=histolytics --cov-report=xml
       - name: Preserve test reports

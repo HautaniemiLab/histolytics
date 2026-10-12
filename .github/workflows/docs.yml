@@ -34,7 +34,7 @@ jobs:
 
         # Step 4: Install dependencies using UV
       - name: Install deps
-        run: uv sync --locked --group docs --python "3.12"
+        run: uv sync --locked --group docs --extra segmentation --python "3.12"
 
       - name: Deploy Docs
         run: uv run --no-sync mkdocs gh-deploy --force

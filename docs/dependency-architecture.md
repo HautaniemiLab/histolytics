@@ -1,9 +1,9 @@
 # Dependency architecture proposal
 
-Status: proposed, 10 October 2026. This document describes a target and migration
+Status: installation split in review, 12 October 2026. This document describes a target and migration
 gates; implemented API changes are recorded in the changelog. PR 8 made existing
-requirements explicit as a separate declaration change. Installation groups remain
-proposed.
+requirements explicit as a separate declaration change. The current batch implements the base, segmentation, cucim, and cuda-analysis
+installation groups; finer training/backend groups remain proposed.
 
 ## Modules first, installation groups second
 
@@ -156,15 +156,17 @@ already have segmentations should not need model frameworks or a NVIDIA runtime.
 Keep panoptic segmentation as a first-class optional capability with documented
 installation commands. Keep cuCIM and PyTorch CUDA support.
 
-This default is a recommendation pending the maintainer's preference. A more
-conservative first release can keep CPU segmentation in the default and make
-only NVIDIA processing/backends optional. The same import-boundary work below
-is needed before a later spatial-only default can work reliably.
+The maintainer selected this analysis-first default. It is an installation-contract
+change for the next release, with migration commands for existing model users.
+Public computation APIs and device defaults remain unchanged.
 
 ## Feature groups
 
-Names are provisional; implement only groups with working imports and installation
-tests. Avoid an extra for every small dependency or a generic plugin framework.
+Base, segmentation, cucim, and cuda-analysis are implemented in the current batch.
+Training, polars, and bioio below remain future proposals, not available extras.
+The segmentation group retains datasets for the existing finetuning notebook and
+Albumentations for published upstream inference imports. Avoid an extra for every
+small dependency or a generic plugin framework.
 
 | Installation | Capability | Dependency ownership |
 | --- | --- | --- |
@@ -183,8 +185,8 @@ compatibility check against upstream requirements. Do not install competing CuPy
 distributions: use the CUDA-specific provider consistent with the cuCIM/cuML stack.
 
 Target commands would be `histolytics`, `histolytics[segmentation]`, and, for
-cuCIM WSI inference, `histolytics[segmentation,cucim]`. These are illustrative
-future commands, not extras available in the current release. Training and backend
+cuCIM WSI inference, `histolytics[segmentation,cucim]`. These commands apply to the next release/current source, not published 0.2.5.
+The cucim extra includes segmentation prerequisites; cuda-analysis does not include models. Training and backend
 groups must include or clearly compose their shared prerequisites. A single
 cross-platform `all` extra is not proposed: Linux NVIDIA backends have different
 requirements from a CPU analysis installation.
@@ -195,20 +197,11 @@ The following were checked against Histolytics and the published
 cellseg-models-pytorch 0.1.30, rather than assuming changes in its local maintenance
 checkout are already released:
 
-1. **Common utilities load the model stack.** `histolytics.utils.__init__` eagerly
-   imports FileHandler/H5Handler from cellseg utilities. That upstream initializer
-   imports tensor utilities, which import Torch, and mask utilities using Numba.
-   Importing `histolytics.utils.gdf` without cellseg currently fails in the parent
-   initializer before the spatial helper can load. Remove these upstream aliases
-   from the shared utility initializer and import the classes directly from
-   `cellseg_models_pytorch.utils` in segmentation examples. Document the import-path
-   migration; do not add dynamic compatibility hooks or copy the upstream manager.
-2. **Bundled samples cross the same boundary.** data.fetch imports FileHandler at
-   module load and uses it for two JPEG reads. Those reads are OpenCV imread plus
-   BGR-to-RGB conversion. Use the existing codec directly in the sample loader,
-   preserving pixel values, dtype, shape, color order, and attribution. Test both
-   bundled images against the current loader before changing the implementation.
-   A casual switch to a different decoder is not an identical-output guarantee.
+1. **Common utilities are independent.** The upstream file-handler aliases were
+   removed from the utility initializer. Segmentation examples import upstream
+   handlers directly, with documented migration and no dynamic compatibility hooks.
+2. **Bundled images are independent.** The sample loader uses OpenCV directly with
+   exact pixel parity against the previous upstream loader.
 3. **Inference and augmentation imports are intertwined.** Histolytics' WSI
    segmenter imports the upstream dataset package. The published initializer
    imports training datasets and Albumentations transforms eagerly. Removing
@@ -223,13 +216,12 @@ checkout are already released:
    provides a genuinely independent reader boundary; do not duplicate reader implementations.
 5. **CPU processing and CUDA processing need independent availability checks.**
    Intensity/chromatin annotations are now deferred, and texture imports are guarded.
-   Image utilities need separate availability flags for CuPy/cuML clustering and
-   CuPy/cuCIM color processing. Test each optional stack independently before moving it
-   out of the default requirements. Preserve documented errors and resolve silent
+   Image utilities now have separate availability flags for CuPy/cuML clustering and
+   CuPy/cuCIM color processing, with import/dispatch tests for optional combinations. Preserve documented errors and resolve silent
    fallback policy explicitly when changing public behavior.
 6. **The datasets package is an example/training dependency.** No source module
-   imports Hugging Face datasets; the finetuning notebook does. Move its ownership
-   to the appropriate optional workflow instead of treating it as a spatial core need.
+   imports Hugging Face datasets; the finetuning notebook does. It is retained in the segmentation extra for the existing finetuning workflow,
+   rather than in the analysis base. A finer training split awaits upstream boundaries.
 
 Torch CPU execution and installation footprint are different concerns. PyPI Torch
 wheels may bring CUDA runtime packages even when inference uses `device="cpu"`.
@@ -298,3 +290,20 @@ References: [PyPA optional dependencies](https://packaging.python.org/en/latest/
 [cuCIM installation](https://github.com/rapidsai/cucim),
 [CuPy package selection](https://docs.cupy.dev/en/stable/install.html), and
 [BioIO reader plugins](https://bioio-devs.github.io/bioio/).
+
+## Installation-split safeguards
+
+The base explicitly retains NumPy <2, Arrow <17, Numba 0.60, scikit-image <0.26,
+and the other shared upper bounds previously supplied by cellseg-models-pytorch.
+It also retains cuDF's pandas >=2,<2.4.0dev0 bound and cuML's scikit-learn >=1.4
+floor, preventing removal of the GPU stack from changing the numerical family.
+Numba remains an analysis dependency for the existing libpysal accelerated graph
+and geometry paths. All 280 locked package versions and wheel hashes are retained.
+This intentionally leaves Python 3.13 compatibility unresolved.
+
+CI checks fresh base/full Linux archive installations on Python 3.10–3.13, plus
+macOS 3.12 analysis and segmentation profiles, Linux 3.12 segmentation, and Linux
+3.12 CUDA analysis without models. Base installs reject model/NVIDIA distributions
+and execute the analysis regressions; segmentation installs exercise offline CPU
+forward/backward training. Full locked source tests retain all extras. These checks
+do not establish GPU computation, real WSI backend operation, or checkpoint parity.
