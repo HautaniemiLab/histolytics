@@ -45,6 +45,11 @@ class WSIPatchDataset(Dataset):
                 Dictionary mapping nuclei class names to integer labels.
             tissue_classes (Dict[str, int], optional):
                 Dictionary mapping tissue class names to integer labels.
+
+        Note:
+            Annotation geometry uses level-zero pixels. Use ``level=0`` for
+            aligned image/mask patches; annotation rasterization at reduced levels
+            is not yet aligned with the reader's image grid.
         """
         super().__init__()
         self.reader = reader
@@ -156,7 +161,7 @@ class WSIPatchDataset(Dataset):
                 width=w,
                 height=h,
             )
-            raster, raster_type
+            return raster, raster_type
 
         return raster
 
@@ -187,7 +192,25 @@ class WSIPatchDataset(Dataset):
         )
         return raster_tissue
 
-    def __getitem__(self, index: int, **kwargs) -> Dict[str, np.ndarray]:
+    def __getitem__(
+        self, index: int, **kwargs
+    ) -> np.ndarray | pd.DataFrame | pd.Series:
+        """Read a patch and return its packed channels or pipeline features.
+
+        Args:
+            index: Position in the grid's coordinate list.
+            **kwargs: Additional arguments passed to ``pipeline_func``.
+
+        Returns:
+            Without a pipeline, an (H, W, C) NumPy array with RGB first, followed
+            by a nuclei instance channel when supplied, then a tissue class
+            channel when supplied. At level zero C is 3, 4, or 5. RGB-only uint8
+            patches retain their dtype; int32 annotation channels promote the
+            packed RGB/mask array to int32 without changing pixel values or IDs.
+            Nuclei IDs retain the nuclei GeoDataFrame's index; background is zero.
+            With a pipeline, its DataFrame or Series result; the callback receives
+            separate RGB, nuclei, and tissue arrays with their original dtypes.
+        """
         xywh = self.coordinates[index]
         img = self._read_patch(xywh)
 
@@ -209,10 +232,10 @@ class WSIPatchDataset(Dataset):
 
         tile = img
         if self.nuclei is not None:
-            tile = np.stack((tile, label_mask_nuclei), axis=-1)
+            tile = np.concatenate((tile, label_mask_nuclei[..., None]), axis=-1)
 
         if self.tissue is not None:
-            tile = np.stack((tile, tissue_mask), axis=-1)
+            tile = np.concatenate((tile, tissue_mask[..., None]), axis=-1)
 
         return tile
 

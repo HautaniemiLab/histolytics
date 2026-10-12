@@ -16,6 +16,8 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Pack level-zero WSI RGB patches and optional nuclei/tissue masks along the channel
+  axis without discarding integer IDs; return the requested nuclei instance/type pair.
 - Allow sequential WSI patch iteration with zero workers without blocking on an
   empty prefetch queue, and report the correct batch count when dropping the final batch.
 - Report CuPy/cupyx rather than cuCIM as the CUDA mask-cleanup requirements.

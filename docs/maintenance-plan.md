@@ -6,15 +6,17 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–17 have landed on main at `eb26902`; the merged local branches
+PRs 3–18 have landed on main at `e063e32`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38230409272)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38243756199)
 passed tooling/build and documentation, all 20 intended archive/profile checks
-(Linux 3.10–3.12 and macOS 3.12), and 233 source tests with one hardware-dependent
-CUDA skip per version. The full Linux archive checks select the all extra directly.
+(Linux 3.10–3.12 and macOS 3.12), and 238 source tests with one hardware-dependent
+CUDA skip per version. OpenSlide Linux/macOS and cuCIM CPU-read jobs each
+passed 12 real-reader checks without skips. The full Linux archive checks select
+the all extra directly.
 These results cover the tree now merged on main. Python 3.13 source installation
 and analysis/full release-format installations still fail on the existing
 dependency stack.
@@ -57,6 +59,10 @@ The post-merge main run is separate; do not equate preparation with publication.
 - [x] Analysis-default installation and explicit segmentation, cucim, cuda-analysis,
   and all extras; numerical bounds and all 280 locked versions retained. Verified
   Linux/macOS profiles and CPU tutorial outputs; published 0.2.5 remains unchanged.
+
+- [x] Generated three-level TIFF checks through real OpenSlide (Linux/macOS) and
+  cuCIM CPU reading (Linux); zero-worker iteration, drop-last counts, RGB axes and
+  level-zero pixel-coordinate handoffs verified. Reduced-level boundaries remain upstream.
 
 ### Open compatibility and release gates
 
@@ -210,12 +216,15 @@ workflow/plugin framework or a wholesale folder rewrite.
    Saved-segmentation, assembly, reconstruction, and external-weight checks are
    merged, including tuple-input compatibility, independent image-backend availability,
    and mask-cleanup dependency guidance. The installation split is merged, including
-   the all aggregate and CPU onboarding corrections. Next verify actual WSI reading
-   with generated TIFF pixels and explicit OpenSlide/cuCIM test environments. Keep
-   xywh in level-zero pixel units, distinguish array axes from coordinate order,
-   and exercise sequential tile batches without whole-level reads. Fix the confirmed
-   zero-worker prefetch deadlock and drop-last batch count in shared iterator code.
-   Preserve defaults, masks, classes, positive-worker mapping, and inference behavior.
+   the all aggregate and CPU onboarding corrections. Real OpenSlide/cuCIM reads and
+   sequential image-only tile batches are verified, with shared zero-worker and
+   drop-last corrections merged. Next repair level-zero image/mask channel packing
+   and the nuclei-type return; preserve RGB pixels, original integer index IDs,
+   background zero, semantic class dictionaries, and callback arrays. Verify a
+   saved-segmentation-to-CPU-feature composition, including clipped/empty masks.
+   Reduced-level annotation rasterization is still misaligned and requires its own
+   coordinate-contract fix; do not resize labels or change scientific selections
+   implicitly in this level-zero batch.
    The published reader adapters mix coordinate scales at reduced-level boundaries;
    record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
