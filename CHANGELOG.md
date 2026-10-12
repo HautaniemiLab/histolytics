@@ -18,6 +18,9 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Keep pretrained nuclei/tissue class mappings on each loaded model, so loading
+  another checkpoint or customizing a mapping cannot change another model's classes
+  or the shared checkpoint registry.
 - Rasterize WSI masks directly on the requested pyramid pixel grid, preserving
   discrete IDs and class mappings without resizing labels. Unequal-axis reader
   downsamples are rejected until upstream coordinate handling is corrected.

@@ -6,22 +6,18 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–20 have landed on main at `3c3ec64`; the merged local branches
+PRs 3–21 have landed on main at `4a0d037`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38250732151)
-passed tooling/build and documentation, all 20 intended archive/profile checks
-(Linux 3.10–3.12 and macOS 3.12), and 238 source tests with one hardware-dependent
-CUDA skip per version. OpenSlide Linux/macOS and cuCIM CPU-read jobs each
-passed 19 real-reader checks without skips. The full Linux archive checks select
-the all extra directly.
-These results cover PR 19; PR 20 separately passed 255 source tests and 39 checks
-in each native-reader environment, plus all 20 supported installation combinations.
-Python 3.13 source installation and analysis/full release-format installations still fail on the existing
-dependency stack.
-The post-merge main run is separate; do not equate preparation with publication.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38264631135)
+passed all 15 routine jobs: tooling/build, documentation, three supported source
+versions, three native-reader environments, and six archive/profile installations.
+The preceding full validation covered all 20 supported installation combinations.
+Python 3.13 remains unsupported on the existing dependency stack and is tracked in
+the explicit manual compatibility scope. These are pre-merge validation results;
+no package release has occurred.
 
 ### Completed foundation
 
@@ -113,7 +109,8 @@ See [the dependency audit](dependency-audit.md) for the import/advisory snapshot
 verified constraints, and initial priorities. Reachability review and upgrades
 remain open. The merged texture fix moves its unconditional CuPy import into the
 existing optional GPU guard, with regression checks for known CPU GLCM values.
-This does not yet make the complete package installable without CUDA dependencies.
+The analysis-default installation split now permits CPU analysis without CUDA;
+GPU feature kernels remain optional and await evaluation.
 
 ## Evaluate CuPy processing and retain cuCIM
 
@@ -228,7 +225,11 @@ Installation groups follow those code boundaries; they are not a substitute for
 them. Preserve existing representations and high-level APIs, and avoid a new
 workflow/plugin framework or a wholesale folder rewrite.
 
-1. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
+1. Keep pretrained class mappings owned by each loaded model, not shared class
+   attributes or mutable registry dictionaries. Verify multiple named checkpoints
+   and a local checkpoint together offline, preserving tensor loading and mapping
+   contents. This is the next focused correctness batch.
+2. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
    expose one reusable seam at a time, with a small composition regression and
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
@@ -250,8 +251,8 @@ workflow/plugin framework or a wholesale folder rewrite.
    record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
    consume an upstream correction before extending those contracts.
-2. Continue the independent Google-style documentation and gradual typing work.
-3. Consume a tested upstream compatibility release and upgrade numerical/CUDA
+3. Continue the independent Google-style documentation and gradual typing work.
+4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.
 
 GPU processing comparisons and peak-memory measurements await CUDA hardware.
