@@ -11,6 +11,10 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Preserve neighborhood center/order when mapping node IDs to centroids, accept
+  NumPy neighborhoods without ambiguous comparisons, and align distance/area
+  aggregation with explicit node IDs while retaining table row labels. Reject
+  missing or duplicate mapped IDs instead of silently computing different neighbors.
 - Honor nuclei, cytoplasm, and tissue geometry smoothing settings in every model
   post-processing dispatch, including disabling smoothing with `None`.
 - Select only matching object rows in spatial queries and tile assembly, avoiding

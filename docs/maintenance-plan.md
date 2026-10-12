@@ -4,16 +4,16 @@ Refresh Histolytics in small, independently reviewable changes. Establish reliab
 tests and release installations before upgrading runtime dependencies. Preserve
 public APIs, checkpoints, spatial feature definitions, and scientific results.
 
-## Current state — 11 October 2026
+## Current state — 12 October 2026
 
-PRs 3–11 have landed on main at `faeff3b`; the merged local branches
+PRs 3–12 have landed on main at `1d945d2`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38053566825)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38164117980)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 185 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 197 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -42,6 +42,8 @@ The post-merge main run is separate; do not equate preparation with publication.
   migration and exact JPEG pixel comparisons; no dynamic compatibility hooks.
 - [x] One shared geometry query for analysis, aggregation, dataset crops, and tile
   assembly, with exact selection and saved-segmentation composition regressions.
+- [x] Model reconstruction smoothing settings forwarded across every dispatch,
+  with standalone reconstruction, real save-mode checks, and default geometry parity.
 
 ### Open compatibility and release gates
 
@@ -190,13 +192,13 @@ workflow/plugin framework or a wholesale folder rewrite.
    expose one reusable seam at a time, with a small composition regression and
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
-   The saved-segmentation and assembly composition check is merged. Next verify
-   prediction-to-reconstruction settings and saved geometry. The existing upstream
-   PostProcessor is independently callable, so reuse it rather than adding a facade.
-   Correct ignored smoothing settings in the model convenience method, with default
-   geometry parity and explicit callback/offset checks. The published asynchronous
-   processor assumes tissue maps are present and returns unresolved cytoplasm
-   results; consume an upstream correction before extending those contracts.
+   Saved-segmentation, assembly, and reconstruction checks are merged. Next verify
+   external neighbor weights and object IDs in distance aggregation. Preserve the
+   supplied center/order and table row labels, and use Shapely distance directly
+   instead of a private geometry-module helper. Keep reciprocal clipping and feature
+   definitions unchanged. The published asynchronous reconstruction processor still
+   assumes tissue maps are present and returns unresolved cytoplasm results;
+   consume an upstream correction before extending those contracts.
 2. Continue the independent Google-style documentation and gradual typing work.
 3. Consume a tested upstream compatibility release and upgrade numerical/CUDA
    families in reviewable batches to make Python 3.13 support real.

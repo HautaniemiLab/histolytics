@@ -109,3 +109,43 @@ def test_saved_segmentation_to_analysis_without_model_packages():
         [sys.executable, "-c", code], capture_output=True, text=True, timeout=30
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_external_weights_to_analysis_without_graph_construction():
+    code = textwrap.dedent(
+        """
+        import sys
+        for package in (
+            "torch", "cellseg_models_pytorch", "cupy", "cupyx", "cucim", "cuml",
+            "histolytics.spatial_geom", "histolytics.spatial_graph.graph",
+            "histolytics.spatial_graph.spatial_weights",
+        ):
+            sys.modules[package] = None
+
+        import geopandas as gpd
+        import numpy as np
+        import pandas as pd
+        from libpysal.weights import W
+        from shapely.geometry import Point
+        from histolytics.spatial_graph.nhood import nhood_dists
+        from histolytics.spatial_agg.local_distances import local_distances
+
+        points = [Point(0, 0), Point(3, 4), Point(9, 12)]
+        ids = pd.Series([7, 42, 91], index=[11, 13, 17])
+        centroids = pd.Series(points, index=ids.index)
+        np.testing.assert_array_equal(
+            nhood_dists([42, 7, 91], centroids, ids=ids), [0, 5, 10]
+        )
+        objects = gpd.GeoDataFrame({"uid": [7, 42, 91]}, geometry=points, index=[11, 13, 17])
+        weights = W({42: [7, 91], 7: [42], 91: [42]}, silence_warnings=True)
+        result = local_distances(objects, weights, id_col="uid", rm_nhood_cols=False)
+        assert result.index.tolist() == [11, 13, 17]
+        np.testing.assert_array_equal(result.loc[13, "nhood_dists"], [0, 5, 10])
+        assert result.loc[13, "nhood_dists_mean"] == 5.0
+        assert "nhood_dists" not in objects.columns
+        """
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, timeout=30
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

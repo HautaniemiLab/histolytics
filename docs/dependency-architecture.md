@@ -144,6 +144,9 @@ assembly; those metadata are not discarded at the image-model step.
   Trace each helper before changing its owner. A one-line Shapely distance call or
   a genuinely shared primitive may be sufficient; a file-moving sweep is not the
   goal. Keep substantial domain computation with the capability that owns it.
+  Verify external weights with sparse node IDs and independent table row labels.
+  Distance neighborhoods must retain their first node as center and preserve order;
+  use Shapely distance directly so this operation does not load geometry features.
 
 ## Recommended default
 

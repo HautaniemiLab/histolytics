@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from functools import partial
-from typing import Tuple
 
 import geopandas as gpd
 from libpysal.weights import W
@@ -15,66 +15,42 @@ def local_distances(
     gdf: gpd.GeoDataFrame,
     spatial_weights: W,
     normalize: bool = False,
-    id_col: str = None,
-    reductions: Tuple[str, ...] = ("mean",),
+    id_col: str | None = None,
+    reductions: Sequence[str] = ("mean",),
     weight_by_area: bool = False,
     invert: bool = False,
     parallel: bool = False,
     num_processes: int = 1,
     rm_nhood_cols: bool = True,
-    col_prefix: str = None,
+    col_prefix: str | None = None,
     create_copy: bool = True,
 ) -> gpd.GeoDataFrame:
-    """Compute the distances to the neighboring objects for every object in a GeoDataFrame.
-    and aggregate them by the specified reduction methods.
+    """Aggregate distances from each node to its supplied graph neighbors.
 
-    Note:
-        Neighborhoods are defined by the `spatial_weights` object, which can be created
-        with the `fit_graph` function. The function should be applied to the input
-        GeoDataFrame before using this function.
-
-    Note:
-        Option to weight the nhood values by their area before reductions.
-
-    Parameters:
-        gdf (gpd.GeoDataFrame):
-            The input GeoDataFrame.
-        spatial_weights (libysal.weights.W):
-            Libpysal spatial weights object.
-        normalize (bool):
-            Flag whether to column (quantile) normalize the computed metrics or not.
-        id_col (str):
-            The unique id column in the gdf. If None, this uses `set_uid` to set it.
-            Defaults to None.
-        reductions (Tuple[str, ...], default=("mean",)):
-            A list of reduction methods for the neighborhood feature values. Allowed are
-            "sum", "mean", "median", "min", "max", "std".
-        weight_by_area (bool):
-            Flag whether to weight the neighborhood values by the area of the object.
-            Defaults to False.
-        invert (bool):
-            Flag whether to invert the distances. Defaults to False.
-        parallel (bool):
-            Flag whether to use parallel apply operations when computing the character.
-            Defaults to False.
-        num_processes (int):
-            The number of processes to use when parallel=True. If -1,
-            this will use all available cores.
-        rm_nhood_cols (bool):
-            Flag, whether to remove the extra neighborhood columns from the result gdf.
-            Defaults to True.
-        col_prefix (str):
-            Prefix for the new column names.
-        create_copy (bool):
-            Flag whether to create a copy of the input gdf and return that.
-            Defaults to True.
-
-    Raises:
-        ValueError: If the `reductions` parameter contains an illegal reduction method.
+    Args:
+        gdf: Objects whose geometries and node IDs correspond to spatial_weights.
+            Distances retain geometry coordinate units, usually pixels.
+        spatial_weights: Existing libpysal weights; graph construction is not
+            required. Neighborhoods include each center node's self-distance.
+        normalize: Quantile-normalize reduced values after aggregation.
+        id_col: Unique node-ID column matching the weight keys. IDs need not equal
+            table row labels. If None, assign running UIDs using set_uid.
+        reductions: Reduction names: "sum", "mean", "median", "min", "max", "std".
+        weight_by_area: Apply existing normalized area weights before reduction.
+        invert: Use reciprocal distances, clipping below 1e-6 before inversion.
+        parallel: Use parallel apply instead of serial apply.
+        num_processes: Worker count; -1 uses the existing automatic CPU selection.
+        rm_nhood_cols: Remove temporary neighborhood columns from the result.
+        col_prefix: Optional prefix for result column names.
+        create_copy: Copy the input before adding columns. If False, use it directly.
 
     Returns:
-        gpd.GeoDataFrame:
-            The input geodataframe with computed distances column added.
+        GeoDataFrame with reduced neighborhood distances. Supplying id_col
+        preserves the original table row labels and node IDs.
+
+    Raises:
+        ValueError: If a reduction is unsupported or node IDs are not unique.
+        KeyError: If a node ID, neighbor ID, or requested ID column is missing.
 
     Examples:
         Compute the mean of eccentricity values for each neighborhood
@@ -124,6 +100,8 @@ def local_distances(
     if id_col is None:
         id_col = "uid"
         gdf = set_uid(gdf)
+    if not gdf[id_col].is_unique:
+        raise ValueError("id_col must contain unique node IDs")
 
     # get the immediate node neighborhood
     func = partial(nhood, spatial_weights=spatial_weights)
@@ -139,7 +117,9 @@ def local_distances(
     # get areas
     area_col = None
     if weight_by_area:
-        func = partial(nhood_vals, values=gdf.geometry.area)
+        areas = gdf.geometry.area
+        areas.index = gdf[id_col]
+        func = partial(nhood_vals, values=areas)
         gdf[area_col] = gdf_apply(
             gdf,
             func,
@@ -150,7 +130,9 @@ def local_distances(
         )
 
     # get distances
-    func = partial(nhood_dists, centroids=gdf.centroid, invert=invert)
+    centroids = gdf.centroid
+    centroids.index = gdf[id_col]
+    func = partial(nhood_dists, centroids=centroids, invert=invert)
     gdf["nhood_dists"] = gdf_apply(
         gdf,
         func,
