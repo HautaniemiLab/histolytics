@@ -43,3 +43,10 @@ capture and repeat validation were performed on locked macOS ARM64 Python 3.12.1
 Linux execution of this real artifact remains a separate validation requirement
 before upgrading a Linux model environment. Expected outputs and tolerances must
 not be regenerated merely to make an upgrade pass.
+
+Run **Run Tests** manually with `scope=checkpoint` to repeat the real-artifact check
+on Linux Python 3.10 and 3.12. This uses two existing source jobs with the locked
+segmentation profile, downloads only the recorded immutable checkpoint and checks
+its SHA-256 before loading. Ordinary PR/main and release jobs keep offline tests.
+The manual scope skips unrelated documentation, archive and reader checks; its
+results must be recorded separately from routine CI.

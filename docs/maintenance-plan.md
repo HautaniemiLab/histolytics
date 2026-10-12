@@ -6,13 +6,13 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–21 and 23–24 have landed on main at `49680f4`; the merged local branches
+PRs 3–21 and 23–25 have landed on main at `c16669b`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38271817656)
-passed all 15 routine jobs, including the fixed CPU image-feature reference.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38275935219)
+passed all 15 routine jobs, including the offline checkpoint-reference guards.
 The earlier full installation validation covered all 20 supported archive/profile
 combinations. Python 3.13 remains unsupported and has a separate manual
 compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
@@ -335,7 +335,7 @@ Only a demonstrated blocker in these two selected feature families belongs here.
   All 15 CI jobs passed in run 38271817656; PR 24 is merged. This bounded
   milestone is complete.
 
-## Active milestone: one published-checkpoint CPU reference
+## Completed milestone: one published-checkpoint CPU reference
 
 Purpose: establish a real pretrained-model loading/prediction baseline before
 upgrading the model dependency stack. The controlled-producer composition and CPU
@@ -378,8 +378,8 @@ checkpoint rewrite, pretrained encoder download or runtime dependency upgrade.
   float roundoff. Actual artifact validation is separate from ordinary CI.
 - Capture/repeat validation uses locked macOS ARM64 CPU segmentation. Linux real
   artifact execution and GPU behavior remain unverified; do not claim those from
-  offline CI. Completion requires the existing 15-job gate and ends this single
-  checkpoint/image milestone.
+  offline CI. All 15 jobs passed in run 38275935219; PR 25 is merged. This
+  single-checkpoint/macOS CPU milestone is complete.
 
 ## Readiness gate: clean up temporary validation records
 
@@ -406,3 +406,22 @@ not justify keeping unrelated completed audit snapshots indefinitely.
   the specific comparison it enables.
 
 This gate is part of readiness and must not be deferred beyond release preparation.
+
+## Active milestone: Linux execution of the pinned checkpoint
+
+Purpose: close the real-weight Linux validation gap before a model-stack upgrade.
+Reuse the committed artifact identity, input and fixed comparisons; do not add
+another verbose capture or regenerate expected outputs.
+
+Done means the explicit `checkpoint` scope of Run Tests strictly loads and checks
+that same public artifact on Linux Python 3.10 and 3.12, representing the old and
+newer Torch branches already in the lock. Reuse two existing source-job matrix
+entries with the complete locked segmentation profile and CPU execution. Default
+PR/main jobs remain 15, offline and unchanged; release validation remains full.
+The manual run performs no package publishing and needs only public checkpoint
+access. Report its runs and resolved versions in the PR/CI logs.
+
+If fixed comparisons fail, investigate the concrete platform/version difference
+without relaxing criteria, replacing expectations or hiding failures. Only blockers
+on this exact path belong in the batch. Model dependency upgrades, GPU checks,
+whole-slide behavior and new reference files remain outside this milestone.

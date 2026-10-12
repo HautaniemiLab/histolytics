@@ -16,7 +16,7 @@ on:
         description: Validation scope (Python 3.13 is currently unsupported)
         type: choice
         default: routine
-        options: [routine, full, python313]
+        options: [routine, full, python313, checkpoint]
 
 concurrency:
   group: tests-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ inputs.scope || 'routine' }}
@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   tooling:
-    if: inputs.scope != 'python313'
+    if: inputs.scope != 'python313' && inputs.scope != 'checkpoint'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,7 +50,7 @@ jobs:
         run: uv run --no-sync python -m unittest discover -s tools/tests -v
 
   documentation:
-    if: inputs.scope != 'python313'
+    if: inputs.scope != 'python313' && inputs.scope != 'checkpoint'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -69,7 +69,7 @@ jobs:
         run: uv run --no-sync mkdocs build
 
   wsi-readers:
-    if: inputs.scope != 'python313'
+    if: inputs.scope != 'python313' && inputs.scope != 'checkpoint'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -112,7 +112,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ${{ fromJSON(inputs.scope == 'python313' && '["3.13"]' || '["3.10","3.11","3.12"]') }}
+        python-version: ${{ fromJSON(inputs.scope == 'python313' && '["3.13"]' || inputs.scope == 'checkpoint' && '["3.10","3.12"]' || '["3.10","3.11","3.12"]') }}
     env:
       HF_HUB_OFFLINE: "1"
       OMP_NUM_THREADS: "2"
@@ -130,11 +130,35 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install locked dependencies and current package
-        run: uv sync --locked --dev --all-extras --python "${{ matrix.python-version }}"
+        run: uv sync --locked --dev ${{ inputs.scope == 'checkpoint' && '--extra segmentation' || '--all-extras' }} --python "${{ matrix.python-version }}"
+      - name: Fetch pinned public checkpoint
+        if: inputs.scope == 'checkpoint'
+        env:
+          HF_HUB_OFFLINE: "0"
+          CHECKPOINT_CACHE: ${{ runner.temp }}/checkpoint-cache
+        run: |
+          uv run --no-sync python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from huggingface_hub import hf_hub_download
+
+          checkpoint = json.loads(Path("docs/validation/hgsc-hovernet-reference.json").read_text())["checkpoint"]
+          path = hf_hub_download(
+              repo_id=checkpoint["repo_id"], filename=checkpoint["filename"],
+              revision=checkpoint["revision"], cache_dir=os.environ["CHECKPOINT_CACHE"], token=False,
+          )
+          with open(os.environ["GITHUB_ENV"], "a") as environment:
+              environment.write(f"HISTOLYTICS_CHECKPOINT_PATH={path}\n")
+          PY
+      - name: Check pinned public checkpoint on CPU
+        if: inputs.scope == 'checkpoint'
+        run: uv run --no-sync python tools/check_checkpoint_reference.py "$HISTOLYTICS_CHECKPOINT_PATH"
       - name: Run tests and preserve coverage
+        if: inputs.scope != 'checkpoint'
         run: uv run --no-sync pytest tests --junitxml=test-results.xml --cov=histolytics --cov-report=xml
       - name: Preserve test reports
-        if: always()
+        if: always() && inputs.scope != 'checkpoint'
         uses: actions/upload-artifact@v7
         with:
           name: test-reports-${{ matrix.python-version }}
@@ -144,6 +168,7 @@ jobs:
           if-no-files-found: warn
 
   packages:
+    if: inputs.scope != 'checkpoint'
     uses: ./.github/workflows/package.yml
     with:
       scope: ${{ inputs.scope || 'routine' }}

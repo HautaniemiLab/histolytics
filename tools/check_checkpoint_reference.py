@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import platform
 from pathlib import Path
 
 import numpy as np
@@ -93,4 +94,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("checkpoint", type=Path, help="Local pinned .safetensors file")
     _check_checkpoint(parser.parse_args().checkpoint)
-    print("Published checkpoint CPU reference passed")
+    print(
+        f"Published checkpoint CPU reference passed: Python {platform.python_version()}, Torch {torch.__version__}"
+    )
