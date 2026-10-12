@@ -1,7 +1,7 @@
 """Real TIFF decoding and pixel-coordinate contracts; no CUDA kernels run here."""
 
 import os
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import geopandas as gpd
 import numpy as np
@@ -203,7 +203,8 @@ def test_packed_image_mask_channels(slide, annotations, with_nuclei, with_tissue
     assert_geodataframe_equal(tissue, original_tissue)
 
 
-def test_nuclei_instance_and_type_masks(slide, annotations):
+@pytest.mark.parametrize("level", [0, 1, 2, -1])
+def test_nuclei_instance_and_type_masks(slide, annotations, level):
     from histolytics.torch_datasets.wsi_patch_dataset import WSIPatchDataset
 
     reader, _ = slide
@@ -212,31 +213,39 @@ def test_nuclei_instance_and_type_masks(slide, annotations):
         reader,
         gpd.GeoDataFrame(geometry=[box(48, 32, 128, 80)]),
         nuclei=nuclei,
+        level=level,
         nuclei_classes={"neoplastic": 2, "immune": 5},
     )
     actual_instances, actual_classes = dataset._read_nuclei_mask(
         (48, 32, 80, 48), return_type=True
     )
-    np.testing.assert_array_equal(actual_instances, instances)
-    np.testing.assert_array_equal(actual_classes, classes)
+    step = 4 if level == -1 else 2**level
+    np.testing.assert_array_equal(actual_instances, instances[::step, ::step])
+    np.testing.assert_array_equal(actual_classes, classes[::step, ::step])
 
 
-def test_empty_annotation_channels(slide, annotations):
+@pytest.mark.parametrize("level", [0, 1, 2, -1])
+def test_empty_annotation_channels(slide, annotations, level):
     reader, levels = slide
     nuclei, tissue, _, _, _ = annotations
     with WSIPatchIterator(
         reader,
         gpd.GeoDataFrame(geometry=[box(48, 32, 128, 80)]),
+        level=level,
         nuclei=nuclei.iloc[:0],
         tissue=tissue.iloc[:0],
         num_workers=0,
         pin_memory=False,
     ) as iterator:
         tile = iterator.get_single_item(0)
-        assert tile.shape == (48, 80, 5)
-        np.testing.assert_array_equal(tile[..., :3], levels[0][32:80, 48:128])
+        step = 4 if level == -1 else 2**level
+        assert tile.shape == (48 // step, 80 // step, 5)
         np.testing.assert_array_equal(
-            tile[..., 3:], np.zeros((48, 80, 2), dtype=np.int32)
+            tile[..., :3],
+            levels[level][32 // step : 80 // step, 48 // step : 128 // step],
+        )
+        np.testing.assert_array_equal(
+            tile[..., 3:], np.zeros((48 // step, 80 // step, 2), dtype=np.int32)
         )
 
 
@@ -246,7 +255,8 @@ def patch_intensity(img, label, mask):
     return rgb_intensity_feats(img, label, mask=mask, metrics=("mean",), device="cpu")
 
 
-def test_saved_masks_to_cpu_features(slide, annotations, tmp_path):
+@pytest.mark.parametrize("level", [0, 1, 2, -1])
+def test_saved_masks_to_cpu_features(slide, annotations, tmp_path, level):
     reader, levels = slide
     nuclei, tissue, instances, _, tissues = annotations
     nuclei.to_parquet(tmp_path / "nuclei.parquet")
@@ -256,6 +266,7 @@ def test_saved_masks_to_cpu_features(slide, annotations, tmp_path):
     with WSIPatchIterator(
         reader,
         gpd.GeoDataFrame(geometry=[box(48, 32, 128, 80)]),
+        level=level,
         nuclei=nuclei,
         tissue=tissue,
         tissue_classes={"stroma": 9, "tumor": 3},
@@ -269,8 +280,107 @@ def test_saved_masks_to_cpu_features(slide, annotations, tmp_path):
         features = result[0][1]
         assert features.index.tolist() == [42000]
         assert features.columns.tolist() == ["R_mean", "G_mean", "B_mean"]
-        image = levels[0][32:80, 48:128]
+        step = 4 if level == -1 else 2**level
+        image = levels[level][32 // step : 80 // step, 48 // step : 128 // step]
         low, high = np.percentile(image, (2, 98))
         normalized = np.clip((image.astype(float) - low) / (high - low), 0, 1)
-        expected = normalized[(instances == 42000) & (tissues > 0)].mean(axis=0)
+        expected = normalized[
+            (instances[::step, ::step] == 42000) & (tissues[::step, ::step] > 0)
+        ].mean(axis=0)
         np.testing.assert_allclose(features.to_numpy(), expected[None])
+
+
+@pytest.mark.parametrize("level", [1, 2, -1])
+@pytest.mark.parametrize("xywh", [(48, 32, 80, 48), (49, 33, 81, 49), (50, 34, 83, 51)])
+def test_reduced_level_mask_grid(slide, annotations, level, xywh):
+    reader, _ = slide
+    nuclei, tissue, _, _, _ = annotations
+    x, y, width, height = xywh
+    grid = gpd.GeoDataFrame(geometry=[box(x, y, x + width, y + height)])
+    expected_image = reader.read_region(xywh, level)
+    step = 4 if level == -1 else 2**level
+    h, w = expected_image.shape[:2]
+    xx, yy = np.meshgrid(
+        x + (np.arange(w) + 0.5) * step, y + (np.arange(h) + 0.5) * step
+    )
+    # Preserve GDAL's legacy boundary ties: right edge included, left excluded.
+    instances = np.zeros((h, w), dtype=np.int32)
+    instances[(xx > 48) & (xx <= 60) & (yy >= 32) & (yy < 44)] = 7
+    instances[(xx > 80) & (xx <= 96) & (yy >= 48) & (yy < 64)] = 42000
+    tissues = np.zeros_like(instances)
+    tissues[(xx > 80) & (xx <= 104) & (yy >= 44) & (yy < 68)] = 9
+    tissues[(xx > 110) & (xx <= x + width) & (yy >= 60) & (yy < y + height)] = 3
+    with WSIPatchIterator(
+        reader,
+        grid,
+        level=level,
+        nuclei=nuclei,
+        tissue=tissue,
+        tissue_classes={"stroma": 9, "tumor": 3},
+        batch_size=1,
+        num_workers=0,
+        pin_memory=False,
+    ) as iterator:
+        tile = iterator.get_single_item(0)
+        assert tile.shape == (h, w, 5)
+        np.testing.assert_array_equal(tile[..., :3], expected_image)
+        np.testing.assert_array_equal(tile[..., 3], instances)
+        np.testing.assert_array_equal(tile[..., 4], tissues)
+        np.testing.assert_array_equal(next(iter(iterator)), tile[None])
+
+
+def test_unequal_axis_downsamples_are_rejected_for_masks(slide, annotations):
+    from histolytics.torch_datasets.wsi_patch_dataset import WSIPatchDataset
+
+    reader, _ = slide
+    nuclei, _, _, _, _ = annotations
+    grid = gpd.GeoDataFrame(geometry=[box(48, 32, 128, 80)])
+    with patch.object(
+        type(reader), "level_downsamples", new_callable=PropertyMock
+    ) as downsamples:
+        downsamples.return_value = {0: (1.0, 1.0), 1: (2.0, 2.001), 2: (4.0, 4.0)}
+        masked = WSIPatchDataset(reader, grid, level=1, nuclei=nuclei)
+        with pytest.raises(ValueError, match="equal axis downsamples"):
+            masked[0]
+        image_only = WSIPatchDataset(reader, grid, level=1)
+        np.testing.assert_array_equal(
+            image_only[0], reader.read_region((48, 32, 80, 48), 1)
+        )
+
+
+def test_fractional_pyramid_mask_grid(tmp_path, annotations):
+    from histolytics.torch_datasets.wsi_patch_dataset import WSIPatchDataset
+
+    y, x = np.indices((192, 288))
+    image = np.stack((x % 256, y % 256, (x + 3 * y) % 256), axis=-1).astype(np.uint8)
+    rows = np.floor(np.arange(128) * 1.5).astype(int)
+    cols = np.floor(np.arange(192) * 1.5).astype(int)
+    lower = image[rows[:, None], cols]
+    path = tmp_path / "fractional.tif"
+    with tifffile.TiffWriter(path) as writer:
+        writer.write(image, photometric="rgb", tile=(32, 32), metadata=None)
+        writer.write(
+            lower, photometric="rgb", tile=(32, 32), metadata=None, subfiletype=1
+        )
+    reader = SlideReader(path, backend=os.environ["HISTOLYTICS_WSI_BACKEND"])
+    nuclei, _, _, _, _ = annotations
+    try:
+        assert reader.level_downsamples[1] == (1.5, 1.5)
+        dataset = WSIPatchDataset(
+            reader,
+            gpd.GeoDataFrame(geometry=[box(48, 30, 120, 78)]),
+            level=1,
+            nuclei=nuclei,
+        )
+        tile = dataset[0]
+        assert tile.shape == (32, 48, 4)
+        np.testing.assert_array_equal(tile[..., :3], lower[20:52, 32:80])
+        xx, yy = np.meshgrid(
+            48 + (np.arange(48) + 0.5) * 1.5, 30 + (np.arange(32) + 0.5) * 1.5
+        )
+        expected = np.zeros((32, 48), dtype=np.int32)
+        expected[(xx > 48) & (xx <= 60) & (yy >= 30) & (yy < 44)] = 7
+        expected[(xx > 80) & (xx <= 96) & (yy >= 48) & (yy < 64)] = 42000
+        np.testing.assert_array_equal(tile[..., 3], expected)
+    finally:
+        reader._reader.reader.close()

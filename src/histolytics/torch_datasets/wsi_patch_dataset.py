@@ -4,6 +4,8 @@ from typing import Callable, Dict, List
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from cellseg_models_pytorch.wsi.tiles import format_level
+from rasterio.transform import Affine
 from shapely import Polygon
 from torch.utils.data import Dataset
 
@@ -47,9 +49,11 @@ class WSIPatchDataset(Dataset):
                 Dictionary mapping tissue class names to integer labels.
 
         Note:
-            Annotation geometry uses level-zero pixels. Use ``level=0`` for
-            aligned image/mask patches; annotation rasterization at reduced levels
-            is not yet aligned with the reader's image grid.
+            Annotation geometry uses level-zero pixels. Reduced-level masks are
+            rasterized directly onto the reader's pixel grid without resizing IDs.
+            Masked patches require equal axis downsamples; published reader adapters
+            need an upstream coordinate correction before unequal axes are supported.
+            Pixel-based feature units refer to the requested level, not microns.
         """
         super().__init__()
         self.reader = reader
@@ -113,8 +117,32 @@ class WSIPatchDataset(Dataset):
         tile = self.reader.read_region(xywh, level=self.level)
         return np.array(tile)
 
+    def _raster_grid(
+        self, xywh: tuple[int, int, int, int], shape: tuple[int, int] | None
+    ) -> tuple[int, int, int, int, Affine | None]:
+        """Keep the legacy unit grid or construct the requested reader grid."""
+        x, y, width, height = xywh
+        level = self.level
+        if level != 0:
+            level = format_level(level, available=list(self.reader.level_dimensions))
+        if level == 0:
+            return x, y, width, height, None
+        down_y, down_x = self.reader.level_downsamples[level]
+        if down_y != down_x:
+            raise ValueError(
+                "Masked patches require equal axis downsamples; the reader adapters need an upstream coordinate fix."
+            )
+        if shape is None:
+            shape = (round(height / down_y), round(width / down_x))
+        transform = Affine(down_x, 0, x, 0, down_y, y)
+        return 0, 0, shape[1], shape[0], transform
+
     def _read_nuclei_mask(
-        self, xywh: tuple[int, int, int, int], return_type: bool = False
+        self,
+        xywh: tuple[int, int, int, int],
+        return_type: bool = False,
+        *,
+        shape: tuple[int, int] | None = None,
     ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Read nuclei segmentation mask for a given patch.
 
@@ -123,6 +151,8 @@ class WSIPatchDataset(Dataset):
                 Tuple defining the patch in (xmin, ymin, width, height) format.
             return_type (bool, optional):
                 Whether to return the nuclei type mask as well. Defaults to False.
+            shape (tuple[int, int], optional):
+                Actual reader output (height, width), including rounded dimensions.
 
         Returns:
             np.ndarray | tuple[np.ndarray, np.ndarray]:
@@ -143,34 +173,41 @@ class WSIPatchDataset(Dataset):
             raise e
 
         # rasterize vector polugon to numpy array
+        xoff, yoff, width, height, transform = self._raster_grid(xywh, shape)
         raster = gdf2inst(
             vector,
-            xoff=xmin,
-            yoff=ymin,
-            width=w,
-            height=h,
+            xoff=xoff,
+            yoff=yoff,
+            width=width,
+            height=height,
             reset_index=False,
+            transform=transform,
         )
 
         if return_type:
             raster_type = gdf2sem(
                 vector,
-                xoff=xmin,
-                yoff=ymin,
+                xoff=xoff,
+                yoff=yoff,
                 class_dict=self.nuclei_classes,
-                width=w,
-                height=h,
+                width=width,
+                height=height,
+                transform=transform,
             )
             return raster, raster_type
 
         return raster
 
-    def _read_tissue_mask(self, xywh: tuple[int, int, int, int]) -> np.ndarray:
+    def _read_tissue_mask(
+        self, xywh: tuple[int, int, int, int], *, shape: tuple[int, int] | None = None
+    ) -> np.ndarray:
         """Read tissue mask for a given patch.
 
         Parameters:
             xywh (tuple[int, int, int, int]):
-                Tuple defining the patch in (xmin, ymin, width, height) format.
+                Tuple defining the patch in level-zero (xmin, ymin, width, height).
+            shape (tuple[int, int], optional):
+                Actual reader output (height, width), including rounded dimensions.
 
         Returns:
             np.ndarray:
@@ -182,13 +219,15 @@ class WSIPatchDataset(Dataset):
         crop = Polygon([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
 
         tissue_vec = self.tissue.clip(crop)
+        xoff, yoff, width, height, transform = self._raster_grid(xywh, shape)
         raster_tissue = gdf2sem(
             tissue_vec,
-            xoff=xmin,
-            yoff=ymin,
+            xoff=xoff,
+            yoff=yoff,
             class_dict=self.tissue_classes,
-            width=w,
-            height=h,
+            width=width,
+            height=height,
+            transform=transform,
         )
         return raster_tissue
 
@@ -204,23 +243,27 @@ class WSIPatchDataset(Dataset):
         Returns:
             Without a pipeline, an (H, W, C) NumPy array with RGB first, followed
             by a nuclei instance channel when supplied, then a tissue class
-            channel when supplied. At level zero C is 3, 4, or 5. RGB-only uint8
+            channel when supplied. C is 3, 4, or 5; masks match the actual reader
+            shape at the requested level. RGB-only uint8
             patches retain their dtype; int32 annotation channels promote the
             packed RGB/mask array to int32 without changing pixel values or IDs.
             Nuclei IDs retain the nuclei GeoDataFrame's index; background is zero.
             With a pipeline, its DataFrame or Series result; the callback receives
             separate RGB, nuclei, and tissue arrays with their original dtypes.
+
+        Raises:
+            ValueError: If masked reduced-level reads have unequal axis downsamples.
         """
         xywh = self.coordinates[index]
         img = self._read_patch(xywh)
 
         label_mask_nuclei = None
         if self.nuclei is not None:
-            label_mask_nuclei = self._read_nuclei_mask(xywh)
+            label_mask_nuclei = self._read_nuclei_mask(xywh, shape=img.shape[:2])
 
         tissue_mask = None
         if self.tissue is not None:
-            tissue_mask = self._read_tissue_mask(xywh)
+            tissue_mask = self._read_tissue_mask(xywh, shape=img.shape[:2])
 
         if self.pipeline_func is not None:
             return self.pipeline_func(

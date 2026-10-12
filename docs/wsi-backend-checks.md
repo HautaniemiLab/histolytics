@@ -50,10 +50,22 @@ upstream correction and dedicated validation before promising uniform padding.
 These tests cover correct interior pixels and level-zero padding; they do not
 change or conceal this boundary limitation with a Histolytics wrapper.
 
-Annotation rasters are currently generated in level-zero pixels even when the
-reader uses a reduced pyramid level. Use level zero for masked patches until a
-separate coordinate-grid correction is validated; this batch does not change
-rasterization or silently resample masks.
+Reduced-level annotation masks are rendered directly from level-zero geometry
+onto the reader's pixel grid. Integer scales 2/4 and a fractional scale 1.5 are
+checked, including negative level aliases, odd origins, rounded region dimensions,
+empty/type masks and CPU feature callbacks. RGB values are unchanged, and IDs and
+classes stay int32 without interpolation. Pixel-based features use the chosen
+level's pixels; these counts are not automatically level-zero areas or microns.
+
+The shared gdf2inst/gdf2sem primitives accept Rasterio's native affine transform
+with explicit width/height and no separate offsets. Their default unit-grid
+translation, painter ordering and [GDAL pixel-center/edge rules](https://rasterio.readthedocs.io/en/stable/topics/features.html#burning-shapes-into-a-raster)
+remain unchanged; direct-grid tests preserve boundary ties independently.
+
+Masked patches with unequal axis downsamples are rejected. The published adapters
+mix axis/size conventions there, so their decoded grid requires an upstream fix
+before alignment can be promised. Image-only reading retains its existing behavior.
+This guard does not clamp nearly equal ratios or introduce a resampling fallback.
 
 Synthetic TIFF checks do not validate every vendor format, ICC profiles, physical
 pixel calibration, BioIO plugins, pretrained checkpoints, segmentation/stitching
