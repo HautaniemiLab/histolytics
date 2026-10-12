@@ -156,26 +156,26 @@ def _rm_objects_mask_cp(mask: np.ndarray, min_size: int = 1000) -> np.ndarray:
 def rm_objects_mask(
     mask: np.ndarray, min_size: int = 1000, device: str = "cuda"
 ) -> np.ndarray:
-    """Remove objects in a binary mask smaller than min_size.
+    """Keep connected components with an area strictly greater than ``min_size``.
 
-    Parameters:
-        mask (np.ndarray):
-            The input binary mask.
-        min_size (int):
-            Minimum size of objects to keep.
-        device (str):
-            Device to use for computation. Options are 'cpu' or 'cuda'. If set to 'cuda',
-            Cuml will be used for GPU acceleration.
+    Args:
+        mask: Binary mask with shape (H, W).
+        min_size: Exclusive component-area cutoff in pixels.
+        device: ``"cpu"`` uses SciPy; ``"cuda"`` requires CuPy and its cupyx
+            SciPy functions, distributed together in ``cupy-cuda12x``.
 
     Returns:
-        np.ndarray:
-            The binary mask with small objects removed.
+        NumPy boolean mask with shape (H, W), using 4-connected components.
+
+    Raises:
+        RuntimeError: If CUDA is requested without CuPy/cupyx available.
+        ValueError: If ``device`` is neither ``"cpu"`` nor ``"cuda"``.
     """
     if device == "cuda" and not _has_cp:
         raise RuntimeError(
-            "CuPy and cucim are required for GPU acceleration (device='cuda'). "
+            "CuPy and cupyx are required for GPU acceleration (device='cuda'). "
             "Please install them with:\n"
-            "  pip install cupy-cuda12x cucim-cu12\n"
+            "  pip install cupy-cuda12x\n"
             "or set device='cpu'."
         )
 
