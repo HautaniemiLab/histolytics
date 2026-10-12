@@ -6,14 +6,14 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–14 have landed on main at `bff61df`; the merged local branches
+PRs 3–15 have landed on main at `20a57b1`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38215620414)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38219779710)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 224 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 229 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -48,6 +48,8 @@ The post-merge main run is separate; do not equate preparation with publication.
   weights-to-analysis composition and unchanged reciprocal/area-weighting definitions.
 - [x] Tuple neighborhood compatibility restored, including mapped/unmapped IDs,
   reciprocal distances, pandas rows, and empty tuples.
+- [x] Independent cuML clustering and cuCIM color-backend detection, with CPU
+  output checks and optional-import/dispatch combinations; GPU computation unverified.
 
 ### Open compatibility and release gates
 
@@ -197,10 +199,10 @@ workflow/plugin framework or a wholesale folder rewrite.
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
    Saved-segmentation, assembly, reconstruction, and external-weight checks are
-   merged, including the tuple-input review correction. Next separate image-backend
-   availability: cuML clustering and cuCIM color processing must not overwrite each
-   other's availability. Exercise missing/present import combinations and CPU
-   outputs without claiming GPU computation or changing fallback policy. The
+   merged, including the tuple-input review correction and independent image-backend
+   availability. Next correct the mask-cleanup dependency guidance and verify its
+   independent CuPy/cupyx boundary, CPU connectivity, and exclusive area cutoff.
+   Preserve GPU implementations and existing dispatch/error policy. The
    published asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
    consume an upstream correction before extending those contracts.

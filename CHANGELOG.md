@@ -11,6 +11,7 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Report CuPy/cupyx rather than cuCIM as the CUDA mask-cleanup requirements.
 - Detect cuML clustering and cuCIM color-processing backends independently in
   image utilities; report the correct missing CUDA clustering dependencies.
 - Accept tuple neighborhoods in distance lookups with or without mapped node IDs.
