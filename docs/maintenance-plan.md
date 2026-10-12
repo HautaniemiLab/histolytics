@@ -6,7 +6,7 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–19 have landed on main at `5f7baba`; the merged local branches
+PRs 3–20 have landed on main at `3c3ec64`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
@@ -17,8 +17,9 @@ passed tooling/build and documentation, all 20 intended archive/profile checks
 CUDA skip per version. OpenSlide Linux/macOS and cuCIM CPU-read jobs each
 passed 19 real-reader checks without skips. The full Linux archive checks select
 the all extra directly.
-These results cover the tree now merged on main. Python 3.13 source installation
-and analysis/full release-format installations still fail on the existing
+These results cover PR 19; PR 20 separately passed 255 source tests and 39 checks
+in each native-reader environment, plus all 20 supported installation combinations.
+Python 3.13 source installation and analysis/full release-format installations still fail on the existing
 dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
 
@@ -68,6 +69,10 @@ The post-merge main run is separate; do not equate preparation with publication.
   index IDs/class dictionaries preserved, and saved Parquet annotations feed CPU
   feature analysis through real OpenSlide/cuCIM reads.
 
+- [x] Reduced-level annotation rasterization on the actual reader grid, with legacy
+  GDAL boundary behavior, IDs/classes and feature callbacks preserved. Fractional
+  TIFF grids are verified; unequal-axis masked reads await an upstream fix.
+
 ### Open compatibility and release gates
 
 - [ ] Resolve Python 3.13 dependency compatibility and validate source, wheel,
@@ -80,7 +85,7 @@ The post-merge main run is separate; do not equate preparation with publication.
 Numba 0.60.0/llvmlite 0.43.0 are the confirmed first Python 3.13 blocker.
 cellseg-models-pytorch 0.1.30 and the CUDA stack constrain this family; the inspected
 upstream metadata still uses the Numba 0.60 series. Preserve the failing 3.13 checks
-while fixing compatible requirements, wheels, and numerical baselines. Do not
+in the explicit `python313` workflow scope while fixing compatible requirements, wheels, and numerical baselines. Do not
 bypass upstream constraints or rely on an unpublished checkout for a release.
 
 ## Installation and dependency audit
@@ -204,6 +209,16 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 - [ ] Validate a release candidate, write migration notes for intentional breaks,
   and retain the previous release and baseline artifacts for rollback.
 
+## CI validation scope
+
+Routine PR/main validation uses 15 jobs rather than 34. Keep supported source
+versions and the three native-reader environments, build both archives, check six
+representative installation profiles, and run installed analysis regressions once.
+Full release/manual validation retains all 20 supported installation combinations;
+unsupported Python 3.13 has a separate manual compatibility scope. No runtime
+constraints, numerical tests, or publisher permissions change. See
+[the release guide](releasing.md) for invocation and exact scope.
+
 ## Immediate next work
 
 The [dependency architecture proposal](dependency-architecture.md) now starts
@@ -224,12 +239,12 @@ workflow/plugin framework or a wholesale folder rewrite.
    sequential image-only tile batches are verified, with shared zero-worker and
    drop-last corrections merged. Level-zero image/mask packing and type-mask returns
    are verified with clipped/empty masks and saved annotations feeding CPU features.
-   Next rasterize annotations directly on the requested pyramid grid through an
+   PR 20 rasterizes annotations directly on the requested pyramid grid through an
    explicit affine option in the shared raster primitives. Preserve legacy default
    rendering, GDAL boundary ties, IDs/class mappings, source geometry, actual reader
-   shapes, and level-zero coordinate origins. Test integer/fractional grids, rounded
-   region dimensions, aliases, empty/type masks and feature callbacks. Unequal-axis
-   metadata remains inconsistent in the published adapters; reject masked use rather
+   shapes, and level-zero coordinate origins. Integer/fractional grids, rounded
+   region dimensions, aliases, empty/type masks and feature callbacks are verified.
+   Unequal-axis metadata remains inconsistent in the published adapters; reject masked use rather
    than approximate its pixel grid or hide the dependency problem.
    The published reader adapters mix coordinate scales at reduced-level boundaries;
    record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still

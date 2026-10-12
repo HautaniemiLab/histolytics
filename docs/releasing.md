@@ -1,8 +1,20 @@
 # Releasing Histolytics
 
 The release workflow runs source tests and clean wheel/source installation checks
-on Python 3.10–3.13. It publishes the exact built artifacts only after every required
-job passes. A manual run of Publish validates without publishing.
+on supported Python versions 3.10–3.12. It publishes the exact built artifacts
+only after every required job passes. A manual run of Publish validates without publishing.
+
+Routine pull requests and main runs use 15 jobs: tooling, documentation, three
+source-test versions, three native-reader environments, a distribution build, and
+six representative installation checks. All capability profiles are checked from
+installed archives; analysis regressions run once from the Linux wheel rather than
+in every installation job. Both wheel and source archives remain checked.
+
+Run **Run Tests** manually with `scope=full` for all 20 supported installation
+combinations. Publish always selects this full scope. Run it with `scope=python313`
+for the separate Python 3.13 source and four archive compatibility checks; these
+remain failing on the current dependency stack and do not establish support.
+Superseded PR runs are cancelled; release validation runs are retained.
 
 ## One-time trusted publisher setup
 
