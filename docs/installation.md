@@ -44,7 +44,9 @@ reader remains OpenSlide. HDF5 training additionally requires `tables`, as befor
 Torch's Linux wheels can include NVIDIA runtime packages even for CPU execution.
 For a CPU-only model environment, install the appropriate CPU Torch/torchvision
 wheels using [PyTorch’s installation selector](https://pytorch.org/get-started/locally/) before adding this extra. The analysis-only default
-does not require Torch or a special package index.
+does not require Torch or a special package index. Select the model device
+explicitly, for example `from_pretrained(..., device=torch.device("cpu"))`;
+the public model-loading default remains CUDA.
 
 ### Retained cuCIM reader and CUDA analysis
 

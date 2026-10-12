@@ -1,5 +1,9 @@
 # Getting started
 
+Install `histolytics[segmentation]` for CPU models, or `histolytics[all]` for the
+full Linux installation. These examples explicitly use CPU; use
+`torch.device("cuda")` when running with a compatible GPU environment.
+
 ## 1. Load a pre-trained model
 
 Pre-trained weights can be found on the [histolytics model hub](https://huggingface.co/histolytics-hub) or downloaded automatically when calling `from_pretrained`. Make sure you have an internet connection for the first use.
@@ -14,14 +18,18 @@ Available segmentation model architectures are:
 
 
 ```python
+import torch
+
 from histolytics.models.cellpose_panoptic import CellposePanoptic
 # from histolytics.models.hovernet_panoptic import HoverNetPanoptic
 # from histolytics.models.stardist_panoptic import StarDistPanoptic
 
 
-model = CellposePanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
-# model = HoverNetPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
-# model = StarDistPanoptic.from_pretrained("hgsc_v1_efficientnet_b5")
+model = CellposePanoptic.from_pretrained(
+    "hgsc_v1_efficientnet_b5", device=torch.device("cpu")
+)
+# model = HoverNetPanoptic.from_pretrained("hgsc_v1_efficientnet_b5", device=torch.device("cpu"))
+# model = StarDistPanoptic.from_pretrained("hgsc_v1_efficientnet_b5", device=torch.device("cpu"))
 ```
 
 ## 2. Run inference for one image
