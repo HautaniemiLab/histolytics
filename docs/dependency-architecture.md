@@ -223,8 +223,8 @@ checkout are already released:
    provides a genuinely independent reader boundary; do not duplicate reader implementations.
 5. **CPU processing and CUDA processing need independent availability checks.**
    Intensity/chromatin annotations are now deferred, and texture imports are guarded.
-   Image utilities still overwrite one shared availability flag in separate CuPy/cuML
-   and cuCIM import blocks. Test each optional stack independently before moving it
+   Image utilities need separate availability flags for CuPy/cuML clustering and
+   CuPy/cuCIM color processing. Test each optional stack independently before moving it
    out of the default requirements. Preserve documented errors and resolve silent
    fallback policy explicitly when changing public behavior.
 6. **The datasets package is an example/training dependency.** No source module

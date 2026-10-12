@@ -11,6 +11,8 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Detect cuML clustering and cuCIM color-processing backends independently in
+  image utilities; report the correct missing CUDA clustering dependencies.
 - Accept tuple neighborhoods in distance lookups with or without mapped node IDs.
 - Preserve neighborhood center/order when mapping node IDs to centroids, accept
   NumPy neighborhoods without ambiguous comparisons, and align distance/area
