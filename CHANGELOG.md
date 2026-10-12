@@ -11,6 +11,7 @@ All notable changes to Histolytics will be documented in this file.
   directly instead of relying on transitive installation.
 
 ### Fixed
+- Accept tuple neighborhoods in distance lookups with or without mapped node IDs.
 - Preserve neighborhood center/order when mapping node IDs to centroids, accept
   NumPy neighborhoods without ambiguous comparisons, and align distance/area
   aggregation with explicit node IDs while retaining table row labels. Reject

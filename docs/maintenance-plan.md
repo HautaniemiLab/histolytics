@@ -6,14 +6,14 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 12 October 2026
 
-PRs 3–12 have landed on main at `1d945d2`; the merged local branches
+PRs 3–13 have landed on main at `bcce132`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38164117980)
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38212932514)
 passed the tooling/build jobs, all six clean wheel/source installations on Python
-3.10–3.12, and 197 source tests with one hardware-dependent CUDA skip per version.
+3.10–3.12, and 218 source tests with one hardware-dependent CUDA skip per version.
 These results cover the tree now merged on main. Python 3.13 source installation
 and both release-format installations still fail on the existing dependency stack.
 The post-merge main run is separate; do not equate preparation with publication.
@@ -44,6 +44,8 @@ The post-merge main run is separate; do not equate preparation with publication.
   assembly, with exact selection and saved-segmentation composition regressions.
 - [x] Model reconstruction smoothing settings forwarded across every dispatch,
   with standalone reconstruction, real save-mode checks, and default geometry parity.
+- [x] Neighborhood center/order and external node-ID alignment, with an external
+  weights-to-analysis composition and unchanged reciprocal/area-weighting definitions.
 
 ### Open compatibility and release gates
 
@@ -192,11 +194,11 @@ workflow/plugin framework or a wholesale folder rewrite.
    expose one reusable seam at a time, with a small composition regression and
    preserved public convenience APIs. Verify numerical selections before any
    default/extra split so it does not silently upgrade the analysis stack.
-   Saved-segmentation, assembly, and reconstruction checks are merged. Next verify
-   external neighbor weights and object IDs in distance aggregation. Preserve the
-   supplied center/order and table row labels, and use Shapely distance directly
-   instead of a private geometry-module helper. Keep reciprocal clipping and feature
-   definitions unchanged. The published asynchronous reconstruction processor still
+   Saved-segmentation, assembly, reconstruction, and external-weight checks are
+   merged. Address the review finding that pandas treats tuple neighborhood keys
+   as multiple indexers; retain Sequence inputs with explicit list-like lookup and
+   regression coverage before widening the architecture work. The published
+   asynchronous reconstruction processor still
    assumes tissue maps are present and returns unresolved cytoplasm results;
    consume an upstream correction before extending those contracts.
 2. Continue the independent Google-style documentation and gradual typing work.

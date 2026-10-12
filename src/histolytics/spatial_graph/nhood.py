@@ -196,6 +196,7 @@ def nhood_dists(
 
     nhood_dists = np.array([0])
     if isinstance(nhood, (Sequence, np.ndarray)) and len(nhood) > 0:
+        nhood = list(nhood)
         if ids is not None:
             if not ids.is_unique:
                 raise ValueError("ids must contain unique node IDs")
