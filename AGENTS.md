@@ -116,6 +116,8 @@ not support the NVIDIA extras; CPU analysis and segmentation are checked separat
 | Lint library, tests, and release tools | `uv run --no-sync ruff check src tests tools` |
 | Check formatting | `uv run --no-sync ruff format --check src tests tools` |
 | Targeted library test | `HF_HUB_OFFLINE=1 uv run --no-sync pytest tests/test_ops.py -x` |
+| OpenSlide WSI checks (Linux/macOS) | `uv sync --locked --dev --group wsi-tests --extra segmentation && HISTOLYTICS_WSI_BACKEND=OPENSLIDE uv run --no-sync pytest tools/wsi_tests` |
+| cuCIM CPU-read checks (Linux) | `uv sync --locked --dev --group wsi-tests --extra cucim && HISTOLYTICS_WSI_BACKEND=CUCIM uv run --no-sync pytest tools/wsi_tests` |
 | Library suite and coverage | `HF_HUB_OFFLINE=1 uv run --no-sync pytest tests --cov=histolytics --cov-report=xml` |
 | Release guard tests (Python 3.11+) | `python -m unittest discover -s tools/tests -v` |
 | Check versions (Python 3.11+) | `python tools/check_release_metadata.py` |

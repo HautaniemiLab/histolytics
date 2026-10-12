@@ -1,8 +1,8 @@
 # Dependency architecture proposal
 
-Status: installation split in review, 12 October 2026. This document describes a target and migration
+Status: installation split merged; WSI checks in progress, 12 October 2026. This document describes a target and migration
 gates; implemented API changes are recorded in the changelog. PR 8 made existing
-requirements explicit as a separate declaration change. The current batch implements the base, segmentation, cucim, and cuda-analysis
+requirements explicit as a separate declaration change. PR 17 implements the base, segmentation, cucim, and cuda-analysis
 installation groups, plus all as their documented full-install aggregate; finer
 training/backend groups remain proposed.
 
@@ -164,7 +164,7 @@ Public computation APIs and device defaults remain unchanged.
 ## Feature groups
 
 Base, segmentation, cucim, cuda-analysis, and their all aggregate are implemented
-in the current batch.
+on main.
 Training, polars, and bioio below remain future proposals, not available extras.
 The segmentation group retains datasets for the existing finetuning notebook and
 Albumentations for published upstream inference imports. Avoid an extra for every
@@ -310,3 +310,8 @@ macOS 3.12 analysis and segmentation profiles, Linux 3.12 segmentation, and Linu
 and execute the analysis regressions; segmentation installs exercise offline CPU
 forward/backward training. Full locked source tests retain all extras. These checks
 do not establish GPU computation, real WSI backend operation, or checkpoint parity.
+
+Real reader coverage is tracked in [WSI backend checks](wsi-backend-checks.md).
+The generated fixture verifies pixel-level reading and sequential tile handoffs;
+it does not establish vendor-format support or GPU computation. Reduced-level
+boundary clipping in the published adapters remains an upstream limitation.

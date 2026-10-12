@@ -108,4 +108,4 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           uv pip install --python "$RUNNER_TEMP/package-env/bin/python" 'pytest>=8.3.5'
-          "$RUNNER_TEMP/package-env/bin/python" -m pytest "$GITHUB_WORKSPACE/tests" --ignore="$GITHUB_WORKSPACE/tests/test_models.py" --ignore="$GITHUB_WORKSPACE/tests/test_postprocessing.py" -k 'not bundled_pixels_match_upstream'
+          "$RUNNER_TEMP/package-env/bin/python" -m pytest "$GITHUB_WORKSPACE/tests" --ignore="$GITHUB_WORKSPACE/tests/test_models.py" --ignore="$GITHUB_WORKSPACE/tests/test_postprocessing.py" --ignore="$GITHUB_WORKSPACE/tests/test_nodes_loader.py" -k 'not bundled_pixels_match_upstream'

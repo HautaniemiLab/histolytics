@@ -52,6 +52,43 @@ jobs:
       - name: Build documentation
         run: uv run --no-sync mkdocs build
 
+  wsi-readers:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, backend: OPENSLIDE, extra: segmentation}
+          - {os: macos-latest, backend: OPENSLIDE, extra: segmentation}
+          - {os: ubuntu-latest, backend: CUCIM, extra: cucim}
+    env:
+      HF_HUB_OFFLINE: "1"
+      HISTOLYTICS_WSI_BACKEND: ${{ matrix.backend }}
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.4"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install the explicit reader test profile
+        run: uv sync --locked --dev --group wsi-tests --extra "${{ matrix.extra }}" --python "3.12"
+      - name: Check real TIFF pixels, coordinates, and sequential patch batches
+        run: uv run --no-sync pytest tools/wsi_tests --junitxml=wsi-test-results.xml
+      - name: Preserve reader test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wsi-reports-${{ matrix.os }}-${{ matrix.backend }}
+          path: wsi-test-results.xml
+          if-no-files-found: warn
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 45

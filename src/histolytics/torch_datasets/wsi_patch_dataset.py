@@ -219,14 +219,23 @@ class WSIPatchDataset(Dataset):
 
 class WSIPatchMapAndCollate:
     def __init__(self, dataset: Dataset):
-        """Collate function to batch WSI patch datasets.
+        """Create a collator for array-valued WSI patches.
 
-        Returns a stacked numpy array of patches with Shape (N, C, H, W). Each patch
-        is expected to be a numpy array.
+        Args:
+            dataset: Map-style dataset returning patch arrays.
         """
         self.dataset = dataset
 
     def __call__(self, batch_of_indices: List[int]) -> np.ndarray:
+        """Stack the selected patches along a new batch axis.
+
+        Args:
+            batch_of_indices: Dataset indices in the requested batch order.
+
+        Returns:
+            Stacked NumPy array; RGB patches (H, W, 3) produce (N, H, W, 3).
+            No channel transpose is performed. Empty indices return shape (0,).
+        """
         results = []
         for i in batch_of_indices:
             results.append(self.dataset[i])
