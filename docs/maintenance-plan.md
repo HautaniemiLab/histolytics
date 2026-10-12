@@ -200,6 +200,8 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Release
 
+- [ ] Complete the validation-artifact cleanup gate below before considering the
+  repository release-ready.
 - [ ] Configure the matching PyPI trusted publisher and GitHub environment following
   [the release guide](releasing.md); verify authentication only on an authorized release.
 - [ ] Validate a release candidate, write migration notes for intentional breaks,
@@ -378,3 +380,29 @@ checkpoint rewrite, pretrained encoder download or runtime dependency upgrade.
   artifact execution and GPU behavior remain unverified; do not claim those from
   offline CI. Completion requires the existing 15-job gate and ends this single
   checkpoint/image milestone.
+
+## Readiness gate: clean up temporary validation records
+
+The verbose JSON records are temporary maintenance evidence, not permanent
+repository documentation. Cleanup is required once the selected dependency
+upgrades pass their numerical/checkpoint comparisons and the supported installation
+profiles pass release-candidate validation. GPU or other deferred milestones do
+not justify keeping unrelated completed audit snapshots indefinitely.
+
+- Remove obsolete `dependency-imports.json`, `dependency-advisories.json` and
+  `texture-cpu-baseline.json` after their relevant audit/evaluation decisions are
+  recorded concisely. Preserve useful full reports as external validation artifacts
+  or in Git history, rather than accumulating snapshots on the current tree.
+- Replace the verbose CPU image-feature and published-checkpoint JSON captures
+  with compact regression fixtures and only essential provenance/settings. Keep
+  the minimum expected values, immutable input/checkpoint identity and comparison
+  criteria needed to detect scientific regressions; remove redundant environment
+  dumps and completed-work narration.
+- Update affected tests, checker tools and documentation links together. Verify
+  that cleanup preserves the numerical checks and reproducibility, then remove
+  superseded reports and helpers. Do not drop a regression merely to delete JSON.
+- Until cleanup, add no further verbose snapshots by default. Prefer existing
+  compact fixtures and CI artifacts; justify any additional committed capture by
+  the specific comparison it enables.
+
+This gate is part of readiness and must not be deferred beyond release preparation.
