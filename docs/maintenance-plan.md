@@ -4,20 +4,19 @@ Refresh Histolytics in small, independently reviewable changes. Establish reliab
 tests and release installations before upgrading runtime dependencies. Preserve
 public APIs, checkpoints, spatial feature definitions, and scientific results.
 
-## Current state — 12 October 2026
+## Current state — 13 October 2026
 
-PRs 3–21 have landed on main at `4a0d037`; the merged local branches
-have been removed. Package version remains `0.2.5`. No package release or runtime
-dependency upgrade has been performed during this maintenance work.
+PRs 3–21 and 23–27 have landed on main at `5753fdc`; the merged local branches
+have been removed. Package version remains `0.2.5`. The focused Torch
+2.9.1 upgrade is merged; no package release has occurred.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38264631135)
-passed all 15 routine jobs: tooling/build, documentation, three supported source
-versions, three native-reader environments, and six archive/profile installations.
-The preceding full validation covered all 20 supported installation combinations.
-Python 3.13 remains unsupported on the existing dependency stack and is tracked in
-the explicit manual compatibility scope. These are pre-merge validation results;
-no package release has occurred.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38309064269)
+passed all 15 routine jobs on the upgraded and cleaned-up tree.
+The earlier full installation validation covered all 20 supported archive/profile
+combinations. Python 3.13 remains unsupported and has a separate manual
+compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
+is not included in this main revision. No package release has occurred.
 
 ### Completed foundation
 
@@ -109,8 +108,8 @@ See [the dependency audit](dependency-audit.md) for the import/advisory snapshot
 verified constraints, and initial priorities. Reachability review and upgrades
 remain open. The merged texture fix moves its unconditional CuPy import into the
 existing optional GPU guard, with regression checks for known CPU GLCM values.
-The analysis-default installation split now permits CPU analysis without CUDA;
-GPU feature kernels remain optional and await evaluation.
+CPU analysis is now available without model/NVIDIA packages through the merged
+installation split; GPU processing remains optional and awaits evaluation.
 
 ## Evaluate CuPy processing and retain cuCIM
 
@@ -201,6 +200,8 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Release
 
+- [x] Complete the validation-artifact cleanup gate below before considering the
+  repository release-ready.
 - [ ] Configure the matching PyPI trusted publisher and GitHub environment following
   [the release guide](releasing.md); verify authentication only on an authorized release.
 - [ ] Validate a release candidate, write migration notes for intentional breaks,
@@ -216,50 +217,47 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Immediate next work
+## Completed maintenance phase and remaining readiness work — 13 October 2026
 
-The [dependency architecture proposal](dependency-architecture.md) now starts
-from standalone capabilities and explicit data handoffs. Pipelines compose WSI
-reading, image inference, reconstruction, conversion, assembly, and analysis.
-Installation groups follow those code boundaries; they are not a substitute for
-them. Preserve existing representations and high-level APIs, and avoid a new
-workflow/plugin framework or a wholesale folder rewrite.
+The installation split and standalone image-to-analysis composition are complete.
+The focused Torch upgrade now requires >=2.9.1,<2.10, with torchvision 0.24.1 and
+Triton 3.5.1. Other retained package versions are unchanged. The legacy CUDA 11
+closure and unused build helpers leave the lock. No further CI scopes or scientific
+baselines are added.
 
-1. Keep pretrained class mappings owned by each loaded model, not shared class
-   attributes or mutable registry dictionaries. Verify multiple named checkpoints
-   and a local checkpoint together offline, preserving tensor loading and mapping
-   contents. This is the next focused correctness batch.
-2. Verify existing prediction, reconstruction, assembly, and analysis handoffs;
-   expose one reusable seam at a time, with a small composition regression and
-   preserved public convenience APIs. Verify numerical selections before any
-   default/extra split so it does not silently upgrade the analysis stack.
-   Saved-segmentation, assembly, reconstruction, and external-weight checks are
-   merged, including tuple-input compatibility, independent image-backend availability,
-   and mask-cleanup dependency guidance. The installation split is merged, including
-   the all aggregate and CPU onboarding corrections. Real OpenSlide/cuCIM reads and
-   sequential image-only tile batches are verified, with shared zero-worker and
-   drop-last corrections merged. Level-zero image/mask packing and type-mask returns
-   are verified with clipped/empty masks and saved annotations feeding CPU features.
-   PR 20 rasterizes annotations directly on the requested pyramid grid through an
-   explicit affine option in the shared raster primitives. Preserve legacy default
-   rendering, GDAL boundary ties, IDs/class mappings, source geometry, actual reader
-   shapes, and level-zero coordinate origins. Integer/fractional grids, rounded
-   region dimensions, aliases, empty/type masks and feature callbacks are verified.
-   Unequal-axis metadata remains inconsistent in the published adapters; reject masked use rather
-   than approximate its pixel grid or hide the dependency problem.
-   The published reader adapters mix coordinate scales at reduced-level boundaries;
-   record the limitation and resolve it upstream, without a local padding workaround. The published asynchronous reconstruction processor still
-   assumes tissue maps are present and returns unresolved cytoplasm results;
-   consume an upstream correction before extending those contracts.
-3. Continue the independent Google-style documentation and gradual typing work.
-4. Consume a tested upstream compatibility release and upgrade numerical/CUDA
-   families in reviewable batches to make Python 3.13 support real.
+The unchanged public checkpoint passed on upgraded macOS CPU and Linux Python
+3.10/3.12 in explicit run 38307557090. The locked local library/native-reader suite
+passed 302 tests with one existing CUDA skip before cleanup. The .pt loading
+regression preserves exact tensors. Final source/profile/reader CI remains the
+existing 15-job gate, with ordinary tests offline.
 
-GPU processing comparisons and peak-memory measurements await CUDA hardware.
-They do not block unrelated maintenance. Keep cuCIM and PyTorch CUDA model
-support, and make CuPy removal decisions from the requested evaluation.
-Keep all batches independently revertible; merging maintenance PRs does not
-complete their remaining compatibility, scientific, or publication checks.
+Temporary checkpoint scope/checker/capture files and obsolete JSON audit/timing
+snapshots are retired. Their detailed evidence remains in Git history and CI logs;
+[the dependency audit](dependency-audit.md) records the upgrade and checkpoint
+identity concisely. The CPU image-feature values remain as a compact CSV fixture
+with unchanged input checks and numerical tolerances. Cleanup has not regenerated
+expected results or removed library contract regressions.
 
-See [WSI backend checks](wsi-backend-checks.md) for the generated fixture, explicit
-environments, covered coordinate contracts, and the upstream boundary limitation.
+PR 27 passed all 15 jobs and is merged. This focused upgrade/cleanup phase is complete.
+The validated analysis-first installation, independent composition, scoped model
+upgrade and compact CI are the deliverable. Do not start unrelated fixes or another
+baseline collection batch. Python 3.13 needs an upstream compatibility release;
+CuPy evaluation awaits GPU hardware; checkpoint/GPU coverage beyond this single
+CPU model and release publisher authentication remain separate work.
+
+## Readiness cleanup rule
+
+Keep only regression fixtures and short provenance/settings needed for reproducible
+checks. Completed verbose captures and audit/environment dumps belong in Git
+history or CI artifacts. Any future temporary validation tooling must be removed
+when its bounded task is verified; do not add permanent workflow options or reports
+by default. Preserve meaningful regression coverage when retiring scaffolding.
+
+The only remaining open maintenance PR is #22: per-instance checkpoint class
+mappings. Its root cause is shared class attributes and mutable registry aliases,
+which can change an already loaded model's downstream class names. Bring that
+existing fix onto the upgraded main, preserve the three offline regression cases,
+and validate it in the unchanged CI gate. No new baseline or workflow scope.
+After it is reviewed, release preparation needs an explicitly selected version,
+intentional-break migration notes, candidate artifact validation and separately
+authorized publication. Do not invent a version or publish as ordinary maintenance.

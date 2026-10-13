@@ -70,6 +70,22 @@ def test_checkpoint_class_mappings_are_independent(checkpoint_model, name):
     assert second.tissue_classes[1] == "stroma"
 
 
+def test_local_pytorch_state_dict_round_trip(tmp_path):
+    torch.manual_seed(42)
+    original = HoverNetPanoptic(
+        3, 2, enc_name="resnet18", enc_pretrain=False, device=torch.device("cpu")
+    )
+    checkpoint = tmp_path / "hovernet.pt"
+    torch.save(original.model.state_dict(), checkpoint)
+    loaded = HoverNetPanoptic.from_pretrained(checkpoint, device=torch.device("cpu"))
+    assert loaded.model.state_dict().keys() == original.model.state_dict().keys()
+    for name, value in original.model.state_dict().items():
+        torch.testing.assert_close(
+            loaded.model.state_dict()[name], value, rtol=0, atol=0
+        )
+        assert loaded.model.state_dict()[name].device.type == "cpu"
+
+
 @pytest.mark.parametrize(
     "model",
     [
