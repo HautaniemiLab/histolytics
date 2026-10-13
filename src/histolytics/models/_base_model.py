@@ -27,16 +27,23 @@ class BaseModelPanoptic:
         weights: Union[str, Path],
         device: torch.device = torch.device("cuda"),
         model_kwargs: Dict[str, Any] = {},
-    ):
+    ) -> "BaseModelPanoptic":
         """Load the model from pretrained weights.
 
-        Parameters:
-            model_name (str):
-                Name of the pretrained model.
-            device (torch.device):
-                Device to run the model on.
-            model_kwargs (Dict[str, Any]):
-                Additional arguments for the model.
+        Args:
+            weights: Registered checkpoint name or local checkpoint path.
+            device: Device to load and run the model on. Defaults to CUDA.
+            model_kwargs: Additional arguments for the model.
+
+        Returns:
+            A model with strictly loaded weights. Registered checkpoints provide
+            independent nuclei/tissue class dictionaries on the returned instance;
+            local checkpoints have None mappings. Loading or customizing another
+            model does not change these dictionaries.
+
+        Raises:
+            ValueError: If weights is neither a file nor a registered name.
+                Checkpoint loading and model construction errors propagate.
 
         Examples:
             >>> model = Model.from_pretrained(<str or Path to weights>, device=torch.device("cuda"))
@@ -83,12 +90,12 @@ class BaseModelPanoptic:
             model_inst.model.load_state_dict(state_dict, strict=True)
 
         try:
-            cls.nuc_classes = MODEL_CLASS_DICTS[weights]["nuc"]
-            cls.tissue_classes = MODEL_CLASS_DICTS[weights]["tissue"]
+            model_inst.nuc_classes = MODEL_CLASS_DICTS[weights]["nuc"].copy()
+            model_inst.tissue_classes = MODEL_CLASS_DICTS[weights]["tissue"].copy()
         except KeyError:
             # if the model is not in the class dict, set to None
-            cls.nuc_classes = None
-            cls.tissue_classes = None
+            model_inst.nuc_classes = None
+            model_inst.tissue_classes = None
 
         return model_inst
 

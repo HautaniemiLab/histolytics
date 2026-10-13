@@ -1,6 +1,6 @@
 # Dependency architecture proposal
 
-Status: installation split and image-only WSI checks merged; level-zero mask handoffs merged; reduced grids in progress, 12 October 2026. This document describes a target and migration
+Status: installation split and image-only WSI checks merged; level-zero mask handoffs merged; reduced grids merged, 12 October 2026. This document describes a target and migration
 gates; implemented API changes are recorded in the changelog. PR 8 made existing
 requirements explicit as a separate declaration change. PR 17 implements the base, segmentation, cucim, and cuda-analysis
 installation groups, plus all as their documented full-install aggregate; finer
@@ -305,11 +305,13 @@ and geometry paths. The installation-split batch retained all 280 locked version
 the focused Torch upgrade separately selects the 2.9 family and its companions.
 This intentionally leaves Python 3.13 compatibility unresolved.
 
-CI checks fresh base/full Linux archive installations on Python 3.10–3.13, plus
+Full release/manual CI checks fresh base/full Linux archive installations on
+Python 3.10–3.12, plus
 macOS 3.12 analysis and segmentation profiles, Linux 3.12 segmentation, and Linux
 3.12 CUDA analysis without models. Base installs reject model/NVIDIA distributions
 and execute the analysis regressions; segmentation installs exercise offline CPU
-forward/backward training. Full locked source tests retain all extras. These checks
+forward/backward training. Routine CI uses six representative installation checks;
+Python 3.13 has a separate manual compatibility scope. Full locked source tests retain all extras. These checks
 do not establish GPU computation, real WSI backend operation, or checkpoint parity.
 
 Real reader coverage is tracked in [WSI backend checks](wsi-backend-checks.md).
@@ -319,7 +321,7 @@ boundary clipping in the published adapters remains an upstream limitation.
 
 PR 19 repairs level-zero channel packing and verifies external saved annotation
 tables as feature inputs. It retains index-based instance IDs and explicit class
-mappings. The current batch extends the existing stateless raster primitives with
+mappings. PR 20 extends the existing stateless raster primitives with
 an explicit affine grid, so orchestration supplies the reader's coordinates/shape
 without moving the raster algorithm or resizing integer labels. Legacy defaults
 remain unchanged. Unequal-axis reader coordinates and edge padding stay upstream.
