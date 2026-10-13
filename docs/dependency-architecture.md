@@ -301,7 +301,8 @@ and the other shared upper bounds previously supplied by cellseg-models-pytorch.
 It also retains cuDF's pandas >=2,<2.4.0dev0 bound and cuML's scikit-learn >=1.4
 floor, preventing removal of the GPU stack from changing the numerical family.
 Numba remains an analysis dependency for the existing libpysal accelerated graph
-and geometry paths. All 280 locked package versions and wheel hashes are retained.
+and geometry paths. The installation-split batch retained all 280 locked versions;
+the focused Torch upgrade separately selects the 2.9 family and its companions.
 This intentionally leaves Python 3.13 compatibility unresolved.
 
 CI checks fresh base/full Linux archive installations on Python 3.10–3.13, plus

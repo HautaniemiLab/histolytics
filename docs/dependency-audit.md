@@ -2,8 +2,9 @@
 
 This is an inventory and prioritization record, not a claim that the listed
 vulnerabilities are exploitable in every Histolytics workflow or already fixed.
-Snapshots: [direct imports](validation/dependency-imports.json) and
-[open advisories](validation/dependency-advisories.json).
+The dated import/advisory snapshots are archived in
+[Git history](https://github.com/HautaniemiLab/histolytics/tree/5cd94960f92c0dcddd905966df366075ceb6dd53/docs/validation);
+completed validation reports have been removed from the current tree.
 
 ## Verified baseline
 
@@ -81,7 +82,7 @@ No alerts were dismissed and no version upgrade is included in the texture fix.
 
 | Priority | Evidence and next verification |
 | --- | --- |
-| PyTorch and checkpoint loading | The lock selects 2.0.1 on Python 3.10/Linux x86_64, and newer branches include 2.8.0/2.9.0. The critical [GHSA-53q9-r3pm-6pq6](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6) affects versions below 2.6.0. BaseModelPanoptic._get_state_dict calls torch.load for non-safetensors checkpoints. Review the loading trust boundary and explicit weights-only behavior, then verify checkpoint/prediction compatibility before upgrading. A weights-only option alone does not repair this advisory on affected versions. |
+| PyTorch and checkpoint loading | The audit snapshot selected 2.0.1 on Python 3.10/Linux x86_64, and newer branches include 2.8.0/2.9.0. The critical [GHSA-53q9-r3pm-6pq6](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6) affects versions below 2.6.0. BaseModelPanoptic._get_state_dict calls torch.load for non-safetensors checkpoints. Review the loading trust boundary and explicit weights-only behavior, then verify checkpoint/prediction compatibility before upgrading. A weights-only option alone does not repair this advisory on affected versions. |
 | Pillow, Arrow, and GeoPandas | Locked Pillow 11.3.0, PyArrow 16.1.0, and GeoPandas 1.1.1 are in reported vulnerable ranges. Image decoding and Parquet loading are normal library operations. Review each advisory's trigger against those operations, then test bundled data, WSI/image I/O, and spatial outputs with candidate versions. |
 | Network and downloads | Requests, urllib3, and aiohttp have open alerts. Checkpoint downloads use Hugging Face Hub; dataset/download integrations also pull this family. Review redirects, transport, and file handling against the specific advisories before selecting upgrades. |
 | Documentation and development | The snapshot includes MkDocs, notebook rendering, Tornado, virtualenv, and related packages. Separate tools used by docs/build/test jobs from user runtime requirements and upgrade those environments in their own batch. |
@@ -111,3 +112,29 @@ remain incomplete.
 3. Consume the tested upstream Numba/Python compatibility release when available.
 4. Upgrade the PyTorch/checkpoint, image/numerical, geospatial, and tooling families
    independently. Compare outputs and installation results after each batch.
+
+## Focused Torch upgrade — 13 October 2026
+
+Segmentation now requires Torch >=2.9.1,<2.10 with locked torchvision 0.24.1 and
+Triton 3.5.1. Other retained package versions are unchanged; legacy CUDA 11 packages
+and obsolete build helpers leave the lock. This excludes the <=2.5.1 range in
+[GHSA-53q9-r3pm-6pq6](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6);
+it is not a claim that all dependency advisories are resolved.
+
+The same public HGSC HoVer-Net/EfficientNet-B5 checkpoint was SHA-256 verified at
+revision `976ae141db64d800e11ff6c7d84b59d9f2527ba1`, filename
+`hovernet_hgsc_v1_efficientnet_b5.safetensors`, hash
+`832e478100c27182034576ce307caade6c3054df04ced7e63a33476423805fe4`.
+A crop (686,686,128,128), public min-max normalization to [0,1], CPU float32/eval,
+two Torch threads, seed 42 and serial HoVer-Net enhancement produced seven nuclei.
+Fixed labels/shapes/dtypes matched exactly; auxiliary maps retained the predefined
+`rtol=1e-4`, `atol=1e-5` criteria. The artifact's Apache-2.0 license and
+[published model card](https://huggingface.co/histolytics-hub/hovernet-histo-hgsc-pan-v1)
+remain authoritative.
+
+Capture and upgraded comparison passed on macOS ARM64 Python 3.12.13. Explicit
+Linux run [38307557090](https://github.com/HautaniemiLab/histolytics/actions/runs/38307557090)
+passed Python 3.10.22 and 3.12.15 with Torch 2.9.1+cu128 on CPU. Temporary workflow,
+checker and capture files were retired after this comparison; their exact records
+remain in Git history. The compact CPU feature fixture remains in ordinary tests.
+GPU computation and Python 3.13 compatibility are still unverified/unresolved.

@@ -67,7 +67,7 @@ available memory, and the compute budget. The default uses three crops and four
 timed calls per crop (one first call and three repetitions), plus reference and
 warmup calls. Run CPU and GPU on the same machine for a direct comparison.
 
-Initial [CPU results](validation/texture-cpu-baseline.json), 9 October 2026:
+Initial [archived CPU results](https://github.com/HautaniemiLab/histolytics/blob/5cd94960f92c0dcddd905966df366075ceb6dd53/docs/validation/texture-cpu-baseline.json), 9 October 2026:
 
 | Center crop | Nuclei | Warm median |
 | --- | --- | --- |

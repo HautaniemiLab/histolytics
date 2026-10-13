@@ -4,15 +4,15 @@ Refresh Histolytics in small, independently reviewable changes. Establish reliab
 tests and release installations before upgrading runtime dependencies. Preserve
 public APIs, checkpoints, spatial feature definitions, and scientific results.
 
-## Current state — 12 October 2026
+## Current state — 13 October 2026
 
-PRs 3–21 and 23–24 have landed on main at `49680f4`; the merged local branches
+PRs 3–21 and 23–25 have landed on main at `c16669b`; the merged local branches
 have been removed. Package version remains `0.2.5`. No package release or runtime
 dependency upgrade has been performed during this maintenance work.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38271817656)
-passed all 15 routine jobs, including the fixed CPU image-feature reference.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38275935219)
+passed all 15 routine jobs, including the offline checkpoint-reference guards.
 The earlier full installation validation covered all 20 supported archive/profile
 combinations. Python 3.13 remains unsupported and has a separate manual
 compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
@@ -200,6 +200,8 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Release
 
+- [ ] Complete the validation-artifact cleanup gate below before considering the
+  repository release-ready.
 - [ ] Configure the matching PyPI trusted publisher and GitHub environment following
   [the release guide](releasing.md); verify authentication only on an authorized release.
 - [ ] Validate a release candidate, write migration notes for intentional breaks,
@@ -215,166 +217,38 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Completed milestone: verified image-to-analysis composition
+## Maintenance endpoint and current batch — 13 October 2026
 
-Goal: independently usable capabilities exchange explicit data, and pipeline code
-combines them. Complete one small CPU image-to-analysis path using existing APIs:
-image → predictor outputs → standalone reconstruction → vector geometry → saved
-Parquet → fresh-process CPU image features and spatial selection/aggregation.
-Reuse existing native-reader and assembly checks; do not build a workflow framework.
+The installation split and standalone image-to-analysis composition are complete.
+The focused Torch upgrade now requires >=2.9.1,<2.10, with torchvision 0.24.1 and
+Triton 3.5.1. Other retained package versions are unchanged. The legacy CUDA 11
+closure and unused build helpers leave the lock. No further CI scopes or scientific
+baselines are added.
 
-### Done means
+The unchanged public checkpoint passed on upgraded macOS CPU and Linux Python
+3.10/3.12 in explicit run 38307557090. The locked local library/native-reader suite
+passed 302 tests with one existing CUDA skip before cleanup. The .pt loading
+regression preserves exact tensors. Final source/profile/reader CI remains the
+existing 15-job gate, with ordinary tests offline.
 
-- One deterministic offline composition regression carries actual image input
-  through the unmocked predictor, standalone processor, raster/vector conversion,
-  saved Parquet, and downstream analysis. A tiny controlled Torch producer makes
-  expected outputs independent of learned weights; it is a contract fixture, not
-  evidence of pretrained segmentation quality.
-- The test checks tensor/image axes and dtype, logits versus labels, background,
-  nonempty instance IDs, class names, exact pixel geometry/origin, and saved identity.
-  Rasterize with the explicit saved uid column; table indices are not instance IDs.
-- A fresh analysis process consumes saved outputs with model/NVIDIA imports
-  blocked and produces analytically checked RGB features and spatial counts.
-  It neither instantiates nor retains the producer/processor.
-- Existing tissue-assembly tests confirm standalone use without running segmentation;
-  existing real-reader tests confirm aligned image/mask inputs at supported grids.
-  Record their scope instead of extending this milestone into slide-wide inference.
-- Supported source suites, archive/profile checks and native-reader checks pass
-  in the existing 15-job gate. No additional CI jobs or runtime dependencies.
-- The plan records acceptance evidence and remaining limitations, and this
-  milestone stops. Only demonstrated blockers on this path justify implementation
-  changes; successful composition may require tests only.
+Temporary checkpoint scope/checker/capture files and obsolete JSON audit/timing
+snapshots are retired. Their detailed evidence remains in Git history and CI logs;
+[the dependency audit](dependency-audit.md) records the upgrade and checkpoint
+identity concisely. The CPU image-feature values remain as a compact CSV fixture
+with unchanged input checks and numerical tolerances. Cleanup has not regenerated
+expected results or removed library contract regressions.
 
-### Acceptance evidence
+This phase ends when the focused upgrade and cleanup pass the existing gate.
+The validated analysis-first installation, independent composition, scoped model
+upgrade and compact CI are the deliverable. Do not start unrelated fixes or another
+baseline collection batch. Python 3.13 needs an upstream compatibility release;
+CuPy evaluation awaits GPU hardware; checkpoint/GPU coverage beyond this single
+CPU model and release publisher authentication remain separate work.
 
-The composition and its supporting local checks passed (21 tests, locked macOS
-Python 3.12.13 CPU segmentation profile). Lint, formatting, changed-file hooks and
-seven tooling guards passed. All 15 CI jobs passed in run 38268556552; PR 23 is
-merged. This bounded milestone is complete. No code change
-beyond the regression test is needed to connect this path.
+## Readiness cleanup rule
 
-- `tests/test_postprocessing.py::test_image_predictions_to_saved_analysis`: real
-  Predictor execution with a controlled CPU Torch producer, standalone HoVer-Net
-  reconstruction, exact labels/classes, vector conversion at origin (100, 200),
-  Parquet persistence, uid-based rasterization, RGB means, selection and counts.
-  Both reconstructed objects have 256 square-pixel area; table indices 101/303
-  deliberately differ from instance uids 1/2. No physical-unit conversion.
-- `tests/test_standalone_analysis.py::test_saved_segmentation_to_analysis_without_model_packages`
-  and `tests/test_mergers.py::test_tissue_assembly_keeps_single_column_objects`:
-  standalone tissue assembly from saved/external data, without model execution.
-- `tools/wsi_tests/test_readers.py`: actual OpenSlide Linux/macOS and cuCIM CPU reads,
-  aligned mask grids and saved annotations feeding CPU features. These are existing
-  native-reader jobs, not new CI environments.
-
-### Current batch and scope boundary
-
-The current regression fills the complete saved-artifact handoff between
-segmentation and an independent analysis process. Prediction, reconstruction, saved geometry,
-standalone assembly, CPU imports and real-reader grids already have separate tests.
-The composition regression connects these contracts using existing outputs,
-class dictionaries, Parquet files, raster functions and analysis APIs unchanged.
-No standalone PostProcessor user-guide example is required.
-
-Published checkpoint accuracy/reproducibility, whole-slide stitching quality,
-CUDA performance/removal decisions, physical calibration, vendor formats,
-unequal-axis/off-slide reader fixes, asynchronous cytoplasm handling, Python 3.13,
-security/dependency upgrades, general typing and documentation sweeps are separate
-backlog milestones. Do not start them as incidental fixes in this milestone.
-Published reader/reconstruction limitations require upstream corrections, not local
-padding wrappers, fallback behavior or compatibility machinery.
-
-Before any next PR, name the unmet acceptance criterion and its direct evidence.
-If the current criteria pass, mark the milestone complete and propose the next
-bounded milestone before further implementation work.
-
-## Completed milestone: reproducible CPU image-feature reference
-
-Purpose: record real-data numerical outputs before runtime dependency upgrades,
-so future changes can be assessed against a reviewed reference. The preceding
-composition milestone verified handoff contracts with controlled data; it did not
-record real histology feature values.
-
-Scope: one 128×128 central crop of the bundled HGSC tumor-nest RGB image and its
-existing instance/type masks. Retain original sparse instance IDs and zero
-background; edge objects are cropped, not dropped or densely relabeled. Record
-RGB intensity mean/std and GLCM contrast/dissimilarity through existing public CPU
-APIs. This is a small feature reference, not coverage of every analysis capability.
-
-### Done means
-
-- One committed reference records source revision, input SHA-256 hashes, image/mask
-  axes/dtypes, pixel crop origin, instance IDs/counts/classes, explicit feature
-  settings, capture platform and relevant package versions. No physical calibration
-  is assumed, no patient identifiers added, and existing bundled-data provenance
-  is retained.
-- Record numerical values, output IDs/column names/dtypes and predefined
-  `rtol=1e-6`, `atol=1e-8` (the existing texture-evaluation tolerances). Input
-  identity, class labels and pixel counts require exact agreement.
-- One small regression recomputes these features against the fixed reference in
-  supported source and installed analysis profiles, using the existing CI gate.
-  Capture uses a complete locked CPU analysis environment without model/NVIDIA
-  packages. Do not add CI jobs, dependencies, a benchmark framework or new APIs.
-- Record successful validation and stop. A baseline failure is investigated;
-  expected values or tolerances are never updated merely to make a test pass.
-  Intentional future numerical changes need reviewed justification.
-
-Real-checkpoint predictions, morphology/graph/collagen/chromatin baselines, CUDA
-comparisons, image-decoder changes and all runtime upgrades are outside this batch.
-Only a demonstrated blocker in these two selected feature families belongs here.
-
-### Acceptance evidence
-
-- [Reference values and capture identity](validation/cpu-image-feature-reference.json)
-  and [reproduction notes](cpu-image-reference.md).
-- `tests/test_cpu_image_reference.py::test_bundled_cpu_image_feature_reference`
-  checks exact inputs/labels/pixel counts and both feature tables, including sparse
-  IDs, column names, dtypes and finite values.
-- Capture and the focused regression pass in the complete locked analysis profile.
-  All 15 CI jobs passed in run 38271817656; PR 24 is merged. This bounded
-  milestone is complete.
-
-## Active milestone: one published-checkpoint CPU reference
-
-Purpose: establish a real pretrained-model loading/prediction baseline before
-upgrading the model dependency stack. The controlled-producer composition and CPU
-feature references do not validate published weights.
-
-Scope: HGSC HoVer-Net/EfficientNet-B5, one immutable Hugging Face revision, one
-bundled image crop, CPU float32 with mixed precision disabled. Preserve published
-weight keys, learned tensors, class mappings and reconstruction settings. Retain
-model licensing/provenance and record crop/normalization explicitly. No GPU run,
-checkpoint rewrite, pretrained encoder download or runtime dependency upgrade.
-
-### Done means
-
-- Pin the public artifact revision/filename and verify its SHA-256. Record model
-  configuration, input identity, preprocessing, shapes/dtypes, versions and device.
-- The public checkpoint-loading API loads the actual artifact strictly, without
-  guessed configuration, monkeypatches, silent fallback or partial tensor loading.
-  If loading fails, verify the root cause and fix only this path with an offline
-  regression before capturing predictions. Explain any required public API tradeoff.
-- Run one bounded image prediction/reconstruction; retain reference data/settings
-  and explicit comparison criteria for later upgrades. Class/instance semantics
-  and background stay intact; a baseline is not evidence of clinical accuracy.
-- Keep ordinary CI offline. Real artifact checks use an explicit local environment;
-  the existing 15-job gate validates affected offline contracts. No new CI jobs.
-- Record all results and limits; stop when this single checkpoint/image path is
-  verified. Other models, whole-slide stitching, calibration, CUDA comparisons,
-  general checkpoint redesign and unrelated fixes remain outside this milestone.
-
-### Acceptance evidence
-
-- [Pinned checkpoint/capture metadata](validation/hgsc-hovernet-reference.json),
-  [six fixed output arrays](validation/hgsc-hovernet-reference.npz), and
-  [reproduction/licensing notes](published-checkpoint-reference.md).
-- The public CPU loading/prediction path succeeded on the actual SHA-256-verified
-  154 MB safetensors artifact. One 128×128 crop reconstructed seven instances.
-  `tools/check_checkpoint_reference.py` repeated the real-artifact check against
-  saved arrays; labels are exact and float auxiliary maps use fixed criteria.
-- Five offline regression cases verify rejection of a wrong checkpoint, changed
-  instance IDs, changed float values and changed dtypes, and acceptance of small
-  float roundoff. Actual artifact validation is separate from ordinary CI.
-- Capture/repeat validation uses locked macOS ARM64 CPU segmentation. Linux real
-  artifact execution and GPU behavior remain unverified; do not claim those from
-  offline CI. Completion requires the existing 15-job gate and ends this single
-  checkpoint/image milestone.
+Keep only regression fixtures and short provenance/settings needed for reproducible
+checks. Completed verbose captures and audit/environment dumps belong in Git
+history or CI artifacts. Any future temporary validation tooling must be removed
+when its bounded task is verified; do not add permanent workflow options or reports
+by default. Preserve meaningful regression coverage when retiring scaffolding.

@@ -1,6 +1,3 @@
-import importlib.util
-from pathlib import Path
-
 import numpy as np
 import pytest
 import torch
@@ -12,49 +9,20 @@ from histolytics.models.hovernet_panoptic import HoverNetPanoptic, hovernet_pano
 from histolytics.models.stardist_panoptic import StarDistPanoptic, stardist_panoptic
 
 
-@pytest.fixture
-def checkpoint_reference_module():
-    path = Path(__file__).resolve().parents[1] / "tools/check_checkpoint_reference.py"
-    spec = importlib.util.spec_from_file_location("checkpoint_reference", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-@pytest.mark.parametrize("change", ["labels", "floating", "dtype"])
-def test_checkpoint_reference_rejects_output_changes(
-    checkpoint_reference_module, change
-):
-    expected = {
-        "labels": np.array([[0, 7]], dtype=np.int32),
-        "aux": np.array([[0.0, 0.5]], dtype=np.float32),
-    }
-    actual = {name: array.copy() for name, array in expected.items()}
-    if change == "labels":
-        actual["labels"][0, 1] = 8
-    elif change == "floating":
-        actual["aux"][0, 1] += 0.01
-    else:
-        actual["labels"] = actual["labels"].astype(np.int64)
-    with pytest.raises(AssertionError):
-        checkpoint_reference_module._compare_arrays(actual, expected)
-
-
-def test_checkpoint_reference_allows_only_small_float_roundoff(
-    checkpoint_reference_module,
-):
-    expected = {"aux": np.array([[0.0, 0.5]], dtype=np.float32)}
-    actual = {"aux": expected["aux"] + 1e-6}
-    checkpoint_reference_module._compare_arrays(actual, expected)
-
-
-def test_checkpoint_reference_rejects_wrong_artifact(
-    checkpoint_reference_module, tmp_path
-):
-    checkpoint = tmp_path / "wrong.safetensors"
-    checkpoint.write_bytes(b"wrong checkpoint")
-    with pytest.raises(ValueError, match="Checkpoint SHA-256"):
-        checkpoint_reference_module._check_checkpoint(checkpoint)
+def test_local_pytorch_state_dict_round_trip(tmp_path):
+    torch.manual_seed(42)
+    original = HoverNetPanoptic(
+        3, 2, enc_name="resnet18", enc_pretrain=False, device=torch.device("cpu")
+    )
+    checkpoint = tmp_path / "hovernet.pt"
+    torch.save(original.model.state_dict(), checkpoint)
+    loaded = HoverNetPanoptic.from_pretrained(checkpoint, device=torch.device("cpu"))
+    assert loaded.model.state_dict().keys() == original.model.state_dict().keys()
+    for name, value in original.model.state_dict().items():
+        torch.testing.assert_close(
+            loaded.model.state_dict()[name], value, rtol=0, atol=0
+        )
+        assert loaded.model.state_dict()[name].device.type == "cpu"
 
 
 @pytest.mark.parametrize(
