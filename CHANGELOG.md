@@ -4,7 +4,7 @@ All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
 
-## [0.3.0] - Unreleased
+## [0.3.0] - 2026-10-19
 
 See the [installation and migration guide](https://hautaniemilab.github.io/histolytics/installation/#migration-and-source-development)
 for the new installation extras, Torch requirements, and file-handler import changes.
