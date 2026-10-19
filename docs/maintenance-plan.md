@@ -6,18 +6,41 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 19 October 2026
 
-PRs 3–27 have landed on main at `ca830b1`; the merged local branches
-have been removed. Release candidate metadata is `0.3.0`; published version remains
-`0.2.5`. The focused Torch
-2.9.1 upgrade is merged; no package release has occurred.
+[Histolytics 0.3.0](https://pypi.org/project/histolytics/0.3.0/) was published on
+19 October 2026 from [tag v0.3.0](https://github.com/HautaniemiLab/histolytics/releases/tag/v0.3.0),
+commit `6ff049a`, after PRs 33–35 completed release preparation. The installation
+split, standalone analysis composition, focused Torch upgrade and validation-file
+cleanup milestone is complete. No remaining backlog item is a 0.3.0 release gate.
 
-The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38309064269)
-passed all 15 routine jobs on the upgraded and cleaned-up tree.
-The earlier full installation validation covered all 20 supported archive/profile
-combinations. Python 3.13 remains unsupported and has a separate manual
-compatibility scope. PR 22 (per-model checkpoint class mappings) is merged with
-its three offline regression cases. No package release has occurred.
+[Release workflow 39242826093](https://github.com/HautaniemiLab/histolytics/actions/runs/39242826093)
+passed all 29 validation jobs and trusted publication, including all 20 supported
+archive/profile installation combinations. Both PyPI archive hashes matched the
+validated workflow artifacts. A fresh macOS ARM64/Python 3.12 CPU-analysis install
+from PyPI passed bundled-data, spatial-query and feature checks without Torch or
+NVIDIA packages. Documentation deployment and the live publication citation were
+verified. Routine CI remains 15 jobs; no new scopes or baselines were added.
+
+Segmentation requires Torch >=2.9.1,<3.0, following the upstream model package's
+major-version limit. The development lock retains Torch 2.9.1. Additional CPU
+checks passed on Torch 2.10.0 in a fresh Linux full-profile install and Torch
+2.14.1 on macOS, including the existing published-checkpoint comparison.
+
+### Remaining work — separate milestones
+
+- Python 3.13: await compatible upstream Numba/llvmlite requirements, then validate
+  supported profiles before changing support claims. Do not override upstream pins.
+- CuPy/cuML processing: evaluate CPU/GPU correctness and end-to-end cost when GPU
+  hardware is available before deciding what to simplify. Retain cuCIM; remove
+  nothing solely because it is optional or unmeasured.
+- Dependencies/security: triage reachable advisories and choose one justified
+  upgrade batch at a time. No blanket dependency refresh.
+- Model/WSI/GPU validation: address the documented upstream reader boundaries and
+  add targeted checks only when a concrete change needs them. The current CPU
+  checkpoint and reader checks do not validate every model, vendor format or GPU.
+
+Typing rollout, broad docstring conversion and notebook/quick-start audits remain
+deferred work, not an automatic next phase. Choose one bounded milestone before
+starting further implementation; do not reopen baseline collection or CI expansion.
 
 ### Completed foundation
 
@@ -55,7 +78,7 @@ its three offline regression cases. No package release has occurred.
 
 - [x] Analysis-default installation and explicit segmentation, cucim, cuda-analysis,
   and all extras; numerical bounds and all 280 locked versions retained. Verified
-  Linux/macOS profiles and CPU tutorial outputs; published 0.2.5 remains unchanged.
+  Linux/macOS profiles and CPU tutorial outputs; shipped in 0.3.0.
 
 - [x] Generated three-level TIFF checks through real OpenSlide (Linux/macOS) and
   cuCIM CPU reading (Linux); zero-worker iteration, drop-last counts, RGB axes and
@@ -69,14 +92,14 @@ its three offline regression cases. No package release has occurred.
   GDAL boundary behavior, IDs/classes and feature callbacks preserved. Fractional
   TIFF grids are verified; unequal-axis masked reads await an upstream fix.
 
-### Open compatibility and release gates
+### Compatibility and publication status
 
 - [ ] Resolve Python 3.13 dependency compatibility and validate source, wheel,
   and source-distribution checks before calling that version supported.
 - [x] Validate the analysis and segmentation installation profiles on macOS and
   Linux. NVIDIA extras remain Linux-only; record each profile separately.
-- [ ] Verify PyPI publisher/account configuration and authentication on a
-  separately authorized release. Prepared OIDC workflow is not proof of account setup.
+- [x] Verify PyPI trusted-publisher authentication through the authorized 0.3.0
+  publication; the exact validated archives were uploaded successfully.
 
 Numba 0.60.0/llvmlite 0.43.0 are the confirmed first Python 3.13 blocker.
 cellseg-models-pytorch 0.1.30 and the CUDA stack constrain this family; the inspected
@@ -91,16 +114,16 @@ processing into explicit extras. Analysis and segmentation install on macOS 3.12
 Linux 3.10–3.12 analysis/full and Linux 3.12 segmentation/CUDA-analysis profiles
 are verified. NVIDIA extras have no compatible macOS installation. Validate complete profile installations
 rather than describing omitted-dependency environments as clean installations. Avoid claiming cross-platform support from partial installs.
-The inspected Dependabot snapshot contains 127 open alerts, including a critical
-PyTorch alert; assess vulnerable versions and reachable paths before prioritizing
-upgrades. No advisories have been dismissed or fixed by the first patch.
+The historical Dependabot snapshot predates the Torch upgrade and is not a current
+alert count. The upgraded minimum excludes the previously recorded critical Torch
+advisory's affected range; broader reachability review and triage remain open.
 
 - [x] Inventory direct imports and undeclared/transitive requirements, including
   PyTorch, NumPy, Shapely, pandas, SciPy, image I/O, checkpoint, and WSI backends.
 - [x] Exercise baseline Linux fresh wheel/source installs against declared ranges,
   alongside locked source tests on Python 3.10–3.12.
-- [ ] Fix remaining CPU/optional import failures without relying on preinstalled
-  packages, then extend installation coverage to the intended extras/platforms.
+- [x] Verify CPU and optional imports in complete supported installation profiles,
+  including all 20 release archive/profile combinations outside the checkout.
 - [ ] Evaluate and simplify the CuPy feature-analysis paths as described below, then
   evaluate remaining WSI backend requirements and optional installation boundaries.
 - [ ] Triage security advisories for runtime, build, and documentation environments.
@@ -148,23 +171,25 @@ remain open. The initial bundled-image run exposed texture label/zero-row bugs;
 the merged fix corrects those shared bookkeeping paths with regression cases
 before collecting the corrected CPU reference. No CuPy path has been removed.
 
-## Reproducible prediction and spatial baselines
+## Scientific validation beyond the completed release
 
-- [ ] Record immutable checkpoint revisions/checksums, encoder and class mappings,
-  normalization, image identity, dtype/device, and output settings.
-- [ ] Capture representative dense predictions and reconstructed nuclei/tissue
-  labels, and define tolerances before comparing dependency changes.
-- [ ] Record spatial query, graph, aggregation, nuclei, and collagen results on
-  bundled data with explicit coordinate units and geometry precision.
-- [ ] Exercise real checkpoint loading and a small WSI with tile merging.
+- [x] Record one immutable HGSC checkpoint's revision/checksum, encoder/classes,
+  normalization, image identity and output settings; compare dense predictions and
+  reconstructed labels with fixed tolerances before the Torch upgrade. Provenance
+  is in the dependency audit; verbose captures remain in Git history.
+- [x] Preserve focused spatial-query, graph/aggregation, CPU image-feature and
+  native-reader regressions without adding broad baseline dumps.
+- [ ] Extend checks to other checkpoints, collagen/GPU paths and representative
+  whole-slide tile merging only for a scoped change that requires that evidence.
 - [ ] Define feasible separate GPU and backend checks. CPU tests do not validate them.
 
 ## Dependency and tooling upgrades
 
 - [x] Update development tooling and hooks separately from runtime packages.
   Align uv hook pins with the verified workflow and modernize Ruff configuration.
-- [ ] Upgrade cellseg-models-pytorch/PyTorch, numerical/image packages, geospatial
-  packages, and CUDA/WSI dependencies in separate batches. Update manifest and lock
+- [x] Complete the focused Torch upgrade and compatibility-range review for 0.3.0.
+- [ ] Evaluate remaining model, numerical/image, geospatial and CUDA/WSI upgrades
+  in separately justified batches. Update manifest and lock
   together and compare predictions, labels, features, and training after each batch.
 - [ ] Evaluate newer Python versions from compatible wheels and passing source and
   installation checks. Update all metadata and docs together when support changes.
@@ -203,10 +228,13 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 - [x] Complete the validation-artifact cleanup gate below before considering the
   repository release-ready.
-- [ ] Configure the matching PyPI trusted publisher and GitHub environment following
-  [the release guide](releasing.md); verify authentication only on an authorized release.
-- [ ] Validate a release candidate, write migration notes for intentional breaks,
-  and retain the previous release and baseline artifacts for rollback.
+- [x] Configure the matching PyPI trusted publisher and GitHub environment following
+  [the release guide](releasing.md); verify authentication on the authorized release.
+- [x] Validate and publish 0.3.0 with migration notes and approved release notes;
+  preserve previous releases and archived validation evidence for rollback.
+- [x] Verify published archive hashes, fresh PyPI installation and live docs.
+- [ ] If legacy publishing credentials remain, revoke the old PyPI token and remove
+  the obsolete GitHub secret after the successful trusted publication.
 
 ## CI validation scope
 
@@ -218,7 +246,7 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Completed maintenance phase and remaining readiness work — 13 October 2026
+## Completed maintenance phase — released 19 October 2026
 
 The installation split and standalone image-to-analysis composition are complete.
 The focused Torch upgrade locks Torch 2.9.1, torchvision 0.24.1 and
@@ -245,7 +273,7 @@ The validated analysis-first installation, independent composition, scoped model
 upgrade and compact CI are the deliverable. Do not start unrelated fixes or another
 baseline collection batch. Python 3.13 needs an upstream compatibility release;
 CuPy evaluation awaits GPU hardware; checkpoint/GPU coverage beyond this single
-CPU model and release publisher authentication remain separate work.
+CPU model remains separate work. Trusted publication is now verified.
 
 ## Readiness cleanup rule
 
@@ -255,10 +283,7 @@ history or CI artifacts. Any future temporary validation tooling must be removed
 when its bounded task is verified; do not add permanent workflow options or reports
 by default. Preserve meaningful regression coverage when retiring scaffolding.
 
-The final maintenance fix, PR 22, is merged: checkpoint class mappings now belong
-to each model instance. Release preparation covers migration notes, accurate Python
-support metadata, Google-style API rendering, an explicitly selected version, and
-candidate artifact validation through the existing checks. Version `0.3.0` is
-selected; it is not published. No new baseline or
-workflow scope. Publication needs separate authorization; do not invent a version
-or publish as ordinary maintenance.
+PRs 22 and 33–35 are merged. Per-instance checkpoint mappings, migration notes,
+accurate Python support metadata, Google-style API rendering and the reviewed
+Torch range are included in published 0.3.0. This milestone is closed; future
+releases still need explicit publication authorization.
