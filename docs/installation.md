@@ -1,7 +1,7 @@
 ## Installation
 
-These installation groups apply to 0.3.0 (in preparation) and current source checkout.
-Published Histolytics 0.2.5 still installs the model and NVIDIA dependencies by default.
+These installation groups apply to Histolytics 0.3.0 and later.
+Histolytics 0.2.5 installs the model and NVIDIA dependencies by default.
 
 ### Recommended full installation
 
