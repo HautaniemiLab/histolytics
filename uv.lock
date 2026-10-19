@@ -1819,7 +1819,7 @@ wheels = [
 
 [[package]]
 name = "histolytics"
-version = "0.2.5"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "esda", version = "2.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },

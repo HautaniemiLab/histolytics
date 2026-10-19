@@ -1,6 +1,6 @@
 ## Installation
 
-These installation groups apply to the next release and current source checkout.
+These installation groups apply to 0.3.0 (in preparation) and current source checkout.
 Published Histolytics 0.2.5 still installs the model and NVIDIA dependencies by default.
 
 ### Recommended full installation
@@ -75,6 +75,8 @@ or a measured speed benefit. They are not supported on macOS.
 
 ### Migration and source development
 
+Supported Python versions are 3.10–3.12. Python 3.13 remains unsupported.
+
 Existing model users must select `segmentation` or `all` in their installation command. To
 retain all previously mandatory capabilities on Linux:
 
@@ -86,7 +88,21 @@ Public computation APIs and their `device` defaults are unchanged. Explicit CUDA
 requests still require their backend; existing color-processing CPU fallbacks are
 unchanged. Numerical bounds previously inherited from the model package are retained
 in the base requirements. Python 3.13 support remains blocked by the existing
-Numba/llvmlite and Arrow dependency family; this split is not a runtime upgrade.
+Numba/llvmlite and Arrow dependency family.
+
+The segmentation extra now requires Torch >=2.9.1,<2.10. Existing model
+environments using Torch 2.0 must upgrade; use the CPU-wheel instructions above
+if NVIDIA runtime packages are not needed.
+
+The `FileHandler` and `H5Handler` aliases have been removed from
+`histolytics.utils`. Update those imports to their upstream location:
+
+```python
+from cellseg_models_pytorch.utils import FileHandler, H5Handler
+```
+
+These handlers require the segmentation extra. Spatial and CPU image-analysis
+utilities can be used independently.
 
 To install current source rather than the published release:
 

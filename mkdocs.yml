@@ -32,14 +32,12 @@ plugins:
       default_handler: python
       handlers:
         python:
-          selection:
+          options:
             docstring_style: google
             filters: ["!^_[^_]", "!^__init__$"]
-          rendering:
             show_source: true
             show_root_heading: true
             show_root_full_path: false
-          options:
             members_order: source
             separate_signature: true
             show_signature_annotations: true

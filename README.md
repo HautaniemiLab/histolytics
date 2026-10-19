@@ -53,7 +53,7 @@ pip install 'histolytics[cucim]'              # Retained cuCIM WSI backend (Linu
 pip install 'histolytics[cuda-analysis]'      # Existing CUDA analysis (Linux)
 ```
 
-These groups apply to the next release/current source. Published 0.2.5 retains
+These groups apply to 0.3.0 (in preparation) and current source. Published 0.2.5 retains
 its previous installation requirements. Existing model users must select
 `segmentation` or `all`; to retain all prior capabilities on Linux, install
 `histolytics[all]`. See the
