@@ -6,13 +6,13 @@ public APIs, checkpoints, spatial feature definitions, and scientific results.
 
 ## Current state — 13 October 2026
 
-PRs 3–21 and 23–25 have landed on main at `c16669b`; the merged local branches
-have been removed. Package version remains `0.2.5`. No package release or runtime
-dependency upgrade has been performed during this maintenance work.
+PRs 3–21 and 23–27 have landed on main at `5753fdc`; the merged local branches
+have been removed. Package version remains `0.2.5`. The focused Torch
+2.9.1 upgrade is merged; no package release has occurred.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
-CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38275935219)
-passed all 15 routine jobs, including the offline checkpoint-reference guards.
+CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histolytics/actions/runs/38309064269)
+passed all 15 routine jobs on the upgraded and cleaned-up tree.
 The earlier full installation validation covered all 20 supported archive/profile
 combinations. Python 3.13 remains unsupported and has a separate manual
 compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
@@ -200,7 +200,7 @@ uv version. Deployment events and PyPI account configuration are unchanged.
 
 ## Release
 
-- [ ] Complete the validation-artifact cleanup gate below before considering the
+- [x] Complete the validation-artifact cleanup gate below before considering the
   repository release-ready.
 - [ ] Configure the matching PyPI trusted publisher and GitHub environment following
   [the release guide](releasing.md); verify authentication only on an authorized release.
@@ -217,7 +217,7 @@ unsupported Python 3.13 has a separate manual compatibility scope. No runtime
 constraints, numerical tests, or publisher permissions change. See
 [the release guide](releasing.md) for invocation and exact scope.
 
-## Maintenance endpoint and current batch — 13 October 2026
+## Completed maintenance phase and remaining readiness work — 13 October 2026
 
 The installation split and standalone image-to-analysis composition are complete.
 The focused Torch upgrade now requires >=2.9.1,<2.10, with torchvision 0.24.1 and
@@ -238,7 +238,7 @@ identity concisely. The CPU image-feature values remain as a compact CSV fixture
 with unchanged input checks and numerical tolerances. Cleanup has not regenerated
 expected results or removed library contract regressions.
 
-This phase ends when the focused upgrade and cleanup pass the existing gate.
+PR 27 passed all 15 jobs and is merged. This focused upgrade/cleanup phase is complete.
 The validated analysis-first installation, independent composition, scoped model
 upgrade and compact CI are the deliverable. Do not start unrelated fixes or another
 baseline collection batch. Python 3.13 needs an upstream compatibility release;
@@ -252,3 +252,12 @@ checks. Completed verbose captures and audit/environment dumps belong in Git
 history or CI artifacts. Any future temporary validation tooling must be removed
 when its bounded task is verified; do not add permanent workflow options or reports
 by default. Preserve meaningful regression coverage when retiring scaffolding.
+
+The only remaining open maintenance PR is #22: per-instance checkpoint class
+mappings. Its root cause is shared class attributes and mutable registry aliases,
+which can change an already loaded model's downstream class names. Bring that
+existing fix onto the upgraded main, preserve the three offline regression cases,
+and validate it in the unchanged CI gate. No new baseline or workflow scope.
+After it is reviewed, release preparation needs an explicitly selected version,
+intentional-break migration notes, candidate artifact validation and separately
+authorized publication. Do not invent a version or publish as ordinary maintenance.
