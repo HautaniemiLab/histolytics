@@ -11,8 +11,10 @@ for the new installation extras, Torch requirements, and file-handler import cha
 
 ### Changed
 - Advertise Python 3.10–3.12 support; remove the unsupported Python 3.13 classifier.
-- Require Torch 2.9.1–2.9.x for segmentation, replacing legacy Torch 2.0 support
-  and aligning the locked torchvision/Triton companions. CPU analysis stays independent.
+- Require Torch >=2.9.1,<3.0 for segmentation, replacing legacy Torch 2.0 support
+  and following the upstream model package's major-version limit. The development
+  lock retains Torch 2.9.1 and its matching torchvision/Triton companions.
+  CPU analysis stays independent.
 - Add an explicit Rasterio affine grid to instance/semantic rasterization, retaining
   legacy unit-grid defaults and requiring unambiguous output dimensions/offsets.
 - Make CPU analysis the default installation; move models/workflows to

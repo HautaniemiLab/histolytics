@@ -115,8 +115,9 @@ remain incomplete.
 
 ## Focused Torch upgrade — 13 October 2026
 
-Segmentation now requires Torch >=2.9.1,<2.10 with locked torchvision 0.24.1 and
-Triton 3.5.1. Other retained package versions are unchanged; legacy CUDA 11 packages
+Segmentation requires Torch >=2.9.1,<3.0, following the upstream model package's
+major-version limit. The development lock retains Torch 2.9.1, torchvision 0.24.1
+and Triton 3.5.1. Other retained package versions are unchanged; legacy CUDA 11 packages
 and obsolete build helpers leave the lock. This excludes the <=2.5.1 range in
 [GHSA-53q9-r3pm-6pq6](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6);
 it is not a claim that all dependency advisories are resolved.
@@ -138,3 +139,10 @@ passed Python 3.10.22 and 3.12.15 with Torch 2.9.1+cu128 on CPU. Temporary workf
 checker and capture files were retired after this comparison; their exact records
 remain in Git history. The compact CPU feature fixture remains in ordinary tests.
 GPU computation and Python 3.13 compatibility are still unverified/unresolved.
+
+The pre-release upper-bound review removed the precautionary `<2.10` limit in
+favor of the upstream model package's `<3.0` constraint. On macOS ARM64/Python
+3.12.13, Torch 2.14.1 and torchvision 0.29.1 passed all 39 existing model and
+reconstruction tests and the same archived checkpoint comparison above, with
+unchanged labels and tolerances. Every other installed dependency remained at its
+locked version. The development lock stays at Torch 2.9.1; no GPU claim is added.

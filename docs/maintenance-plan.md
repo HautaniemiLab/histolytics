@@ -221,8 +221,9 @@ constraints, numerical tests, or publisher permissions change. See
 ## Completed maintenance phase and remaining readiness work — 13 October 2026
 
 The installation split and standalone image-to-analysis composition are complete.
-The focused Torch upgrade now requires >=2.9.1,<2.10, with torchvision 0.24.1 and
-Triton 3.5.1. Other retained package versions are unchanged. The legacy CUDA 11
+The focused Torch upgrade locks Torch 2.9.1, torchvision 0.24.1 and
+Triton 3.5.1. The release requirement is >=2.9.1,<3.0, following the upstream
+model package's major-version limit. Other retained package versions are unchanged. The legacy CUDA 11
 closure and unused build helpers leave the lock. No further CI scopes or scientific
 baselines are added.
 

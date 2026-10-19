@@ -1953,7 +1953,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.4,<2.0.0" },
     { name = "scipy", specifier = ">=1.14,<2.0" },
     { name = "shapely", specifier = ">=2.0.1" },
-    { name = "torch", marker = "extra == 'segmentation'", specifier = ">=2.9.1,<2.10" },
+    { name = "torch", marker = "extra == 'segmentation'", specifier = ">=2.9.1,<3.0" },
     { name = "torchdata", marker = "extra == 'segmentation'", specifier = ">=0.11.0" },
     { name = "tqdm", specifier = ">=4.64.0,<5.0.0" },
 ]
