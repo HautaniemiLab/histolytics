@@ -35,13 +35,18 @@ pip install 'histolytics[segmentation]'
 ```
 
 This adds models, inference/reconstruction, WSI adapters, and the existing
-segmentation/training dependencies. The model group requires Torch >=2.9.1,<2.10;
+segmentation/training dependencies. The model group requires Torch >=2.9.1,<3.0;
 Linux Torch wheels require glibc >=2.28; macOS model wheels require Apple silicon
 (ARM64). CPU analysis remains independent of Torch. Albumentations remains in this group because
 the published upstream inference imports require it. OpenSlide and BioIO backends
 still need their backend dependencies; this group does not install them. The default
 reader remains OpenSlide. HDF5 training additionally requires `tables`, as before. Install `openslide-python` and its system library (or
 `openslide-bin`) for that backend (see [OpenSlide installation](https://openslide.org/api/python/#installing)); BioIO requires `bioio` and a format reader plugin.
+
+The development lock uses Torch 2.9.1 with torchvision 0.24.1. CPU model and
+checkpoint checks also passed with Torch 2.14.1 and torchvision 0.29.1. The `<3.0`
+limit follows cellseg-models-pytorch; it does not restrict users to the locked minor
+version or establish GPU compatibility for every allowed release.
 
 Torch's Linux wheels can include NVIDIA runtime packages even for CPU execution.
 For a CPU-only Linux model environment, install the matching
@@ -52,8 +57,8 @@ pip install torch==2.9.1 torchvision==0.24.1 --index-url https://download.pytorc
 pip install 'histolytics[segmentation]'
 ```
 
-These versions satisfy the model extra without replacing CPU wheels with a newer
-Torch family. The analysis-only default
+These versions satisfy the model extra and match the development lock. For other
+Torch versions, use the corresponding torchvision wheels. The analysis-only default
 does not require Torch or a special package index. Select the model device
 explicitly, for example `from_pretrained(..., device=torch.device("cpu"))`;
 the public model-loading default remains CUDA.
@@ -90,7 +95,7 @@ unchanged. Numerical bounds previously inherited from the model package are reta
 in the base requirements. Python 3.13 support remains blocked by the existing
 Numba/llvmlite and Arrow dependency family.
 
-The segmentation extra now requires Torch >=2.9.1,<2.10. Existing model
+The segmentation extra now requires Torch >=2.9.1,<3.0. Existing model
 environments using Torch 2.0 must upgrade; use the CPU-wheel instructions above
 if NVIDIA runtime packages are not needed.
 
