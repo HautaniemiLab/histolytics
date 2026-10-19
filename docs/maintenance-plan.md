@@ -4,10 +4,11 @@ Refresh Histolytics in small, independently reviewable changes. Establish reliab
 tests and release installations before upgrading runtime dependencies. Preserve
 public APIs, checkpoints, spatial feature definitions, and scientific results.
 
-## Current state — 13 October 2026
+## Current state — 19 October 2026
 
-PRs 3–21 and 23–27 have landed on main at `5753fdc`; the merged local branches
-have been removed. Package version remains `0.2.5`. The focused Torch
+PRs 3–27 have landed on main at `ca830b1`; the merged local branches
+have been removed. Release candidate metadata is `0.3.0`; published version remains
+`0.2.5`. The focused Torch
 2.9.1 upgrade is merged; no package release has occurred.
 
 The repository uses uv, Hatchling, a src layout, and explicit Python selection in
@@ -15,8 +16,8 @@ CI. [The latest verified maintenance run](https://github.com/HautaniemiLab/histo
 passed all 15 routine jobs on the upgraded and cleaned-up tree.
 The earlier full installation validation covered all 20 supported archive/profile
 combinations. Python 3.13 remains unsupported and has a separate manual
-compatibility scope. PR 22 (per-model checkpoint class mappings) remains open and
-is not included in this main revision. No package release has occurred.
+compatibility scope. PR 22 (per-model checkpoint class mappings) is merged with
+its three offline regression cases. No package release has occurred.
 
 ### Completed foundation
 
@@ -253,11 +254,10 @@ history or CI artifacts. Any future temporary validation tooling must be removed
 when its bounded task is verified; do not add permanent workflow options or reports
 by default. Preserve meaningful regression coverage when retiring scaffolding.
 
-The only remaining open maintenance PR is #22: per-instance checkpoint class
-mappings. Its root cause is shared class attributes and mutable registry aliases,
-which can change an already loaded model's downstream class names. Bring that
-existing fix onto the upgraded main, preserve the three offline regression cases,
-and validate it in the unchanged CI gate. No new baseline or workflow scope.
-After it is reviewed, release preparation needs an explicitly selected version,
-intentional-break migration notes, candidate artifact validation and separately
-authorized publication. Do not invent a version or publish as ordinary maintenance.
+The final maintenance fix, PR 22, is merged: checkpoint class mappings now belong
+to each model instance. Release preparation covers migration notes, accurate Python
+support metadata, Google-style API rendering, an explicitly selected version, and
+candidate artifact validation through the existing checks. Version `0.3.0` is
+selected; it is not published. No new baseline or
+workflow scope. Publication needs separate authorization; do not invent a version
+or publish as ordinary maintenance.

@@ -98,6 +98,11 @@ See [the maintenance plan](docs/maintenance-plan.md) and
 
 - Follow Google-style docstrings for Python code
 
+The API reference uses mkdocstrings' Python handler with `docstring_style: google`
+in `mkdocs.yml`. Use `Args:`, `Returns:`, and `Raises:` sections for changed APIs.
+Build the reference with `uv sync --locked --group docs --extra segmentation`
+and `uv run --no-sync mkdocs build` before submitting documentation changes.
+
 ## Versioning
 
 We use [Semantic Versioning](https://semver.org/) for versioning.

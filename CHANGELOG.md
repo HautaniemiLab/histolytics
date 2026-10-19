@@ -3,7 +3,14 @@
 All notable changes to Histolytics will be documented in this file.
 
 ## [Unreleased]
+
+## [0.3.0] - Unreleased
+
+See the [installation and migration guide](https://hautaniemilab.github.io/histolytics/installation/#migration-and-source-development)
+for the new installation extras, Torch requirements, and file-handler import changes.
+
 ### Changed
+- Advertise Python 3.10–3.12 support; remove the unsupported Python 3.13 classifier.
 - Require Torch 2.9.1–2.9.x for segmentation, replacing legacy Torch 2.0 support
   and aligning the locked torchvision/Triton companions. CPU analysis stays independent.
 - Add an explicit Rasterio affine grid to instance/semantic rasterization, retaining
